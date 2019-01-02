@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <h1>Application Settings</h1>
+    <h2>ODL Controllers On LAN:</h2>
+    <ul  class="list-group">
+    {% for odlIP in odlList %}
+        <li class="list-group-item">{{odlIP}} </li>
+    {% endfor %}
+    </ul>
+{% endblock %}
