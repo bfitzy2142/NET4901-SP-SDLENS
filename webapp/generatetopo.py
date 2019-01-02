@@ -9,7 +9,7 @@ odlList=getip.findController()
 controllerIP=odlList[0]
 
 
-odl_topo_url = 'http://192.168.0.21:8181/restconf/operational/network-topology:network-topology'
+odl_topo_url = 'http://'+ controllerIP +':8181/restconf/operational/network-topology:network-topology'
 
 #Probably want to find better way to use creds. I.E (not in clear text in this python script)  
 odl_username = 'admin'
@@ -154,3 +154,4 @@ def run():
         return 0 #no failure reported
     except:
         return 1 #failure to report
+
