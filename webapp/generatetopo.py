@@ -76,7 +76,7 @@ def generateTopoHtml():
     #Build javascript dicts to represent dynamic topology information
 
     #The following is an example of the Javascript will create
-      """
+    """
      var nodes = new vis.DataSet([
             {id: 1, label: 'Node 1'},
             {id: 2, label: 'Node 2'},
