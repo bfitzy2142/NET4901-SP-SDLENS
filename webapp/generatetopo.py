@@ -38,7 +38,6 @@ def fetchTopology():
                 
 
     # get links between switches
-    #linkResponse = requests.get(odl_topo_url, auth=(odl_username, odl_password))
 
     for links in response.json()['network-topology']['topology'][2]['link']:
        # if re.match(r"openflow:", links['link-id'][]):
@@ -50,7 +49,6 @@ def fetchTopology():
         for x in range(len(connectionList)):
             for y in range(x+1, len(connectionList)):
                 if (connectionList[x]['src'] == connectionList[y]['dst'] and connectionList[x]['dst'] == connectionList[y]['src']):
-                    #print("removing src: " + connectionList[y]['src'] + ' dst: ' + connectionList[y]['dst'])
                     connectionList.remove(connectionList[y])
  
 
@@ -61,23 +59,39 @@ def generateTopoHtml():
     
     #Get the start and end of the html file
     f = open("./templates/topology-template.html", "r")
-    i = 0
+    #i = 0
     html_doc_static1 = ''
     html_doc_static2 = ''
     html_doc_static3 = ''
     
-
-    for line in f:
+    for i,line in enumerate(f):
         if i < 35:
             html_doc_static1 += line
         elif i > 35 and i < 47:
             html_doc_static2 += line
         elif i > 47:
             html_doc_static3 += line
-        i+=1
     f.close()
 
     #Build javascript dicts to represent dynamic topology information
+
+    #The following is an example of the Javascript will create
+      """
+     var nodes = new vis.DataSet([
+            {id: 1, label: 'Node 1'},
+            {id: 2, label: 'Node 2'},
+            {id: 3, label: 'Node 3'},
+            {id: 4, label: 'Node 4'},
+            {id: 5, label: 'Node 5'}
+        ]);
+    
+        var edges = new vis.DataSet([
+            {from: 1, to: 3},
+            {from: 1, to: 2},
+            {from: 2, to: 4},
+            {from: 2, to: 5}
+        ]);
+    """
     dictDataSet = '\n        var nodes = new vis.DataSet([\n'
     for x in range(len(deviceList)):
 
@@ -102,40 +116,6 @@ def generateTopoHtml():
             dictDataSet += '            {from: \'' + connectionList[x]['src'] + \
                 '\', to: \'' + connectionList[x]['dst'] + '\'}\n        ]);\n'
 
-
-    """
-    Example of what section above creates:
-       var nodes = new vis.DataSet([
-            {id: 'host:00:00:00:00:00:01', label: 'host:00:00:00:00:00:01'},
-            {id: 'host:00:00:00:00:00:02', label: 'host:00:00:00:00:00:02'},
-            {id: 'openflow:5', label: 'openflow:5'},
-            {id: 'host:00:00:00:00:00:05', label: 'host:00:00:00:00:00:05'},
-            {id: 'openflow:6', label: 'openflow:6'},
-            {id: 'host:00:00:00:00:00:06', label: 'host:00:00:00:00:00:06'},
-            {id: 'openflow:7', label: 'openflow:7'},
-            {id: 'host:00:00:00:00:00:03', label: 'host:00:00:00:00:00:03'},
-            {id: 'host:00:00:00:00:00:04', label: 'host:00:00:00:00:00:04'},
-            {id: 'openflow:1', label: 'openflow:1'},
-            {id: 'openflow:2', label: 'openflow:2'},
-            {id: 'openflow:3', label: 'openflow:3'},
-            {id: 'openflow:4', label: 'openflow:4'}
-        ]);
-
-        var edges = new vis.DataSet([
-            {from: 'openflow:7', to: 'host:00:00:00:00:00:06'},
-            {from: 'openflow:4', to: 'host:00:00:00:00:00:01'},
-            {from: 'openflow:5', to: 'host:00:00:00:00:00:03'},
-            {from: 'openflow:6', to: 'openflow:3'},
-            {from: 'openflow:7', to: 'openflow:3'},
-            {from: 'openflow:1', to: 'openflow:3'},
-            {from: 'openflow:2', to: 'openflow:1'},
-            {from: 'openflow:2', to: 'openflow:4'},
-            {from: 'openflow:6', to: 'host:00:00:00:00:00:04'},
-            {from: 'openflow:2', to: 'openflow:5'},
-            {from: 'host:00:00:00:00:00:02', to: 'openflow:4'},
-            {from: 'host:00:00:00:00:00:05', to: 'openflow:7'}
-        ]);
-    """
     #Create HTML file with newly generated Javascript
     html_doc_ControllerIP='     <h1>Topology for: '+ controllerIP +'</h1>\n'
     html_doc = html_doc_static1 + html_doc_ControllerIP + html_doc_static2 + dictDataSet + html_doc_static3
