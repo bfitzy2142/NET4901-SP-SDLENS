@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 This script will be used to automatically detect what host(s) is/are available running Opendaylight on the LAN
 Author: Brad Fitzgerald
