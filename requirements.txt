@@ -1,4 +1,4 @@
 Flask==1.0.2
 requests==2.21.0
 pprint==0.1
-nmap==0.0.1
+python-nmap==0.6.1
