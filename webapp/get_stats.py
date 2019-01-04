@@ -36,7 +36,7 @@ class odl_stat_collector(object):
             raw_int_stats = int_stats_req.json()
             int_stats = raw_int_stats["node-connector"][0][odl_string]
             node[node_int]["rx-pckts"] = int_stats["packets"]["received"]
-            node[node_int]["tx-pctks"] = int_stats["packets"]["transmitted"]
+            node[node_int]["tx-pckts"] = int_stats["packets"]["transmitted"]
             node[node_int]["rx-bytes"] = int_stats["bytes"]["received"]
             node[node_int]["tx-bytes"] = int_stats["bytes"]["transmitted"]
             node[node_int]["rx-drops"] = int_stats["receive-drops"]
@@ -50,15 +50,16 @@ class odl_stat_collector(object):
             
 
 
-        
-
-    def get_node_ports(self, node, raw_topo):
-        pass
-        
 
         
     def run(self):
-        pass
+        topo = self.get_topo_data()
+        nodes = self.get_nodes(topo)
+        for node in nodes:
+            if "host" not in node:
+                nodes[node] = self.get_port_stats(nodes[node], node)
+        return nodes
+
         
 
 def odl_testing():

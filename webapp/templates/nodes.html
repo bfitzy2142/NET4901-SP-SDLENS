@@ -1,0 +1,44 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+{% for node in nodes %}
+{% if "host" not in node %}
+<h2>{{node}}</h2>
+<table class="table table-bordered">
+  <tr>
+      <th>Interface</th>
+      <th>Rx Pckts</th>
+      <th>Tx Pckts</th>
+      <th>Rx Bytes</th>
+      <th>Tx Bytes</th>
+      <th>Rx Drops</th>
+      <th>Tx Drops</th>
+      <th>Rx Errs</th>
+      <th>Tx Errs</th>
+      <th>Rx Frame-Errs</th>
+      <th>Rx Overrun-Errs</th>
+      <th>Rx CRC-Errs</th>
+
+
+  </tr>
+  {% for node_int in nodes[node] %}
+  <tr>
+    <td>{{node_int}}</td>
+    <td>{{nodes[node][node_int]["rx-pckts"]}}</td>
+    <td>{{nodes[node][node_int]["tx-pckts"]}}</td>
+    <td>{{nodes[node][node_int]["rx-bytes"]}}</td>
+    <td>{{nodes[node][node_int]["tx-bytes"]}}</td>
+    <td>{{nodes[node][node_int]["rx-drops"]}}</td>
+    <td>{{nodes[node][node_int]["tx-drops"]}}</td>
+    <td>{{nodes[node][node_int]["rx-errs"]}}</td>
+    <td>{{nodes[node][node_int]["tx-errs"]}}</td>
+    <td>{{nodes[node][node_int]["rx-frame-errs"]}}</td>
+    <td>{{nodes[node][node_int]["rx-OverRun-errs"]}}</td>
+    <td>{{nodes[node][node_int]["rx-CRC-errs"]}}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endfor %}
+{% endblock %}
+ 

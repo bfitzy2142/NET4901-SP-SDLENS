@@ -4,6 +4,7 @@ from flask import Flask, render_template
 import os
 import generatetopo
 import getip
+from get_stats import odl_stat_collector
 
 app = Flask(__name__)
 odlControllerList = getip.findController()
@@ -22,6 +23,13 @@ def topology():
         return render_template('topo-failure.html')
     elif result == 0:
         return render_template('displaytopo.html')
+
+@app.route("/node-stats")
+def node_stats():
+    o = odl_stat_collector(odlControllerList[0])
+    return render_template('nodes.html', nodes = o.run())
+    
+    
         
 @app.route("/controller")
 def getControllerIP():

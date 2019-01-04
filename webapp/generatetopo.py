@@ -40,7 +40,7 @@ def fetchTopology():
 
     # get links between switches
 
-    for links in response.json()['network-topology']['topology'][2]['link']:
+    for links in response.json()['network-topology']['topology'][0]['link']:
        # if re.match(r"openflow:", links['link-id'][]):
         connection = {"src": links['source']['source-node'],
                       "dst": links['destination']['dest-node']}
