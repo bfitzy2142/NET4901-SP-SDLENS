@@ -2,8 +2,8 @@
 
 from flask import Flask, render_template
 import os
-import generatetopo
-import getip
+from generatetopo import odl_topo_builder
+import getip    
 from get_stats import odl_stat_collector
 
 app = Flask(__name__)
@@ -13,16 +13,18 @@ odlControllerList = getip.findController()
 def index():
     return render_template('home.html')
     
-    
-
 @app.route("/topology")
 def topology():
+    parser=odl_topo_builder(odlControllerList[0])
+    return render_template('topo.html', topologyInfo=parser.fetchTopology())
+    """
     result = generatetopo.run()
     
     if result == 1:
         return render_template('topo-failure.html')
     elif result == 0:
         return render_template('displaytopo.html')
+    """
 
 @app.route("/node-stats")
 def node_stats():
@@ -34,9 +36,9 @@ def node_stats():
 @app.route("/controller")
 def getControllerIP():
     print(odlControllerList)
-    return render_template('settings.html', odlList=odlControllerList)
+    return render_template('settings.html', odlList = odlControllerList)
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=80)
 

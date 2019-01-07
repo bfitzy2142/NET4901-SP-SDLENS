@@ -1,0 +1,50 @@
+{% extends 'layout.html' %}
+{% block body %}
+<h1>Topology for: {{topologyInfo['controller']}}</h1>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//cdn.ckeditor.com/4.6.2/basic/ckeditor.js"></script>
+
+    <div id="mynetwork"></div>
+
+    <script type="text/javascript">
+      CKEDITOR.replace('editor')
+    </script>
+    
+    <script type="text/javascript">
+
+        var nodes = new vis.DataSet([
+            {% for device in topologyInfo['devices'] %}
+            {% if loop.index != topologyInfo['devices']|length %}
+            {id: '{{device}}', label: '{{device}}'},
+            {% elif  loop.index == topologyInfo['devices']|length %}
+            {id: '{{device}}', label: '{{device}}'}
+            {% endif %}
+            {% endfor %}
+        ]);
+
+        var edges = new vis.DataSet([
+            {% for link in topologyInfo['connections'] %}
+            {% if loop.index != topologyInfo['connections']|length %}
+            {from: '{{link['src']}}', to: '{{link['dst']}}'},
+            {% elif  loop.index == topologyInfo['connections']|length %}
+            {from: '{{link['src']}}', to: '{{link['dst']}}'}
+            {% endif %}
+            {% endfor %}
+        ]);
+    
+        // create a network
+        var container = document.getElementById('mynetwork');
+    
+        // provide the data in the vis format
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var options = {};
+    
+        // initialize your network!
+        var network = new vis.Network(container, data, options);
+    </script>
+{% endblock %}
+ 
