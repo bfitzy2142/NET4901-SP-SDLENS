@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
+import getip
 from flask import Flask, render_template
-import os
 from generatetopo import odl_topo_builder
-import getip    
 from get_stats import odl_stat_collector
 
 app = Flask(__name__)
@@ -15,30 +14,19 @@ def index():
     
 @app.route("/topology")
 def topology():
-    parser=odl_topo_builder(odlControllerList[0])
-    return render_template('topo.html', topologyInfo=parser.fetchTopology())
-    """
-    result = generatetopo.run()
-    
-    if result == 1:
-        return render_template('topo-failure.html')
-    elif result == 0:
-        return render_template('displaytopo.html')
-    """
+    parser = odl_topo_builder(odlControllerList[0])
+    return render_template('topo.html', topologyInfo=parser.fetch_topology)
 
 @app.route("/node-stats")
 def node_stats():
     o = odl_stat_collector(odlControllerList[0])
-    return render_template('nodes.html', nodes = o.run())
-    
-    
-        
+    return render_template('nodes.html', nodes=o.run())
+         
 @app.route("/controller")
 def getControllerIP():
     print(odlControllerList)
-    return render_template('settings.html', odlList = odlControllerList)
+    return render_template('settings.html', odlList=odlControllerList)
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=80)
-
+    app.run(debug=True)
