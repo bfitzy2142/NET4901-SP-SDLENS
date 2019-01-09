@@ -15,7 +15,7 @@ def index():
 @app.route("/topology")
 def topology():
     parser = odl_topo_builder(odlControllerList[0])
-    return render_template('topo.html', topologyInfo=parser.fetch_topology)
+    return render_template('topo.html', topologyInfo=parser.fetch_topology())
 
 @app.route("/node-stats")
 def node_stats():
