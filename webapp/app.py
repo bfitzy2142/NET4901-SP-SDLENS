@@ -7,6 +7,7 @@ from get_stats import odl_stat_collector
 
 app = Flask(__name__)
 odlControllerList = getip.findController()
+controllerIP = odlControllerList[0]
 
 @app.route("/")
 def index():
@@ -14,18 +15,18 @@ def index():
     
 @app.route("/topology")
 def topology():
-    parser = odl_topo_builder(odlControllerList[0])
+    parser = odl_topo_builder(controllerIP)
     return render_template('topo.html', topologyInfo=parser.fetch_topology())
 
 @app.route("/node-stats")
 def node_stats():
-    o = odl_stat_collector(odlControllerList[0])
+    o = odl_stat_collector(controllerIP)
     return render_template('nodes.html', nodes=o.run())
          
 @app.route("/controller")
 def getControllerIP():
-    print(odlControllerList)
-    return render_template('settings.html', odlList=odlControllerList)
+    #print(odlControllerList)
+    return render_template('settings.html', odlList=controllerIP)
 
 
 if __name__ == "__main__":
