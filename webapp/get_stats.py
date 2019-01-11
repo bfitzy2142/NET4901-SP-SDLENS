@@ -21,8 +21,14 @@ class Odl_Stat_Collector(object):
         raw_topo = topo_request.json()
         return raw_topo
 
-    def sort_keys(self, keys):
-
+    # Helper Function to sort nodes
+    def sort_keys(self, nodes):
+        # sorted_nodes = sorted(nodes.keys())
+        sorted_nodes = {}
+        for node in sorted(nodes.keys()):
+            sorted_nodes[node] = nodes[node]
+        return sorted_nodes
+        pass
 
     def get_nodes(self, raw_topo):
         nodes = {}
@@ -36,19 +42,22 @@ class Odl_Stat_Collector(object):
             
             for node_int in node['termination-point']:
                 nodes[node['node-id']][node_int['tp-id']] = {}
+        print(nodes)
         # order nodes from smallest to largest. I.e: openflow:1-openflow:2,etc
-        sortedKeys = sorted(nodes.keys())
-        sortedNodes = {}
-        for device in sortedKeys:
-            sortedNodes[device] = nodes[device]
-        return sortedNodes
+        # sortedKeys = sorted(nodes.keys())
+        # sortedNodes = {}
+        # for device in sortedKeys:
+        #     sortedNodes[device] = nodes[device]
+        sorted_nodes = self.sort_keys(nodes)
+        return sorted_nodes
 
     def get_port_stats(self, node, node_name):
         odl_string = "opendaylight-port-statistics:flow-capable-node-connector-statistics"
         # Consider putting this in its own moethod and threading
         for node_int in node:
             
-            url = self.base_url + "opendaylight-inventory:nodes/node/{node_name}/node-connector/{node_int}"
+            url = self.base_url + f"opendaylight-inventory:nodes/node/{node_name}/node-connector/{node_int}"
+            print(url)
             int_stats_req = requests.get(url, headers=self.headers, auth=HTTPBasicAuth("admin", "admin"))
             raw_int_stats = int_stats_req.json()
             int_stats = raw_int_stats["node-connector"][0][odl_string]
