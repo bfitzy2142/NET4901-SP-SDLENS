@@ -38,7 +38,7 @@ class Odl_Stat_Collector(object):
     def get_nodes(self, raw_topo):
         nodes = {}
         for node in raw_topo['network-topology']['topology'][0]['node']:
-            # fix for corner case where 'termination-point' key does not exist
+            # fix for corner case where 'termination-point' key does not exist'
             links = node.get('termination-point')
             if(isinstance(links, list) is not True):
                 continue
@@ -47,12 +47,12 @@ class Odl_Stat_Collector(object):
             
             for node_int in node['termination-point']:
                 nodes[node['node-id']][node_int['tp-id']] = {}
-        print(nodes)
         # order nodes from smallest to largest. I.e: openflow:1-openflow:2,etc
         # sortedKeys = sorted(nodes.keys())
         # sortedNodes = {}
         # for device in sortedKeys:
         #     sortedNodes[device] = nodes[device]
+        print(nodes["openflow:2"])
         sorted_nodes = self.sort_keys(nodes)
         return sorted_nodes
 
@@ -60,27 +60,31 @@ class Odl_Stat_Collector(object):
         odl_string = ("opendaylight-port-statistics:"
                       "flow-capable-node-connector-statistics")
         # Consider putting this in its own moethod and threading
-        for node_int in node:
-            url = self.base_url + f"opendaylight-inventory:nodes/node/{node_name}/node-connector/{node_int}"
-            print(url)
-            raw_int_stats = self.send_get_request(url)
-            int_stats = raw_int_stats["node-connector"][0][odl_string]
-            node[node_int]["rx-pckts"] = int_stats["packets"]["received"]
-            node[node_int]["tx-pckts"] = int_stats["packets"]["transmitted"]
-            node[node_int]["rx-bytes"] = int_stats["bytes"]["received"]
-            node[node_int]["tx-bytes"] = int_stats["bytes"]["transmitted"]
-            node[node_int]["rx-drops"] = int_stats["receive-drops"]
-            node[node_int]["tx-drops"] = int_stats["transmit-drops"]
-            node[node_int]["rx-errs"] = int_stats["receive-errors"]
-            node[node_int]["tx-errs"] = int_stats["transmit-errors"]
-            node[node_int]["rx-frame-errs"] = int_stats["receive-frame-error"]
-            node[node_int]["rx-OverRun-errs"] = int_stats["receive-over-run-error"]
-            node[node_int]["rx-CRC-errs"] = int_stats["receive-crc-error"]
+        url = self.base_url + f"opendaylight-inventory:nodes/node/{node_name}/"
+        print(url)
+        raw_switch_stats = self.send_get_request(url)
+        raw_int_stats = raw_switch_stats["node"][0]["node-connector"]
+        for interface in raw_int_stats:
+            int_id = interface["id"]
+            int_stats = interface[odl_string]
+            node[int_id]["rx-pckts"] = int_stats["packets"]["received"]
+            node[int_id]["tx-pckts"] = int_stats["packets"]["transmitted"]
+            node[int_id]["rx-bytes"] = int_stats["bytes"]["received"]
+            node[int_id]["tx-bytes"] = int_stats["bytes"]["transmitted"]
+            node[int_id]["rx-drops"] = int_stats["receive-drops"]
+            node[int_id]["tx-drops"] = int_stats["transmit-drops"]
+            node[int_id]["rx-errs"] = int_stats["receive-errors"]
+            node[int_id]["tx-errs"] = int_stats["transmit-errors"]
+            node[int_id]["rx-frame-errs"] = int_stats["receive-frame-error"]
+            node[int_id]["rx-OverRun-errs"] = int_stats["receive-over-run-error"]
+            node[int_id]["rx-CRC-errs"] = int_stats["receive-crc-error"]
         return node
 
     def run(self):
         topo = self.get_topo_data()
         nodes = self.get_nodes(topo)
+        print(nodes["openflow:2"])
+        # Do some threading for this method
         for node in nodes:
             if "host" not in node:
                 nodes[node] = self.get_port_stats(nodes[node], node)
