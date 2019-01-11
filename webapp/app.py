@@ -7,7 +7,7 @@ from get_stats import odl_stat_collector
 
 app = Flask(__name__)
 odlControllerList = getip.findController()
-controllerIP = odlControllerList[0]
+controllerIP = '134.117.89.138'
 
 @app.route("/")
 def index():
@@ -25,7 +25,7 @@ def node_stats():
          
 @app.route("/controller")
 def getControllerIP():
-    #print(odlControllerList)
+    # print(odlControllerList)
     return render_template('settings.html', odlList=controllerIP)
 
 
