@@ -12,18 +12,24 @@ class Odl_Stat_Collector(object):
         self.headers = {'Accept': 'application/json',
                         'content-type': 'application/json'}
         self.base_url = f"http://{self.controller_ip}:8181/restconf/operational/"
+        self.auth = HTTPBasicAuth("admin", "admin")
         # This about addin auth to attributes
         self.topo_data = {}
+    
+    # Send get requests to the controller
+    def send_get_request(self, url):
+        response = requests.get(url, headers=self.headers, auth=self.auth)
+        response_data = response.json()
+        return response_data
 
     def get_topo_data(self):
         url = self.base_url + "network-topology:network-topology"
-        topo_request = requests.get(url, headers=self.headers, auth=HTTPBasicAuth("admin", "admin"))
-        raw_topo = topo_request.json()
+        # topo_request = requests.get(url, headers=self.headers, auth=HTTPBasicAuth("admin", "admin"))
+        raw_topo = self.send_get_request(url)
         return raw_topo
 
     # Helper Function to sort nodes
     def sort_keys(self, nodes):
-        # sorted_nodes = sorted(nodes.keys())
         sorted_nodes = {}
         for node in sorted(nodes.keys()):
             sorted_nodes[node] = nodes[node]
@@ -52,14 +58,12 @@ class Odl_Stat_Collector(object):
         return sorted_nodes
 
     def get_port_stats(self, node, node_name):
-        odl_string = "opendaylight-port-statistics:flow-capable-node-connector-statistics"
+        odl_string = ("opendaylight-port-statistics:"
+                      "flow-capable-node-connector-statistics")
         # Consider putting this in its own moethod and threading
         for node_int in node:
-            
             url = self.base_url + f"opendaylight-inventory:nodes/node/{node_name}/node-connector/{node_int}"
-            print(url)
-            int_stats_req = requests.get(url, headers=self.headers, auth=HTTPBasicAuth("admin", "admin"))
-            raw_int_stats = int_stats_req.json()
+            raw_int_stats = self.send_get_request(url)
             int_stats = raw_int_stats["node-connector"][0][odl_string]
             node[node_int]["rx-pckts"] = int_stats["packets"]["received"]
             node[node_int]["tx-pckts"] = int_stats["packets"]["transmitted"]
@@ -81,5 +85,3 @@ class Odl_Stat_Collector(object):
             if "host" not in node:
                 nodes[node] = self.get_port_stats(nodes[node], node)
         return nodes
-
-
