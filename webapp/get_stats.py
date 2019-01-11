@@ -24,7 +24,6 @@ class Odl_Stat_Collector(object):
 
     def get_topo_data(self):
         url = self.base_url + "network-topology:network-topology"
-        # topo_request = requests.get(url, headers=self.headers, auth=HTTPBasicAuth("admin", "admin"))
         raw_topo = self.send_get_request(url)
         return raw_topo
 
@@ -63,6 +62,7 @@ class Odl_Stat_Collector(object):
         # Consider putting this in its own moethod and threading
         for node_int in node:
             url = self.base_url + f"opendaylight-inventory:nodes/node/{node_name}/node-connector/{node_int}"
+            print(url)
             raw_int_stats = self.send_get_request(url)
             int_stats = raw_int_stats["node-connector"][0][odl_string]
             node[node_int]["rx-pckts"] = int_stats["packets"]["received"]
