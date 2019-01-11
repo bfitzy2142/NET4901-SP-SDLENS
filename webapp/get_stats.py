@@ -47,11 +47,6 @@ class Odl_Stat_Collector(object):
             
             for node_int in node['termination-point']:
                 nodes[node['node-id']][node_int['tp-id']] = {}
-        # order nodes from smallest to largest. I.e: openflow:1-openflow:2,etc
-        # sortedKeys = sorted(nodes.keys())
-        # sortedNodes = {}
-        # for device in sortedKeys:
-        #     sortedNodes[device] = nodes[device]
         print(nodes["openflow:2"])
         sorted_nodes = self.sort_keys(nodes)
         return sorted_nodes
