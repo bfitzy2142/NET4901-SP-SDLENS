@@ -4,6 +4,7 @@ import getip
 from flask import Flask, render_template
 from generatetopo import odl_topo_builder
 from get_stats import Odl_Stat_Collector
+from deviceInfo import odl_switch_info
 
 app = Flask(__name__)
 
@@ -28,7 +29,7 @@ def node_stats():
 
 @app.route("/device-info")
 def device_info():
-    o = odl_switch_info(odlControllerList[0])
+    o = odl_switch_info(controllerIP)
     return render_template('deviceInfo.html', nodes = o.run())
          
 @app.route("/controller")
