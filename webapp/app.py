@@ -25,6 +25,11 @@ def topology():
 def node_stats():
     o = Odl_Stat_Collector(controllerIP)
     return render_template('nodes.html', nodes=o.run())
+
+@app.route("/device-info")
+def device_info():
+    o = odl_switch_info(odlControllerList[0])
+    return render_template('deviceInfo.html', nodes = o.run())
          
 @app.route("/controller")
 def getControllerIP():
