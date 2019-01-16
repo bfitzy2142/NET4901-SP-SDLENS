@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
-import auxiliary
 from flask import Flask, render_template
 from generatetopo import odl_topo_builder
 from get_stats import Odl_Stat_Collector
 from deviceInfo import odl_switch_info
+from auxiliary import Webapp_Auxiliary
+
 
 app = Flask(__name__)
-
-# odlControllerList = auxiliary.device_scan()
+# aux = Webapp_Auxiliary()
+# odlControllerList = aux.device_scan()
 # controllerIP = odlControllerList[0]
 controllerIP = "134.117.89.138"
 
