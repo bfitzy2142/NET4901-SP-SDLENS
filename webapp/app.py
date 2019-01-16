@@ -4,6 +4,7 @@ import auxiliary
 from flask import Flask, render_template
 from generatetopo import odl_topo_builder
 from get_stats import Odl_Stat_Collector
+from deviceInfo import odl_switch_info
 
 app = Flask(__name__)
 
@@ -27,7 +28,14 @@ def topology():
 def node_stats():
     o = Odl_Stat_Collector(controllerIP)
     return render_template('nodes.html', nodes=o.run())
-       
+
+
+@app.route("/device-info")
+def device_info():
+    o = odl_switch_info(controllerIP)
+    return render_template('deviceInfo.html', nodes=o.run())
+
+ 
 @app.route("/controller")
 def getControllerIP():
     # print(odlControllerList)

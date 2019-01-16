@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+{% for node in nodes %}
+{% if "host" not in node %}
+<h2>{{node}}</h2>
+<table class="table table-bordered">
+  <tr>
+      <th>Port ID</th>
+      <th>Port Number</th>
+      <th>Current Speed</th>
+      <th>Port Name</th>
+      <!-- <th>Port State</th> -->
+      <th>Hardware Address</th>
+
+  </tr>
+  {% for i in nodes[node] %}
+  <tr>
+    <td>{{ i }}</td> 
+    <td>{{ nodes[node][i]['port_num'] }}</td>
+    <td>{{ nodes[node][i]['speed'] }}</td>
+    <td>{{ nodes[node][i]['name'] }}</td>
+    <td>{{ nodes[node][i]['hwaddr'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endfor %}
+{% endblock %}
+ 
