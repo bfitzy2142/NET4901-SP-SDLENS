@@ -1,7 +1,8 @@
 {% extends 'layout.html' %}
 {% block body %}
-<h1>Topology for: {{topologyInfo['controller']}}</h1>
+<h1 style="font-size: 50px;"> Active Topology: {{topologyInfo['controller']}}</h1>
 
+  
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="//cdn.ckeditor.com/4.6.2/basic/ckeditor.js"></script>
 
@@ -16,9 +17,17 @@
         var nodes = new vis.DataSet([
             {% for device in topologyInfo['devices'] %}
             {% if loop.index != topologyInfo['devices']|length %}
-            {id: '{{device}}', label: '{{device}}'},
+            {% if "host" not in device %}
+            {id: '{{device}}', label: '{{device}}', image: 'https://proxy.duckduckgo.com/iu/?u=https%3A%2F%2Fmaxcdn.icons8.com%2Fwindows8%2FPNG%2F512%2FNetwork%2Fswitch-512.png&f=1', shape: 'image'},
+            {% elif "host" in device %}
+            {id: '{{device}}', label: '{{device}}', image: 'https://proxy.duckduckgo.com/iu/?u=https%3A%2F%2Fd30y9cdsu7xlg0.cloudfront.net%2Fpng%2F11319-200.png&f=1', shape: 'image'},
+            {% endif %}
             {% elif  loop.index == topologyInfo['devices']|length %}
-            {id: '{{device}}', label: '{{device}}'}
+            {% if "host" not in device %}
+            {id: '{{device}}', label: '{{device}}', image: 'https://proxy.duckduckgo.com/iu/?u=https%3A%2F%2Fmaxcdn.icons8.com%2Fwindows8%2FPNG%2F512%2FNetwork%2Fswitch-512.png&f=1', shape: 'image'}
+            {% elif "host" in device %}
+            {id: '{{device}}', label: '{{device}}', image: 'https://proxy.duckduckgo.com/iu/?u=https%3A%2F%2Fd30y9cdsu7xlg0.cloudfront.net%2Fpng%2F11319-200.png&f=1', shape: 'image'}
+            {% endif %}
             {% endif %}
             {% endfor %}
         ]);
@@ -45,6 +54,7 @@
     
         // initialize your network!
         var network = new vis.Network(container, data, options);
+
     </script>
 {% endblock %}
  

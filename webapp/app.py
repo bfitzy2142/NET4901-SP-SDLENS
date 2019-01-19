@@ -40,7 +40,7 @@ def device_info():
 @app.route("/controller")
 def getControllerIP():
     # print(odlControllerList)
-    return render_template('settings.html', odlList=controllerIP)
+    return render_template('settings.html', odlIP=controllerIP)
 
 
 if __name__ == "__main__":
