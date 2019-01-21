@@ -55,7 +55,6 @@ class Odl_Stat_Collector(object):
                       "flow-capable-node-connector-statistics")
         # Consider putting this in its own moethod and threading
         url = self.base_url + f"opendaylight-inventory:nodes/node/{node_name}/"
-        print(url)
         raw_switch_stats = self.send_get_request(url)
         raw_int_stats = raw_switch_stats["node"][0]["node-connector"]
         for interface in raw_int_stats:
@@ -77,7 +76,6 @@ class Odl_Stat_Collector(object):
     def run(self):
         topo = self.get_topo_data()
         nodes = self.get_nodes(topo)
-        print(nodes["openflow:2"])
         # Do some threading for this method
         for node in nodes:
             if "host" not in node:
