@@ -47,7 +47,6 @@ class Odl_Stat_Collector(object):
             
             for node_int in node['termination-point']:
                 nodes[node['node-id']][node_int['tp-id']] = {}
-        print(nodes["openflow:2"])
         sorted_nodes = self.sort_keys(nodes)
         return sorted_nodes
 
