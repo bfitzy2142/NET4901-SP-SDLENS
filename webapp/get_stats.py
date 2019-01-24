@@ -33,7 +33,6 @@ class Odl_Stat_Collector(object):
         for node in sorted(nodes.keys()):
             sorted_nodes[node] = nodes[node]
         return sorted_nodes
-        pass
 
     def get_nodes(self, raw_topo):
         nodes = {}
