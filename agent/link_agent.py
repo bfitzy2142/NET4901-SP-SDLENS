@@ -6,7 +6,6 @@ from abstract_agent import AbstractAgent
 
 class LinkAgent(AbstractAgent):
     """
-    Author: Brad Fitzgerald
     Description: OpenDayLight RESTCONF API parser for device links.
     """
 
@@ -35,29 +34,29 @@ class LinkAgent(AbstractAgent):
             pairs which each form a unique link.
         """
         # List to store the edges (links) between nodes
-        connectionList = []
+        connection_list = []
 
         for node in response['topology']:
             for link in node['link']:
                 connection = {"src": link['source']['source-node'],
                               "dst": link['destination']['dest-node']}
-                connectionList.append(connection)
+                connection_list.append(connection)
         # Cleanup redundant connections
-        cleansed_list = self.remove_redundancy(connectionList)
+        cleansed_list = self.remove_redundancy(connection_list)
         return cleansed_list
 
-    def remove_redundancy(self, connectionList):
+    def remove_redundancy(self, connection_list):
         """Removes redundant links from the list of connections.
 
         Returns:
             list -- A list of unique links.
         """
         # Compare first node with second deleting similar links
-        for first_connection in connectionList:
-            for index, second_connection in enumerate(connectionList, start=1):
+        for first_connection in connection_list:
+            for second_connection in connection_list[1:]:
                 if (self.link_comparison(first_connection, second_connection)):
-                    connectionList.remove(second_connection)
-        return connectionList
+                    connection_list.remove(second_connection)
+        return connection_list
 
     # Logic for similar link detection
     def link_comparison(self, first_obj, second_obj):
