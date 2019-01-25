@@ -58,3 +58,6 @@ class TopologyAgent(AbstractAgent):
         for node in sorted(nodes.keys()):
             sorted_nodes[node] = nodes[node]
         return sorted_nodes
+
+    def create_nodes_table(self):
+        pass
