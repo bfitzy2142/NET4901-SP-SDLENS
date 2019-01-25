@@ -9,8 +9,6 @@ class TopologyAgent(AbstractAgent):
     def __init__(self, controller_ip):
         """"Constructor for Topology_Agent, initializes parent object."""
         super().__init__(controller_ip)
-        self.cnx = mysql.connector.connect(**self.sql_auth, db="sdlens")
-        self.cursor = self.cnx.cursor()
         self.create_nodes_table()
 
     def get_data(self):
@@ -46,7 +44,15 @@ class TopologyAgent(AbstractAgent):
 
     def store_data(self, data):
         """To be implemented"""
-        pass
+        sql_insert = ("INSERT INTO nodes (Node, Type) "
+                      "VALUES ('{}', '{}')")
+        for node in data:
+            if "openflow" in node:
+                node_type = "switch"
+            if "host" in node:
+                node_type = "host"
+            self.cursor.execute(sql_insert.format(node, node_type))
+            self.cnx.commit()
 
     def sort_keys(self, nodes):
         """Sorts the dictionary of nodes alphabetically
@@ -62,15 +68,18 @@ class TopologyAgent(AbstractAgent):
             sorted_nodes[node] = nodes[node]
         return sorted_nodes
 
+    # TODO: Consider helper function to create tables in abstract_agent
     def create_nodes_table(self):
         """Creates a nodes table in the sql DB."""
         table = (
             "CREATE TABLE nodes("
-            "Node VARCHAR(16) NOT NULL,"
+            "Node VARCHAR(32) NOT NULL,"
             "Type VARCHAR(16) NOT NULL,"
             "PRIMARY KEY (Node) );")
         try:
             self.cursor.execute(table)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                print("table already exists")
+                self.cursor.execute("DROP TABLE nodes")
+                self.cursor.execute(table)
+
