@@ -46,6 +46,7 @@ class TopologyAgent(AbstractAgent):
         """Stores our node data in the sdlens database."""
         sql_insert = ("INSERT INTO nodes (Node, Type) "
                       "VALUES ('{}', '{}')")
+        # TODO: Consider threading?
         for node in data:
             if "openflow" in node:
                 node_type = "switch"
