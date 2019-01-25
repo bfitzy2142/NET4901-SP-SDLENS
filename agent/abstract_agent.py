@@ -16,7 +16,9 @@ from requests.auth import HTTPBasicAuth
 
 class AbstractAgent(metaclass=abc.ABCMeta):
     """Abstract class to be implemented by monitoring agents"""
+    
     def __init__(self, controller_ip):
+        """"Initalizer for AbstractAgent"""
         self.controller_ip = controller_ip
         self.headers = {'Accept': 'application/json',
                         'content-type': 'application/json'}

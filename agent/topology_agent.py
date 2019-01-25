@@ -5,7 +5,7 @@ from abstract_agent import AbstractAgent
 
 class TopologyAgent(AbstractAgent):
     def __init__(self, controller_ip):
-        """"Constructor for Topology_Agent, initializes parent object."""
+        """"Initalizer for LinkAgent, initializes parent object."""
         super().__init__(controller_ip)
 
     def get_data(self):
