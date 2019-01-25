@@ -23,6 +23,9 @@ class AbstractAgent(metaclass=abc.ABCMeta):
         self.base_url = f"http://{self.controller_ip}:8181/restconf/operational/"
         # TODO: Change once DB implemented
         self.auth = HTTPBasicAuth("admin", "admin")
+        self.sql_auth = {"user": "root",
+                         "password": "root",
+                         "host": "127.0.0.1"}
 
     def run_agent(self):
         """Template method executed by every agent."""

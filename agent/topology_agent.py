@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Monitoring Agent that discovers topology."""
+import mysql.connector
+
 from abstract_agent import AbstractAgent
 
 
