@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Monitoring Agent that discovers topology."""
+import mysql.connector
+from mysql.connector import errorcode
 from abstract_agent import AbstractAgent
 
 
@@ -7,6 +9,7 @@ class TopologyAgent(AbstractAgent):
     def __init__(self, controller_ip):
         """"Initalizer for LinkAgent, initializes parent object."""
         super().__init__(controller_ip)
+        self.create_nodes_table()
 
     def get_data(self):
         """Gets topology data from ODL controller.
@@ -40,8 +43,16 @@ class TopologyAgent(AbstractAgent):
         return sorted_nodes
 
     def store_data(self, data):
-        """To be implemented"""
-        pass
+        """Stores our node data in the sdlens database."""
+        sql_insert = ("INSERT INTO nodes (Node, Type) "
+                      "VALUES ('{}', '{}')")
+        # TODO: Consider threading?
+        for node in data:
+            if "openflow" in node:
+                node_type = "switch"
+            if "host" in node:
+                node_type = "host"
+            self.send_sql_query(sql_insert.format(node, node_type))
 
     def sort_keys(self, nodes):
         """Sorts the dictionary of nodes alphabetically
@@ -56,3 +67,19 @@ class TopologyAgent(AbstractAgent):
         for node in sorted(nodes.keys()):
             sorted_nodes[node] = nodes[node]
         return sorted_nodes
+
+    # TODO: Consider helper function to create tables in abstract_agent
+    def create_nodes_table(self):
+        """Creates a nodes table in the sql DB."""
+        table = (
+            "CREATE TABLE nodes("
+            "Node VARCHAR(32) NOT NULL,"
+            "Type VARCHAR(16) NOT NULL,"
+            "PRIMARY KEY (Node) );")
+        # If table was previously created, we drop and recreate.
+        try:
+            self.send_sql_query(table)
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                self.send_sql_query("DROP TABLE nodes")
+                self.send_sql_query(table)

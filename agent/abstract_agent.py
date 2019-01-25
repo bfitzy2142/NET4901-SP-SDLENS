@@ -10,6 +10,8 @@ promote reuse and minimize repeated code.
 import abc
 import json
 
+import mysql.connector
+from mysql.connector import errorcode
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -25,12 +27,17 @@ class AbstractAgent(metaclass=abc.ABCMeta):
         self.base_url = f"http://{self.controller_ip}:8181/restconf/operational/"
         # TODO: Change once DB implemented
         self.auth = HTTPBasicAuth("admin", "admin")
+        self.sql_auth = {"user": "root",
+                         "password": "root",
+                         "host": "127.0.0.1"}
+        self.cnx = mysql.connector.connect(**self.sql_auth, db="sdlens")
+        self.cursor = self.cnx.cursor()
 
     def run_agent(self):
         """Template method executed by every agent."""
         response = self.get_data()
         parsed_data = self.parse_response(response)
-        print(parsed_data)
+        self.store_data(parsed_data)
 
     @abc.abstractmethod
     def get_data(self):
@@ -71,3 +78,8 @@ class AbstractAgent(metaclass=abc.ABCMeta):
             data {dict} -- Monitoring data to be stored in the Database
         """
         pass
+
+    def send_sql_query(self, query):
+        """Helper functions that sends SQL calls."""
+        self.cursor.execute(query)
+        self.cnx.commit()
