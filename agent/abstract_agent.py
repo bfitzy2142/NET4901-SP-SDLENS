@@ -26,6 +26,7 @@ class AbstractAgent(metaclass=abc.ABCMeta):
         self.sql_auth = {"user": "root",
                          "password": "root",
                          "host": "127.0.0.1"}
+        
 
     def run_agent(self):
         """Template method executed by every agent."""
