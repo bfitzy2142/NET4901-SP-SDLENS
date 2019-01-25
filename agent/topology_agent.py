@@ -43,7 +43,7 @@ class TopologyAgent(AbstractAgent):
         return sorted_nodes
 
     def store_data(self, data):
-        """To be implemented"""
+        """Stores our node data in the sdlens database."""
         sql_insert = ("INSERT INTO nodes (Node, Type) "
                       "VALUES ('{}', '{}')")
         for node in data:
@@ -51,8 +51,7 @@ class TopologyAgent(AbstractAgent):
                 node_type = "switch"
             if "host" in node:
                 node_type = "host"
-            self.cursor.execute(sql_insert.format(node, node_type))
-            self.cnx.commit()
+            self.send_sql_query(sql_insert.format(node, node_type))
 
     def sort_keys(self, nodes):
         """Sorts the dictionary of nodes alphabetically
@@ -76,10 +75,10 @@ class TopologyAgent(AbstractAgent):
             "Node VARCHAR(32) NOT NULL,"
             "Type VARCHAR(16) NOT NULL,"
             "PRIMARY KEY (Node) );")
+        # If table was previously created, we drop and recreate.
         try:
-            self.cursor.execute(table)
+            self.send_sql_query(table)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                self.cursor.execute("DROP TABLE nodes")
-                self.cursor.execute(table)
-
+                self.send_sql_query("DROP TABLE nodes")
+                self.send_sql_query(table)

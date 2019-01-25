@@ -76,3 +76,8 @@ class AbstractAgent(metaclass=abc.ABCMeta):
             data {dict} -- Monitoring data to be stored in the Database
         """
         pass
+
+    def send_sql_query(self, query):
+        """Helper functions that sends SQL calls."""
+        self.cursor.execute(query)
+        self.cnx.commit()
