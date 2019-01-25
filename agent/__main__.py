@@ -25,7 +25,7 @@ def create_db():
             cnx.database = 'sdlens'
             cursor = cnx.cursor()
             cursor.execute("GRANT ALL ON sdlens.* to 'root'@'localhost';")
-            print("DB created!") #d debug
+            print("DB created!") # debug
 
 if __name__ == '__main__':
     create_db()
