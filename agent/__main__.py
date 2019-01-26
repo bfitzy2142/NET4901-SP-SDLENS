@@ -17,7 +17,7 @@ def create_db():
                  "host": "127.0.0.1"}
     try:
         cnx = mysql.connector.connect(**sql_creds, database='sdlens')
-        print("db already created") # debug
+        print("db already created")  # debug
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_BAD_DB_ERROR:
             cnx = mysql.connector.connect(**sql_creds)
@@ -25,8 +25,10 @@ def create_db():
             cnx.database = 'sdlens'
             cursor = cnx.cursor()
             cursor.execute("GRANT ALL ON sdlens.* to 'root'@'localhost';")
-            print("DB created!") # debug
+            print("DB created!")  # debug
 
 if __name__ == '__main__':
+    controller_ip = "134.117.89.138"
     create_db()
-    
+    topo_agent = TopologyAgent(controller_ip)
+    topo_agent.run_agent()
