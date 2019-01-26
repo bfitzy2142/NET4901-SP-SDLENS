@@ -34,6 +34,7 @@ class TopologyAgent(AbstractAgent):
             dict -- Returns a dictionary with the nodes and node interfaces
                 defined.
         """
+        # TODO: Make this data structure more efficient
         nodes = {}
         for node in response['topology'][0]['node']:
             nodes[node['node-id']] = {}
@@ -47,7 +48,8 @@ class TopologyAgent(AbstractAgent):
         # TODO: Consider threading?
         for node, interfaces in data.items():
             if "openflow" in node:
-                stripped_node = node.replace(":", "")  # SQL doesnt like ':'
+                # SQL doesn't like ':' in table names
+                stripped_node = node.replace(":", "")
                 node_type = "switch"
                 self.create_int_table(stripped_node)
                 self.store_interfaces(stripped_node, interfaces)
@@ -56,12 +58,25 @@ class TopologyAgent(AbstractAgent):
             self.store_nodes(node, node_type)
 
     def store_nodes(self, node, node_type):
+        """Stores node names/type in the Nodes DB table.
+
+        Arguments:
+            node {string} -- Node Name: e.g. 'openflow:1'
+            node_type {string} -- Node type: e.g. 'switch' vs 'host'
+        """
         sql_insert = ("INSERT INTO nodes (Node, Type) "
                       "VALUES ('{}', '{}')")
         self.send_sql_query(sql_insert.format(node, node_type))
         pass
 
     def store_interfaces(self, node, interfaces):
+        """Stores interface names in 'switch_interfaces' tables.
+
+        Arguments:
+            node {string} -- Node name: 'Openflow1'
+            interfaces {dict} -- dictionary of interfaces
+        """
+
         sql_insert = (f"INSERT INTO {node}_interfaces (Interface) "
                       "VALUES ('{}')")
         for interface in interfaces:
