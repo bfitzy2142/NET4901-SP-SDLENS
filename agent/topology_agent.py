@@ -44,15 +44,30 @@ class TopologyAgent(AbstractAgent):
 
     def store_data(self, data):
         """Stores our node data in the sdlens database."""
-        sql_insert = ("INSERT INTO nodes (Node, Type) "
-                      "VALUES ('{}', '{}')")
         # TODO: Consider threading?
-        for node in data:
+        for node, interfaces in data.items():
             if "openflow" in node:
+                stripped_node = node.replace(":", "")  # SQL doesnt like ':'
                 node_type = "switch"
+                self.create_int_table(stripped_node)
+                self.store_interfaces(stripped_node, interfaces)
             if "host" in node:
                 node_type = "host"
-            self.send_sql_query(sql_insert.format(node, node_type))
+            self.store_nodes(node, node_type)
+
+    def store_nodes(self, node, node_type):
+        sql_insert = ("INSERT INTO nodes (Node, Type) "
+                      "VALUES ('{}', '{}')")
+        self.send_sql_query(sql_insert.format(node, node_type))
+        pass
+
+    def store_interfaces(self, node, interfaces):
+        sql_insert = (f"INSERT INTO {node}_interfaces (Interface) "
+                      "VALUES ('{}')")
+        for interface in interfaces:
+            print(sql_insert.format(interface))
+            self.send_sql_query(sql_insert.format(interface))
+        pass
 
     def sort_keys(self, nodes):
         """Sorts the dictionary of nodes alphabetically
@@ -66,6 +81,7 @@ class TopologyAgent(AbstractAgent):
         sorted_nodes = {}
         for node in sorted(nodes.keys()):
             sorted_nodes[node] = nodes[node]
+        print(sorted_nodes)
         return sorted_nodes
 
     # TODO: Consider helper function to create tables in abstract_agent
@@ -82,4 +98,19 @@ class TopologyAgent(AbstractAgent):
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
                 self.send_sql_query("DROP TABLE nodes")
+                self.send_sql_query(table)
+
+    def create_int_table(self, node):
+        """Creates a DB table listing node interfaces."""
+        table = (
+            f"CREATE TABLE {node}_interfaces("
+            "Interface VARCHAR(32) NOT NULL,"
+            "PRIMARY KEY (Interface) );")
+        print(table)
+        # TODO: Converge steps below into a helper function
+        try:
+            self.send_sql_query(table)
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                self.send_sql_query(f"DROP TABLE {node}_interfaces")
                 self.send_sql_query(table)
