@@ -121,7 +121,6 @@ class TopologyAgent(AbstractAgent):
             f"CREATE TABLE {node}_interfaces("
             "Interface VARCHAR(32) NOT NULL,"
             "PRIMARY KEY (Interface) );")
-        print(table)
         # TODO: Converge steps below into a helper function
         try:
             self.send_sql_query(table)
