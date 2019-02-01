@@ -8,6 +8,7 @@ parse data structure -> Store in DB -> etc. It makes more sense to
 promote reuse and minimize repeated code.
 """
 import abc
+from datetime import datetime
 import json
 
 import mysql.connector
@@ -83,3 +84,8 @@ class AbstractAgent(metaclass=abc.ABCMeta):
         """Helper functions that sends SQL calls."""
         self.cursor.execute(query)
         self.cnx.commit()
+
+    def add_timestamp(self):
+        now = datetime.now()
+        timestamp = now.strftime('%Y-%m-%d %H:%M:%S')
+        return timestamp
