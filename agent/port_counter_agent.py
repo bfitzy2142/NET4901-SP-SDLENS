@@ -3,6 +3,7 @@
 import mysql.connector
 from mysql.connector import errorcode
 from abstract_agent import AbstractAgent
+from datetime import datetime
 
 
 class PortCounterAgent(AbstractAgent):
@@ -46,30 +47,78 @@ class PortCounterAgent(AbstractAgent):
         int_tuples = self.cursor.fetchall()
         for interface in int_tuples:
             interface_list.append(interface[0])
-        print(interface_list)
         return interface_list
 
     def get_data(self):
         """TODO"""
         response_dict = {}
-        odl_string = ("opendaylight-port-statistics:"
-                      "flow-capable-node-connector-statistics")
         interface_list = self.get_interfaces(self.node)
         for interface in interface_list:
-            restconf_node = f"opendaylight-inventory:nodes/node/{self.node}/"
-            restconf_int = f"node-connector/{interface}/"
-            url = self.base_url + restconf_node + restconf_int + odl_string
-            print(url)
-            response = self.send_get_request(url)
-            print(response)
+            response_dict[interface] = self.get_counters(interface)
+        print(response_dict.keys())
+        return response_dict
+
+    def get_counters(self, interface):
+        """Helper method that sends API calls for counters of every port.
+
+        Arguments:
+            interface [str] -- Target interface name for the API call.
+
+        Returns:
+            dict -- Returns the response of the API call as a dict.
+        """
+        odl_string = ("opendaylight-port-statistics:"
+                      "flow-capable-node-connector-statistics")
+        restconf_node = f"opendaylight-inventory:nodes/node/{self.node}/"
+        restconf_int = f"node-connector/{interface}/"
+        url = self.base_url + restconf_node + restconf_int + odl_string
+        response = self.send_get_request(url)
         return response
 
     def parse_response(self, response):
         """TODO"""
-        
-        
-        pass
+        # TODO: Make odl_string an attribute
+        odl_string = ("opendaylight-port-statistics:"
+                      "flow-capable-node-connector-statistics")
+        port_stats = {}
+        for interface in response:
+            # print(response[interface])
+            int_id = interface
+            int_stats = response[interface][odl_string]
+            port_stats[int_id] = {}
+            port_stats[int_id]["rx-pckts"] = int_stats["packets"]["received"]
+            port_stats[int_id]["tx-pckts"] = int_stats["packets"]["transmitted"]
+            port_stats[int_id]["rx-bytes"] = int_stats["bytes"]["received"]
+            port_stats[int_id]["tx-bytes"] = int_stats["bytes"]["transmitted"]
+            port_stats[int_id]["rx-drops"] = int_stats["receive-drops"]
+            port_stats[int_id]["tx-drops"] = int_stats["transmit-drops"]
+            port_stats[int_id]["rx-errs"] = int_stats["receive-errors"]
+            port_stats[int_id]["tx-errs"] = int_stats["transmit-errors"]
+            port_stats[int_id]["timestamp"] = self.add_timestamp()
+        return port_stats
+
+    # TODO: Add this to Abstract agent instead
+    def add_timestamp(self):
+        now = datetime.now()
+        timestamp = now.strftime('%Y-%m-%d %H:%M:%S')
+        return timestamp
 
     def store_data(self, data):
         """TODO"""
-        pass
+        for interface in data:
+            int_data = data[interface]
+            # print(int_data)
+            stripped_node = self.node.replace(":", "")
+            sql_insert = (f"INSERT INTO {stripped_node}_counters "
+                          "(Interface, Timestamp, Rx_pckts, Tx_pckts, "
+                          "Rx_bytes, Tx_bytes, Rx_drops, Tx_drops, "
+                          "Rx_errs, Tx_errs) VALUES "
+                          "('{}', '{}', {}, {}, {}, {}, {}, {}, {}, {})")
+            query = sql_insert.format(interface, int_data['timestamp'],
+                                      int_data['rx-pckts'], int_data['tx-pckts'],
+                                      int_data['rx-bytes'], int_data['tx-bytes'],
+                                      int_data['rx-drops'], int_data['tx-drops'],
+                                      int_data['rx-errs'], int_data['tx-errs'])
+            self.send_sql_query(query)
+
+        
