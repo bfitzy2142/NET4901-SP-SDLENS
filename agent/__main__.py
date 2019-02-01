@@ -48,6 +48,8 @@ if __name__ == '__main__':
     topo_agent = TopologyAgent(controller_ip)
     topo_agent.run_agent()
     switch_list = get_switches()
+    link_agent = LinkAgent(controller_ip)
+    link_agent.run_agent()
     counter_agents = {}
     for switch in switch_list:
         counter_agents[switch] = PortCounterAgent(controller_ip, switch)
