@@ -3,7 +3,6 @@
 import mysql.connector
 from mysql.connector import errorcode
 from abstract_agent import AbstractAgent
-import json
 
 
 class LinkAgent(AbstractAgent):
@@ -90,10 +89,10 @@ class LinkAgent(AbstractAgent):
         self.create_links_table()
 
         for link in data:
-            # SQL doesn't like ':' in table names
-            stripped_link_src = link['src'].replace(":", "")
-            stripped_link_dst = link['dst'].replace(":", "") 
-            self.store_links(stripped_link_src, stripped_link_dst)
+            # Not seeing issue with ':' in object name
+            self.store_links(link['src'], link['dst'])
+            
+            
 
     def store_links(self, src, dst):
         """Inserts a unique link into the 'links' table.
