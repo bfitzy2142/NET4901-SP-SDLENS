@@ -9,7 +9,8 @@ class PortCounterAgent(AbstractAgent):
     def __init__(self, controller_ip, node):
         """Initializer for the PortCounterObject"""
         super().__init__(controller_ip)
-        self.create_pc_table(node)
+        self.node = node
+        self.create_pc_table(self.node)
 
     def create_pc_table(self, node):
         """Creates a DB table listing port counters
@@ -36,12 +37,37 @@ class PortCounterAgent(AbstractAgent):
                 self.send_sql_query(f"DROP TABLE {node}_counters")
                 self.send_sql_query(table)
 
-    def parse_response(self, response):
-        """TODO"""
-        pass
+    # TODO: Add this to an SQL Utility module
+    def get_interfaces(self, node):
+        interface_list = []
+        node = node.replace(":", "")
+        query = f"SELECT * FROM {node}_interfaces"
+        self.cursor.execute(query)
+        int_tuples = self.cursor.fetchall()
+        for interface in int_tuples:
+            interface_list.append(interface[0])
+        print(interface_list)
+        return interface_list
 
     def get_data(self):
         """TODO"""
+        response_dict = {}
+        odl_string = ("opendaylight-port-statistics:"
+                      "flow-capable-node-connector-statistics")
+        interface_list = self.get_interfaces(self.node)
+        for interface in interface_list:
+            restconf_node = f"opendaylight-inventory:nodes/node/{self.node}/"
+            restconf_int = f"node-connector/{interface}/"
+            url = self.base_url + restconf_node + restconf_int + odl_string
+            print(url)
+            response = self.send_get_request(url)
+            print(response)
+        return response
+
+    def parse_response(self, response):
+        """TODO"""
+        
+        
         pass
 
     def store_data(self, data):

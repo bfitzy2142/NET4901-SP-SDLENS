@@ -49,6 +49,8 @@ if __name__ == '__main__':
     counter_agents = {}
     for switch in switch_list:
         counter_agents[switch] = PortCounterAgent(controller_ip, switch)
+    for switch in switch_list:
+        counter_agents[switch].run_agent()
     # while loops
     # SELECT Node From nodes WHERE Type="switch";
 
