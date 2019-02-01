@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """Monitoring Agent that tracks port counters."""
-from datetime import datetime
-
 import mysql.connector
 from mysql.connector import errorcode
 
@@ -14,6 +12,8 @@ class PortCounterAgent(AbstractAgent):
         super().__init__(controller_ip)
         self.node = node
         self.create_pc_table(self.node)
+        self.odl_string = ("opendaylight-port-statistics:"
+                           "flow-capable-node-connector-statistics")
 
     def create_pc_table(self, node):
         """Creates a DB table listing port counters
@@ -52,7 +52,15 @@ class PortCounterAgent(AbstractAgent):
         return interface_list
 
     def get_data(self):
-        """TODO"""
+        """Get_data executes the logic necessary to make the API
+        calls for the port counters and organizes the data to be parsed
+        by parse_data.
+
+        Returns:
+            Dict -- Returns a dictionary of the API calls for the port
+            counters. Adds a key that corresponds to the interface for
+            the given API calls.
+        """
         response_dict = {}
         interface_list = self.get_interfaces(self.node)
         for interface in interface_list:
@@ -69,24 +77,27 @@ class PortCounterAgent(AbstractAgent):
         Returns:
             dict -- Returns the response of the API call as a dict.
         """
-        odl_string = ("opendaylight-port-statistics:"
-                      "flow-capable-node-connector-statistics")
         restconf_node = f"opendaylight-inventory:nodes/node/{self.node}/"
         restconf_int = f"node-connector/{interface}/"
-        url = self.base_url + restconf_node + restconf_int + odl_string
+        url = self.base_url + restconf_node + restconf_int + self.odl_string
         response = self.send_get_request(url)
         return response
 
     def parse_response(self, response):
-        """TODO"""
-        # TODO: Make odl_string an attribute
-        odl_string = ("opendaylight-port-statistics:"
-                      "flow-capable-node-connector-statistics")
+        """Parses API response to create a lean dictionary of port stats.
+
+        Arguments:
+            response {dict} -- A dictionary of port stats from the API call,
+            formatted by the get_counters method.
+
+        Returns:
+            Dictionary -- Returns a nested dictionary of interface: port stats,
+            the fields should correspond to the SD_Lens SQL tables.
+        """
         port_stats = {}
         for interface in response:
-            # print(response[interface])
             int_id = interface
-            int_stats = response[interface][odl_string]
+            int_stats = response[interface][self.odl_string]
             port_stats[int_id] = {}
             port_stats[int_id]["rx-pckts"] = int_stats["packets"]["received"]
             port_stats[int_id]["tx-pckts"] = int_stats["packets"]["transmitted"]
@@ -99,17 +110,16 @@ class PortCounterAgent(AbstractAgent):
             port_stats[int_id]["timestamp"] = self.add_timestamp()
         return port_stats
 
-    # TODO: Add this to Abstract agent instead
-    def add_timestamp(self):
-        now = datetime.now()
-        timestamp = now.strftime('%Y-%m-%d %H:%M:%S')
-        return timestamp
-
     def store_data(self, data):
-        """TODO"""
+        """Takes the parsed API responses for the port counters and
+        stores them in the sdlens DBs.
+
+        Arguments:
+            data {dict} -- Takes the dictionary returned my parse_data
+            as the argument.
+        """
         for interface in data:
             int_data = data[interface]
-            # print(int_data)
             stripped_node = self.node.replace(":", "")
             sql_insert = (f"INSERT INTO {stripped_node}_counters "
                           "(Interface, Timestamp, Rx_pckts, Tx_pckts, "
