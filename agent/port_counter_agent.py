@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Monitoring Agent that tracks port counters."""
+from datetime import datetime
+
 import mysql.connector
 from mysql.connector import errorcode
+
 from abstract_agent import AbstractAgent
-from datetime import datetime
 
 
 class PortCounterAgent(AbstractAgent):
@@ -120,5 +122,3 @@ class PortCounterAgent(AbstractAgent):
                                       int_data['rx-drops'], int_data['tx-drops'],
                                       int_data['rx-errs'], int_data['tx-errs'])
             self.send_sql_query(query)
-
-        
