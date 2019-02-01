@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Monitoring Agent that discovers topology."""
+import mysql.connector
+from mysql.connector import errorcode
 from abstract_agent import AbstractAgent
-# import json
+import json
 
 
 class LinkAgent(AbstractAgent):
@@ -14,7 +16,8 @@ class LinkAgent(AbstractAgent):
         super().__init__(controller_ip)
 
     def get_data(self):
-        """Gets link data from ODL controller.
+        """Retrieves json data containing the connections of the
+        present SDN topology from the ODL controller.
 
         Returns:
             dict -- Returns dictionary containing link information of the
@@ -77,9 +80,49 @@ class LinkAgent(AbstractAgent):
             return False
 
     def store_data(self, data):
-        """To be implemented"""
-        pass
+        """Implentaiton of abstract method to store link info in an
+        SQL database
+        
+        Parameters:
+        Data - A list of links. Each index contains dict with src and
+        dst port identifiers.
+        """
+        self.create_links_table()
 
-# Debug
-# obj = LinkAgent('134.117.89.138')
-# print(json.dumps(obj.parse_response(obj.get_data()), indent=1))
+        for link in data:
+            # SQL doesn't like ':' in table names
+            stripped_link_src = link['src'].replace(":", "")
+            stripped_link_dst = link['dst'].replace(":", "") 
+            self.store_links(stripped_link_src, stripped_link_dst)
+
+    def store_links(self, src, dst):
+        """Inserts a unique link into the 'links' table.
+
+        Parameters: 
+        src - the source port for the current connection
+        dst - the destination port for the current connection
+        """
+        sql_insert = ("INSERT INTO links (SRC, DST) "
+                      "VALUES ('{}', '{}')")
+        self.send_sql_query(sql_insert.format(src, dst))
+    
+    def create_links_table(self):
+        """Creates table 'links' if not already created.
+        
+        Table structure:
+        ID: (Primary Key & auto incrementing)
+        SRC: Connection Source
+        DST: Connection Destination
+        """
+        table = (
+            "CREATE TABLE links("
+            "ID int NOT NULL AUTO_INCREMENT,"
+            "SRC VARCHAR(32) NOT NULL,"
+            "DST VARCHAR(32) NOT NULL,"
+            "PRIMARY KEY (ID) );")
+        try:
+            self.send_sql_query(table)
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                self.send_sql_query(f"DROP TABLE links")
+                self.send_sql_query(table)
