@@ -42,13 +42,11 @@ class PortCounterAgent(AbstractAgent):
 
     # TODO: Add this to an SQL Utility module
     def get_interfaces(self, node):
-        interface_list = []
         node = node.replace(":", "")
         query = f"SELECT * FROM {node}_interfaces"
         self.cursor.execute(query)
         int_tuples = self.cursor.fetchall()
-        for interface in int_tuples:
-            interface_list.append(interface[0])
+        interface_list = [interface[0] for interface in int_tuples]
         return interface_list
 
     def get_data(self):
@@ -65,7 +63,6 @@ class PortCounterAgent(AbstractAgent):
         interface_list = self.get_interfaces(self.node)
         for interface in interface_list:
             response_dict[interface] = self.get_counters(interface)
-        print(response_dict.keys())
         return response_dict
 
     def get_counters(self, interface):

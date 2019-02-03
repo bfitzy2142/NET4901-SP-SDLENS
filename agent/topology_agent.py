@@ -80,7 +80,6 @@ class TopologyAgent(AbstractAgent):
         sql_insert = (f"INSERT INTO {node}_interfaces (Interface) "
                       "VALUES ('{}')")
         for interface in interfaces:
-            print(sql_insert.format(interface))
             self.send_sql_query(sql_insert.format(interface))
         pass
 
@@ -96,7 +95,6 @@ class TopologyAgent(AbstractAgent):
         sorted_nodes = {}
         for node in sorted(nodes.keys()):
             sorted_nodes[node] = nodes[node]
-        print(sorted_nodes)
         return sorted_nodes
 
     # TODO: Consider helper function to create tables in abstract_agent
