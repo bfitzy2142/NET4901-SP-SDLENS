@@ -3,6 +3,7 @@
 import mysql.connector
 from mysql.connector import errorcode
 from abstract_agent import AbstractAgent
+# import json
 
 
 class LinkAgent(AbstractAgent):
@@ -125,3 +126,54 @@ class LinkAgent(AbstractAgent):
             if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
                 self.send_sql_query(f"DROP TABLE links")
                 self.send_sql_query(table)
+    
+    def retrieve_links(self):
+        """ Query method to get a list of links from the sql database
+
+        Retruns:
+        List - Containing 'id' of connection, 'src' node, 'dst' node
+        """
+        connections=[]
+
+        link_count_query = "SELECT count( * ) as total_record FROM links"
+        self.cursor.execute(link_count_query)
+        for result in self.cursor:
+            link_count = int(''.join(map(str,result)))
+        
+        for id in range(1,link_count+1):
+            query = "select * from links where id = " + str(id)
+            self.cursor.execute(query)
+            for id_num, src, dst in self.cursor:
+                link={'id': id_num, 'src': src, 'dst': dst}
+                connections.append(link)
+       
+        return connections 
+
+    def retrieve_devices(self):
+        """ Query method to get a list of nodes from the sql database
+
+        Retruns:
+        List - Devices available in the SDN network
+        """
+        devices=[]
+        query = "select node from nodes"
+        self.cursor.execute(query)
+        for node in self.cursor:
+            str_node = str(''.join(map(str,node)))
+            devices.append(str_node)
+        return devices
+
+    def topo_data_consolidater(self):
+        """Builds a dict with link and device data contained within.
+
+        Returns:
+        Dict - To be passed to the topo.html file with Jinja2 templating.
+        """
+        links=self.retrieve_links()
+        nodes=self.retrieve_devices()
+        return {'links': links, 'nodes': nodes}
+
+# Debug
+# obj = LinkAgent('134.117.89.138')
+# obj.run_agent()
+# print(json.dumps(obj.topo_data_consolidater(), indent=1))
