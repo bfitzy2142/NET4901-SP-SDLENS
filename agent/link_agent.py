@@ -23,8 +23,8 @@ class LinkAgent(AbstractAgent):
             dict -- Returns dictionary containing link information of the
             ODL managed network.
         """
-        links_url = 'network-topology:network-topology/topology/flow:1/'
-        url = self.base_url + links_url
+        links_uri = 'network-topology:network-topology/topology/flow:1/'
+        url = self.base_url + links_uri
         response = self.send_get_request(url)
         return response
 
@@ -82,7 +82,7 @@ class LinkAgent(AbstractAgent):
     def store_data(self, data):
         """Implentaiton of abstract method to store link info in an
         SQL database
-        
+
         Parameters:
         Data - A list of links. Each index contains dict with src and
         dst port identifiers.
@@ -90,25 +90,22 @@ class LinkAgent(AbstractAgent):
         self.create_links_table()
 
         for link in data:
-            # Not seeing issue with ':' in object name
             self.store_links(link['src'], link['dst'])
-            
-            
 
     def store_links(self, src, dst):
         """Inserts a unique link into the 'links' table.
 
-        Parameters: 
+        Parameters:
         src - the source port for the current connection
         dst - the destination port for the current connection
         """
         sql_insert = ("INSERT INTO links (SRC, DST) "
                       "VALUES ('{}', '{}')")
         self.send_sql_query(sql_insert.format(src, dst))
-    
+
     def create_links_table(self):
         """Creates table 'links' if not already created.
-        
+
         Table structure:
         ID: (Primary Key & auto incrementing)
         SRC: Connection Source
@@ -126,41 +123,46 @@ class LinkAgent(AbstractAgent):
             if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
                 self.send_sql_query(f"DROP TABLE links")
                 self.send_sql_query(table)
-    
+
     def retrieve_links(self):
         """ Query method to get a list of links from the sql database
 
         Retruns:
         List - Containing 'id' of connection, 'src' node, 'dst' node
-        """
-        connections=[]
 
-        link_count_query = "SELECT count( * ) as total_record FROM links"
-        self.cursor.execute(link_count_query)
-        for result in self.cursor:
-            link_count = int(''.join(map(str,result)))
-        
-        for id in range(1,link_count+1):
-            query = "select * from links where id = " + str(id)
-            self.cursor.execute(query)
-            for id_num, src, dst in self.cursor:
-                link={'id': id_num, 'src': src, 'dst': dst}
-                connections.append(link)
-       
-        return connections 
+        Todo: Add threading functionality
+        """
+        connections = []
+        link_query = "select * from links"
+        self.cursor.execute(link_query)
+        link_rows = self.cursor.fetchall()
+
+        for row in link_rows:
+            connections.append(self.get_links_db(row))
+
+        return connections
+
+    def get_links_db(self, link_row):
+        """ Helper function to allow threading when getting links from db
+        Returns:
+        Single link to be added to a list of links
+        """
+        return {'id': link_row[0], 'src': link_row[1], 'dst': link_row[2]}
 
     def retrieve_devices(self):
         """ Query method to get a list of nodes from the sql database
 
-        Retruns:
+        Returns:
         List - Devices available in the SDN network
         """
-        devices=[]
+        devices = []
         query = "select node from nodes"
         self.cursor.execute(query)
-        for node in self.cursor:
-            str_node = str(''.join(map(str,node)))
-            devices.append(str_node)
+        raw_devices = self.cursor.fetchall()
+
+        for row in raw_devices:
+            devices.append(row[0])
+
         return devices
 
     def topo_data_consolidater(self):
@@ -169,8 +171,8 @@ class LinkAgent(AbstractAgent):
         Returns:
         Dict - To be passed to the topo.html file with Jinja2 templating.
         """
-        links=self.retrieve_links()
-        nodes=self.retrieve_devices()
+        links = self.retrieve_links()
+        nodes = self.retrieve_devices()
         return {'links': links, 'nodes': nodes}
 
 # Debug
