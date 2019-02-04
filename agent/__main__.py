@@ -9,6 +9,7 @@ from abstract_agent import AbstractAgent
 from topology_agent import TopologyAgent
 from link_agent import LinkAgent
 from port_counter_agent import PortCounterAgent
+from device_agent import DeviceAgent
 
 sql_creds = {"user": "root",
                  "password": "root",
@@ -51,11 +52,14 @@ if __name__ == '__main__':
     link_agent = LinkAgent(controller_ip)
     link_agent.run_agent()
     counter_agents = {}
+    device_agents = {}
     for switch in switch_list:
         counter_agents[switch] = PortCounterAgent(controller_ip, switch)
+        device_agents[switch] = DeviceAgent(controller_ip, switch)
     while True:
         for switch in switch_list:
             counter_agents[switch].run_agent()
+            device_agents[switch].run_agent()
         time.sleep(10)
     # while loops
     # SELECT Node From nodes WHERE Type="switch";
