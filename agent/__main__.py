@@ -56,10 +56,10 @@ if __name__ == '__main__':
     for switch in switch_list:
         counter_agents[switch] = PortCounterAgent(controller_ip, switch)
         device_agents[switch] = DeviceAgent(controller_ip, switch)
+        device_agents[switch].run_agent()
     while True:
         for switch in switch_list:
             counter_agents[switch].run_agent()
-            device_agents[switch].run_agent()
         time.sleep(10)
     # while loops
     # SELECT Node From nodes WHERE Type="switch";

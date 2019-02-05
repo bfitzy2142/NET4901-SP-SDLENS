@@ -23,7 +23,7 @@ class DeviceAgent(AbstractAgent):
             f"CREATE TABLE {node}_info("
             "ID INT NOT NULL AUTO_INCREMENT,"
             "Interface VARCHAR(32) NOT NULL,"
-            "Port_Number INT NOT NULL,"
+            "Port_Number BIGINT NOT NULL,"
             "Port_Name VARCHAR(32) NOT NULL,"
             "Speed INT NOT NULL,"
             "Hw_Addr VARCHAR(32) NOT NULL,"
