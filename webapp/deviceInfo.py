@@ -12,7 +12,6 @@ class odl_switch_info(object):
         self.headers = {'Accept': 'application/json', 'content-type': 'application/json'}
         #This about addin auth to attributes
         self.topo_data = {}
-    
 
     def get_topo_data(self):
         url = f"http://{self.controller_ip}:8181/restconf/operational/opendaylight-inventory:nodes"
@@ -24,7 +23,7 @@ class odl_switch_info(object):
     def get_node_connector(self, raw_topo):
         nodes = {}
         fni = 'flow-node-inventory:'
-        #print(json.dumps(raw_topo['nodes'], indent=1))
+        print(json.dumps(raw_topo['nodes'], indent=1))
         for node in raw_topo['nodes']['node']:
             
             nodes[node['id']] = {}
@@ -33,7 +32,6 @@ class odl_switch_info(object):
             	nodes[node['id']][i['id']]['port_num'] = i[fni + 'port-number']
             	nodes[node['id']][i['id']]['speed'] = i[fni + 'current-speed']
             	nodes[node['id']][i['id']]['name'] = i[fni + 'name']
-            	#nodes[node['id']][i['id']]['state'] = i[fni + 'state']['']
             	nodes[node['id']][i['id']]['hwaddr'] = i[fni + 'hardware-address']
 
         #print(nodes)

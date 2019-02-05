@@ -18,15 +18,15 @@
             {% for device in topologyInfo['devices'] %}
             {% if loop.index != topologyInfo['devices']|length %}
             {% if "host" not in device %}
-            {id: '{{device}}', label: '{{device}}', image: 'https://proxy.duckduckgo.com/iu/?u=https%3A%2F%2Fmaxcdn.icons8.com%2Fwindows8%2FPNG%2F512%2FNetwork%2Fswitch-512.png&f=1', shape: 'image'},
+            {id: '{{device}}', label: '{{device}}', image: "{{url_for('static', filename='switch.png')}}", shape: 'image'},
             {% elif "host" in device %}
-            {id: '{{device}}', label: '{{device}}', image: 'https://proxy.duckduckgo.com/iu/?u=https%3A%2F%2Fd30y9cdsu7xlg0.cloudfront.net%2Fpng%2F11319-200.png&f=1', shape: 'image'},
+            {id: '{{device}}', label: '{{device}}', image: '{{url_for('static', filename='host.png')}}', shape: 'image'},
             {% endif %}
             {% elif  loop.index == topologyInfo['devices']|length %}
             {% if "host" not in device %}
-            {id: '{{device}}', label: '{{device}}', image: 'https://proxy.duckduckgo.com/iu/?u=https%3A%2F%2Fmaxcdn.icons8.com%2Fwindows8%2FPNG%2F512%2FNetwork%2Fswitch-512.png&f=1', shape: 'image'}
+            {id: '{{device}}', label: '{{device}}', image: '{{url_for('static', filename='switch.png')}}', shape: 'image'}
             {% elif "host" in device %}
-            {id: '{{device}}', label: '{{device}}', image: 'https://proxy.duckduckgo.com/iu/?u=https%3A%2F%2Fd30y9cdsu7xlg0.cloudfront.net%2Fpng%2F11319-200.png&f=1', shape: 'image'}
+            {id: '{{device}}', label: '{{device}}', image: '{{url_for('static', filename='host.png')}}', shape: 'image'}
             {% endif %}
             {% endif %}
             {% endfor %}
