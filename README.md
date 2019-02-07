@@ -48,7 +48,7 @@ $ karaf-version/bin/./karaf clean
 When starting the program with the `clean` option, this ensures that any previously installed packages are not inclueded and allows for more continuity at the cost of an extra step. To install the OpenDaylight features which we use, the following command is used:
 
 ```
-feature:install odl-restconf odl-l2switch-switch odl-dlux-core odl-dluxapps-nodes odl-dluxapps-topology odl-dluxapps-yangui odl-dluxapps-yangvisualizer odl-dluxapps-yangman
+> feature:install odl-restconf odl-l2switch-switch odl-dlux-core odl-dluxapps-nodes odl-dluxapps-topology odl-dluxapps-yangui odl-dluxapps-yangvisualizer odl-dluxapps-yangman
 ```
 
 #### Mininet (Optional)
@@ -57,7 +57,7 @@ If you are using Mininet to emulate a SDN network, you can download the virtual 
 Once downloaded and opperational, you can create a new topology with the following command. Note that you will have to specifiy the IP address of the OpenDaylight controller.
 
 ```bash
-sudo mn --controller=remote,ip=`controller IP` --switch ovsk,protocols=OpenFLow13 --topo Topology of your choice
+$ sudo mn --controller=remote,ip=`controller IP` --switch ovsk,protocols=OpenFLow13 --topo Topology of your choice
 ```
 
 This command can be altered to make the required topology, but the remote controller portion of the command must remain.
