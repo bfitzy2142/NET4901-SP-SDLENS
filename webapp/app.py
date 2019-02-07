@@ -85,6 +85,12 @@ def getControllerIP():
     return render_template('settings.html', odlIP=controllerIP)
 
 
+@app.route("/graphs")
+@is_logged_in
+def graphs():
+    return render_template('graphs.html')
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm(request.form)
