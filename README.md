@@ -34,6 +34,7 @@ Installing the MySql Server is quite easy, as it can be accomplished with Aptitu
 
 ```
 $ apt install mysql-server
+$ apt install libmysqlclient-dev
 ```
 
 #### OpenDaylight
