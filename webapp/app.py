@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# TODO: Organize imports properly
 from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
 from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
@@ -10,6 +10,8 @@ from generatetopo import odl_topo_builder
 from get_stats import Odl_Stat_Collector
 from deviceInfo import odl_switch_info
 from auxiliary import Webapp_Auxiliary
+from forms import RegisterForm
+from user_db import create_user_db
 
 
 app = Flask(__name__)
@@ -18,7 +20,7 @@ app = Flask(__name__)
 # controllerIP = odlControllerList[0]
 controllerIP = "134.117.89.138"
 
-# config mysql
+# TODO: Manage creds outside of app
 app.secret_key = "secret123"
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
@@ -29,7 +31,7 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 # Init Mysql
 mysql = MySQL(app)
 
-
+# TODO: CLEAN UP CODE, MAKE INIT SCRIPT
 @app.route("/")
 def index():
     if 'logged_in' in session:
@@ -83,37 +85,31 @@ def getControllerIP():
     return render_template('settings.html', odlIP=controllerIP)
 
 
-class RegisterFrom(Form):
-    name = StringField('Name', [validators.Length(min=1, max=100)])
-    username = StringField('Username', [validators.Length(min=4, max=20)])
-    email = StringField('Email', [validators.Length(min=6, max=50)])
-    password = PasswordField('Password', [
-        validators.DataRequired(),
-        validators.EqualTo('confirm', message='Passwords do not match')
-    ])
-    confirm = PasswordField('Confirm Password')
-
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegisterFrom(request.form)
+    form = RegisterForm(request.form)
     if request.method == 'POST' and form.validate():
-        name = form.name.data
-        email = form.email.data
-        username = form.username.data
-        password = sha256_crypt.encrypt(str(form.password.data))
-        # create cursor
-        cur = mysql.connection.cursor()
-        query = ("INSERT INTO users(name, email, username, password) " +
-                 f"VALUES('{name}', '{email}', '{username}', '{password}')")
-        print(query)
-        cur.execute(query)
-        mysql.connection.commit()
-        cur.close()
+        submit_user(form)
         flash('You are now registered and can login', 'success')
         redirect(url_for('index'))
 
     return render_template('register.html', form=form)
+
+
+def submit_user(form):
+    """Helper function to submit user registration to the Database."""
+    name = form.name.data
+    email = form.email.data
+    username = form.username.data
+    password = sha256_crypt.encrypt(str(form.password.data))
+    # TODO: Move into sql tooling object
+    cur = mysql.connection.cursor()
+    query = ("INSERT INTO users(name, email, username, password) " +
+             f"VALUES('{name}', '{email}', '{username}', '{password}')")
+    cur.execute(query)
+    mysql.connection.commit()
+    cur.close()
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -157,4 +153,5 @@ def logout():
 
 
 if __name__ == "__main__":
+    create_user_db()
     app.run(debug=True)

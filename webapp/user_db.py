@@ -19,7 +19,6 @@ def create_user_db():
             "username VARCHAR(30) NOT NULL,"
             "password VARCHAR(100) NOT NULL,"
             "PRIMARY KEY (ID) );")
-    print(table)
     try:
         cursor.execute(table)
         cnx.commit()
