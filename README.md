@@ -37,7 +37,7 @@ $ apt install mysql-server
 ```
 
 #### OpenDaylight
-OpenDaylight can be downloaded from the [OpenDaylight](https://www.opendaylight.org/) website. This application has been based off of Opendaylight `0.8.3`
+OpenDaylight can be downloaded from the [OpenDaylight](https://www.opendaylight.org/) website. This application has been based off of OpenDaylight version: `0.8.3`
 
 Once OpenDaylight has been extracted, you can start the program with:
 
