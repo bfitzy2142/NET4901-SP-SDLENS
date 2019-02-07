@@ -114,11 +114,9 @@ def submit_user(form):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Get Form Fields
         username = request.form['username']
         password_candidate = request.form['password']
-
-        # Create cursor
+        # TODO: Use SQL tooling object once made.
         cur = mysql.connection.cursor()
         # Get user by username
         result = cur.execute(f"SELECT * FROM users WHERE username = '{username}'")
