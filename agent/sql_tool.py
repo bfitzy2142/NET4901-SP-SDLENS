@@ -36,14 +36,27 @@ class SQLTools(object):
         self.cnx.commit()
 
     def send_select(self, query):
-        # TODO: Add exception handling from bad query
+        # TODO: Add exception handling from bad queries
         select_pattern = r"SELECT .+ FROM ([\w_:]+)"
         match = re.search(select_pattern, query, re.IGNORECASE)
         table_name = match.group(1)
         if ":" in table_name:
-            stripped_tbl_name = table_name.replace(":", "")
-            query = query.replace(table_name, stripped_tbl_name)
+            query = self.clean_table_name(query, table_name)
         self.send_sql_query(query)
+
+    def send_insert(self, query):
+        # TODO: Add exception handling from bad queries
+        insert_pattern = r"INSERT INTO ([\w_:]+)"
+        match = re.search(insert_pattern, query, re.IGNORECASE)
+        table_name = match.group(1)
+        if ":" in table_name:
+            query = self.clean_table_name(query, table_name)
+        self.send_sql_query(query)
+
+    def clean_table_name(self, query, table_name):
+        stripped_tbl_name = table_name.replace(":", "")
+        query = query.replace(table_name, stripped_tbl_name)
+        return query
 
     def create_sql_table(self, table_cmd):
         if ":" in table:
