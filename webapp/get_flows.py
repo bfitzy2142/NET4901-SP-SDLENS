@@ -29,17 +29,16 @@ class odl_flow_collector(object):
         raw_flow_stats = flows["flow-node-inventory:table"][0]["flow"]
         #print(raw_flow_stats)
         for flow in raw_flow_stats:
-            flow_id = flow["id"]
-            #id
-            #priority
-            flows[flow_id]["priority"] = flows["flow"]["priority"]
-            #packet count
-            #byte count
-            #table_id
-            #match rules
+            flow_stats = flow["opendaylight-flow-statistics:flow-statistics"]
+            flows["flow-id"] = flow["id"]
+            flows["flow-priority"] = flow["priority"]
+            flows["flow-pkt-cnt"] = flow[flow_stats]["packet-count"]
+            flows["flow-byte-cnt"] = flow[flow_stats]["byte-count"]
+            flows["flow-table-id"] = flow["table_id"]
+            flows["flow-match"] = flow["match"]
             #instructions
-            print(flows)
-            print("*"*200)
+            #print(flows)
+            #print("*"*200)
         return flows
         #print(raw_flow_stats)
 
