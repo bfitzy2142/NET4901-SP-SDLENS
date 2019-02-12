@@ -12,8 +12,8 @@ from port_counter_agent import PortCounterAgent
 from device_agent import DeviceAgent
 
 sql_creds = {"user": "root",
-                 "password": "root",
-                 "host": "127.0.0.1"}
+             "password": "root",
+             "host": "127.0.0.1"}
 
 
 # TODO: Move db functions into its own module
@@ -61,6 +61,3 @@ if __name__ == '__main__':
         for switch in switch_list:
             counter_agents[switch].run_agent()
         time.sleep(10)
-    # while loops
-    # SELECT Node From nodes WHERE Type="switch";
-

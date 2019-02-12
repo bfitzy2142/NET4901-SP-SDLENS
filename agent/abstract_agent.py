@@ -16,6 +16,8 @@ from mysql.connector import errorcode
 import requests
 from requests.auth import HTTPBasicAuth
 
+from sql_tool import SQLTools
+
 
 class AbstractAgent(metaclass=abc.ABCMeta):
     """Abstract class to be implemented by monitoring agents"""
@@ -32,6 +34,7 @@ class AbstractAgent(metaclass=abc.ABCMeta):
                          "host": "127.0.0.1"}
         self.cnx = mysql.connector.connect(**self.sql_auth, db="sdlens")
         self.cursor = self.cnx.cursor()
+        self.sql_tool = SQLTools(**self.sql_auth, db="sdlens")
 
     def run_agent(self):
         """Template method executed by every agent."""
