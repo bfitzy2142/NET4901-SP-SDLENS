@@ -18,7 +18,6 @@ class PortCounterAgent(AbstractAgent):
     def create_pc_table(self, node):
         """Creates a DB table listing port counters
         for a switch."""
-        node = node.replace(":", "")
         table = (
             f"CREATE TABLE {node}_counters("
             "ID INT NOT NULL AUTO_INCREMENT,"
@@ -33,19 +32,12 @@ class PortCounterAgent(AbstractAgent):
             "Rx_errs INT NOT NULL,"
             "Tx_errs INT NOT NULL,"
             "PRIMARY KEY (ID) );")
-        try:
-            self.send_sql_query(table)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                self.send_sql_query(f"DROP TABLE {node}_counters")
-                self.send_sql_query(table)
+        self.sql_tool.create_sql_table(table)
 
     # TODO: Add this to an SQL Utility module
     def get_interfaces(self, node):
-        node = node.replace(":", "")
         query = f"SELECT * FROM {node}_interfaces"
-        self.cursor.execute(query)
-        int_tuples = self.cursor.fetchall()
+        int_tuples = self.sql_tool.send_select(query)
         interface_list = [interface[0] for interface in int_tuples]
         return interface_list
 
@@ -117,8 +109,7 @@ class PortCounterAgent(AbstractAgent):
         """
         for interface in data:
             int_data = data[interface]
-            stripped_node = self.node.replace(":", "")
-            sql_insert = (f"INSERT INTO {stripped_node}_counters "
+            sql_insert = (f"INSERT INTO {self.node}_counters "
                           "(Interface, Timestamp, Rx_pckts, Tx_pckts, "
                           "Rx_bytes, Tx_bytes, Rx_drops, Tx_drops, "
                           "Rx_errs, Tx_errs) VALUES "
@@ -128,4 +119,4 @@ class PortCounterAgent(AbstractAgent):
                                       int_data['rx-bytes'], int_data['tx-bytes'],
                                       int_data['rx-drops'], int_data['tx-drops'],
                                       int_data['rx-errs'], int_data['tx-errs'])
-            self.send_sql_query(query)
+            self.sql_tool.send_insert(query)

@@ -48,11 +48,9 @@ class TopologyAgent(AbstractAgent):
         # TODO: Consider threading?
         for node, interfaces in data.items():
             if "openflow" in node:
-                # SQL doesn't like ':' in table names
-                stripped_node = node.replace(":", "")
                 node_type = "switch"
-                self.create_int_table(stripped_node)
-                self.store_interfaces(stripped_node, interfaces)
+                self.create_int_table(node)
+                self.store_interfaces(node, interfaces)
             if "host" in node:
                 node_type = "host"
             self.store_nodes(node, node_type)
@@ -66,7 +64,7 @@ class TopologyAgent(AbstractAgent):
         """
         sql_insert = ("INSERT INTO nodes (Node, Type) "
                       "VALUES ('{}', '{}')")
-        self.send_sql_query(sql_insert.format(node, node_type))
+        self.sql_tool.send_insert(sql_insert.format(node, node_type))
         pass
 
     def store_interfaces(self, node, interfaces):
@@ -80,7 +78,8 @@ class TopologyAgent(AbstractAgent):
         sql_insert = (f"INSERT INTO {node}_interfaces (Interface) "
                       "VALUES ('{}')")
         for interface in interfaces:
-            self.send_sql_query(sql_insert.format(interface))
+            # self.send_sql_query(sql_insert.format(interface))
+            self.sql_tool.send_insert(sql_insert.format(interface))
         pass
 
     def sort_keys(self, nodes):
@@ -106,12 +105,7 @@ class TopologyAgent(AbstractAgent):
             "Type VARCHAR(16) NOT NULL,"
             "PRIMARY KEY (Node) );")
         # If table was previously created, we drop and recreate.
-        try:
-            self.send_sql_query(table)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                self.send_sql_query("DROP TABLE nodes")
-                self.send_sql_query(table)
+        self.sql_tool.create_sql_table(table)
 
     def create_int_table(self, node):
         """Creates a DB table listing node interfaces."""
@@ -120,9 +114,5 @@ class TopologyAgent(AbstractAgent):
             "Interface VARCHAR(32) NOT NULL,"
             "PRIMARY KEY (Interface) );")
         # TODO: Converge steps below into a helper function
-        try:
-            self.send_sql_query(table)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                self.send_sql_query(f"DROP TABLE {node}_interfaces")
-                self.send_sql_query(table)
+        self.sql_tool.create_sql_table(table)
+
