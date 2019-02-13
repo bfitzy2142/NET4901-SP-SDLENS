@@ -27,9 +27,13 @@
         <script type="text/javascript">
             var container = document.getElementById('visualization');
             var items = [
-                {% for point in data %}
-                {x: '{{point["date"]}}', y: {{point["counter"]}} }
-                {% endfor %}
+            {% for point in data %}
+            {% if not loop.last %}
+            {x: '{{point["date"]}}', y: {{point["counter"]}} },
+            {% else %}
+            {x: '{{point["date"]}}', y: {{point["counter"]}} }
+            {% endif %}
+            {% endfor %}
             ];
             var dataset = new vis.DataSet(items);
             var options = {
