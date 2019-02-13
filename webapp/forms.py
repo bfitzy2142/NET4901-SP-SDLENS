@@ -24,7 +24,7 @@ class GraphForm(Form):
         validators.length(min=9, max=11),
         validators.Regexp("openflow\d{1,3}")
         ])
-    interface = StringField('interface', [
+    interface = StringField('Interface', [
         validators.length(min=12, max=14),
         validators.Regexp("openflow:\d{1,3}:\d{1,3}")
         ])

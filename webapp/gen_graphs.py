@@ -21,9 +21,8 @@ class sql_graph_info(object):
         """
         Pulls the port counters and timestamp from each table in the database.
         """
-        graph_info = {}
         query = (
-            f"SELECT timestamp, Rx_pckts FROM {node}_counters WHERE "
+            f"SELECT timestamp, Rx_pckts, Tx_pckts, Rx_drops, Tx_drops FROM {node}_counters WHERE "
             f"Interface='{interface}'"
         )
 
@@ -41,10 +40,13 @@ class sql_graph_info(object):
 
         for dataPoint in response:
             date = str(dataPoint[0])
-            counter = dataPoint[1]
-            dataPointDict = {"date" : date, "counter" : counter}
+            rx_count = dataPoint[1]
+            tx_count = dataPoint[2]
+            rx_drops = dataPoint[3]
+            tx_drops = dataPoint[4]
+
+            dataPointDict = {"date" : date, "rx_count" : rx_count, "tx_count" : tx_count, "rx_drops" : rx_drops, "tx_drops" : tx_drops}
             graphPoints.append(dataPointDict)
 
         return graphPoints
-
-# Add tx to dict rather than redooing it again
+        
