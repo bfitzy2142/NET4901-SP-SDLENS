@@ -13,20 +13,28 @@ from auxiliary import Webapp_Auxiliary
 from forms import RegisterForm
 from user_db import create_user_db
 
+# TODO: Find PEP8 way of importing modules
+from sys import path
+path.append('../agent')
+from authenticator import Authenticator
+
+auth = Authenticator()
+
 
 app = Flask(__name__)
 # aux = Webapp_Auxiliary()
 # odlControllerList = aux.device_scan()
 # controllerIP = odlControllerList[0]
-controllerIP = "134.117.89.138"
+controllerIP = auth.working_creds['controller']['controller-ip']
+
 
 # TODO: Manage creds outside of app
-app.secret_key = "secret123"
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'root'
-app.config['MYSQL_DB'] = 'sdlens'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+app.secret_key = auth.working_creds['application']['secret_key']
+app.config['MYSQL_HOST'] = auth.working_creds['database']['MYSQL_HOST']
+app.config['MYSQL_USER'] = auth.working_creds['database']['MYSQL_USER']
+app.config['MYSQL_PASSWORD'] = auth.working_creds['database']['MYSQL_PASSWORD']
+app.config['MYSQL_DB'] = auth.working_creds['database']['MYSQL_DB']
+app.config['MYSQL_CURSORCLASS'] = auth.working_creds['database']['CURSORCLASS']
 
 # Init Mysql
 mysql = MySQL(app)

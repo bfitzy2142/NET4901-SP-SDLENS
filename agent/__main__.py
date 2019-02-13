@@ -5,37 +5,44 @@ import time
 import mysql.connector
 from mysql.connector import errorcode
 
+from authenticator import Authenticator
 from abstract_agent import AbstractAgent
 from topology_agent import TopologyAgent
 from link_agent import LinkAgent
 from port_counter_agent import PortCounterAgent
 from device_agent import DeviceAgent
 
-sql_creds = {"user": "root",
-             "password": "root",
-             "host": "127.0.0.1"}
+
+auth = Authenticator()
+yaml_db_creds = auth.working_creds['database']
+sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
+             "password": yaml_db_creds['MYSQL_PASSWORD'],
+             "host": yaml_db_creds['MYSQL_HOST']}
+db = auth.working_creds['database']['MYSQL_DB']
+controller_ip = auth.working_creds['controller']['controller-ip']
 
 
 # TODO: Move db functions into its own module
 def create_db():
     """creates DB for our monitoring app"""
-    # TODO: Dont hardcode SQL creds
     try:
-        cnx = mysql.connector.connect(**sql_creds, database='sdlens')
+        cnx = mysql.connector.connect(**sql_creds, database=db)
         print("db already created")  # debug
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_BAD_DB_ERROR:
+            user = sql_creds['user']
+            host = sql_creds['host']
             cnx = mysql.connector.connect(**sql_creds)
-            cnx.cmd_query('CREATE DATABASE sdlens')
-            cnx.database = 'sdlens'
+            cnx.cmd_query(f'CREATE DATABASE {db}')
+            cnx.database = db
             cursor = cnx.cursor()
-            cursor.execute("GRANT ALL ON sdlens.* to 'root'@'localhost';")
+            cursor.execute(f"GRANT ALL ON {db}.* to '{user}'@'{host}';")
             print("DB created!")  # debug
 
 
 def get_switches():
     switch_list = []
-    cnx = mysql.connector.connect(**sql_creds, database='sdlens')
+    cnx = mysql.connector.connect(**sql_creds, database=db)
     cursor = cnx.cursor()
     cursor.execute("SELECT Node FROM nodes WHERE Type='switch';")
     switch_tuples = cursor.fetchall()
@@ -44,7 +51,6 @@ def get_switches():
     return switch_list
 
 if __name__ == '__main__':
-    controller_ip = "134.117.89.138"
     create_db()
     topo_agent = TopologyAgent(controller_ip)
     topo_agent.run_agent()

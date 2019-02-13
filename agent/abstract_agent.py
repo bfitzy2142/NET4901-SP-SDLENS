@@ -17,24 +17,31 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from sql_tool import SQLTools
+from authenticator import Authenticator
 
 
 class AbstractAgent(metaclass=abc.ABCMeta):
     """Abstract class to be implemented by monitoring agents"""
+    
     def __init__(self, controller_ip):
         """"Initalizer for AbstractAgent"""
+        self.auth = Authenticator()
+        self.yaml_db_creds = self.auth.working_creds['database']
+        self.sql_auth = {"user": self.yaml_db_creds['MYSQL_USER'],
+                         "password": self.yaml_db_creds['MYSQL_PASSWORD'],
+                         "host": self.yaml_db_creds['MYSQL_HOST']}
+        self.db = self.auth.working_creds['database']['MYSQL_DB']
+        self.odl_auth = self.auth.working_creds['controller']
+        self.http_auth = HTTPBasicAuth(self.odl_auth['username'],
+                                       self.odl_auth['password'])
         self.controller_ip = controller_ip
         self.headers = {'Accept': 'application/json',
                         'content-type': 'application/json'}
         self.base_url = f"http://{self.controller_ip}:8181/restconf/operational/"
         # TODO: Change once DB implemented
-        self.auth = HTTPBasicAuth("admin", "admin")
-        self.sql_auth = {"user": "root",
-                         "password": "root",
-                         "host": "127.0.0.1"}
-        self.cnx = mysql.connector.connect(**self.sql_auth, db="sdlens")
+        self.cnx = mysql.connector.connect(**self.sql_auth, db=self.db)
         self.cursor = self.cnx.cursor()
-        self.sql_tool = SQLTools(**self.sql_auth, db="sdlens")
+        self.sql_tool = SQLTools(**self.sql_auth, db=self.db)
 
     def run_agent(self):
         """Template method executed by every agent."""
@@ -59,7 +66,7 @@ class AbstractAgent(metaclass=abc.ABCMeta):
         Returns:
             dict -- Returns a dictionary corresponding to the API response.
         """
-        response = requests.get(url, headers=self.headers, auth=self.auth)
+        response = requests.get(url, headers=self.headers, auth=self.http_auth)
         response_data = response.json()
         return response_data
 
