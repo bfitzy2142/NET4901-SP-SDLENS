@@ -14,3 +14,18 @@ class RegisterForm(Form):
         validators.EqualTo('confirm', message='Passwords do not match')
     ])
     confirm = PasswordField('Confirm Password')
+
+
+class GraphForm(Form):
+    """
+    Class to select the device and interface for graphs
+    """
+    node = StringField('Node', [
+        validators.length(min=9, max=11),
+        validators.Regexp("openflow\d{1,3}")
+        ])
+    interface = StringField('interface', [
+        validators.length(min=12, max=14),
+        validators.Regexp("openflow:\d{1,3}:\d{1,3}")
+        ])
+

@@ -10,8 +10,9 @@ from generatetopo import odl_topo_builder
 from get_stats import Odl_Stat_Collector
 from deviceInfo import odl_switch_info
 from auxiliary import Webapp_Auxiliary
-from forms import RegisterForm
+from forms import RegisterForm, GraphForm
 from user_db import create_user_db
+from gen_graphs import sql_graph_info
 
 
 app = Flask(__name__)
@@ -77,7 +78,7 @@ def device_info():
     o = odl_switch_info(controllerIP)
     return render_template('deviceInfo.html', nodes=o.run())
 
- 
+
 @app.route("/controller")
 @is_logged_in
 def getControllerIP():
@@ -85,10 +86,18 @@ def getControllerIP():
     return render_template('settings.html', odlIP=controllerIP)
 
 
-@app.route("/graphs")
+@app.route("/graphs", methods=['GET', 'POST'])
 @is_logged_in
 def graphs():
-    return render_template('graphs.html')
+    graph_input = GraphForm(request.form)
+    if request.method == 'POST' and graph_input.validate():
+        node = graph_input.node.data
+        interface = graph_input.interface.data
+
+        graph_object = sql_graph_info(node, interface)
+        data = graph_object.db_pull(node, interface)
+        return render_template("graphs.html", form=graph_input, data=data)
+    return render_template("graphs.html", form=graph_input)
 
 
 @app.route('/register', methods=['GET', 'POST'])
