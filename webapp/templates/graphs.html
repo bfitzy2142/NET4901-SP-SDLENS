@@ -1,0 +1,137 @@
+{% extends 'layout.html' %}
+{% block body %}
+
+<h1 style="font-size: 50px;"> Performance Metrics</h1>
+<br>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//cdn.ckeditor.com/4.6.2/basic/ckeditor.js"></script>
+
+    <!-- Input Values -->
+    <div id="switch_input">
+        {% from "includes/_formhelpers.html" import render_field%}
+        <form method="POST", action="">
+            <table style="width:100%">
+                <tr>
+                    <td>
+                        <div class="form-group">
+                            {{render_field(form.node, class_="form-control")}}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            {{render_field(form.interface, class_="form-control")}}
+                        </div>
+                    </td>
+                    <td colspan="3" align="right">
+                        <input type="submit" class="btn btn-primary" value="Submit">
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <!-- Graphs -->
+    <div id="rx_pkts">
+        <h4>Recieved Packets Forwared</h4>
+        {% if data %}
+        <script type="text/javascript">
+            var container = document.getElementById('rx_pkts');
+            var items = [
+            {% for point in data %}
+            {% if not loop.last %}
+            {x: '{{point["date"]}}', y: {{point["rx_count"]}} },
+            {% else %}
+            {x: '{{point["date"]}}', y: {{point["rx_count"]}} }
+            {% endif %}
+            {% endfor %}
+            ];
+            var dataset = new vis.DataSet(items);
+            var options = {
+                width: '100%',
+                height: '250px'
+            };
+            var graph2d = new vis.Graph2d(container, dataset, options);
+        </script>
+        {% endif %}
+    </div>
+    <br>
+    <br>
+    <div id="tx_pkts">
+        <h4>Transmitted Packets Forwared</h4>
+        {% if data%}
+        <script type="text/javascript">
+            var container = document.getElementById("tx_pkts")
+            var items = [
+                {% for point in data %}
+                {%if not loop.last %}
+                {x: '{{point["date"]}}', y: {{point["tx_count"]}}},
+                {% else %}
+                {x: '{{point["date"]}}', y: {{point["tx_count"]}} }
+                {% endif %}
+                {% endfor %}
+            ];
+            var dataset = new vis.DataSet(items);
+            var options = {
+                width: '100%',
+                height: '250px'
+            };
+            var graph2d = new vis.Graph2d(container, dataset, options);
+        </script>    
+        {% endif %}
+    </div>
+    <br>
+    <br>
+    <div id="rx_dps">
+        <h4>Recieved Packet Drops</h4>
+        {% if data %}
+        <script type="text/javascript">
+            var container = document.getElementById('rx_dps');
+            var items = [
+            {% for point in data %}
+            {% if not loop.last %}
+            {x: '{{point["date"]}}', y: {{point["rx_drops"]}} },
+            {% else %}
+            {x: '{{point["date"]}}', y: {{point["rx_drops"]}} }
+            {% endif %}
+            {% endfor %}
+            ];
+            var dataset = new vis.DataSet(items);
+            var options = {
+                width: '100%',
+                height: '250px'
+            };
+            var graph2d = new vis.Graph2d(container, dataset, options);
+        </script>
+        {% endif %}
+    </div>
+    <br>
+    <br>
+    <div id="tx_dps">
+        <h4>Transmitted Packet Drops</h4>
+        {% if data%}
+        <script type="text/javascript">
+            var container = document.getElementById("tx_dps")
+            var items = [
+                {% for point in data %}
+                {%if not loop.last %}
+                {x: '{{point["date"]}}', y: {{point["rx_drops"]}}},
+                {% else %}
+                {x: '{{point["date"]}}', y: {{point["rx_drops"]}} }
+                {% endif %}
+                {% endfor %}
+            ];
+            var dataset = new vis.DataSet(items);
+            var options = {
+                width: '100%',
+                height: '250px'
+            };
+            var graph2d = new vis.Graph2d(container, dataset, options);
+        </script>    
+        {% endif %}
+    </div>
+
+    <br>
+    <br>
+
+{% endblock %}
