@@ -18,13 +18,24 @@ class sql_graph_info(object):
         self.interface = interface
 
     def db_pull(self, node, interface):
+        """ Pulls the RX and TX information from the database
+            to display for the graphs page.
+        
+        Arguments:
+            node [str] -- The node that holds the interface which
+                          is to presented.
+            interface [str] -- The interface in which the counter
+                               information will be based off of.
+
+        Returns:
+            dict -- containing arrays of the counter values at
+                    their coresponding timestamp.
         """
-        Pulls the port counters and timestamp from each table in the database.
-        """
+        node_st = node.replace(":", "")
         query = (
             f"SELECT timestamp, Rx_pckts, Tx_pckts, Rx_drops, Tx_drops "
-            f"FROM {node}_counters WHERE "
-            f"Interface='{interface}'"
+            f"FROM {node_st}_counters WHERE "
+            f"Interface='{node}:{interface}'"
         )
 
         mydb = mysql.connector.connect(

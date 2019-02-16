@@ -21,11 +21,11 @@ class GraphForm(Form):
     Class to select the device and interface for graphs
     """
     node = StringField('Node', [
-        validators.length(min=9, max=11),
-        validators.Regexp("openflow\d{1,3}")
+        validators.length(min=10, max=12),
+        validators.Regexp("openflow:\d{1,3}")
         ])
-    interface = StringField('Interface', [
-        validators.length(min=12, max=14),
-        validators.Regexp("openflow:\d{1,3}:\d{1,3}")
+    interface = StringField('Interface (Int #)', [
+        validators.length(min=1, max=2),
+        validators.Regexp("\d{1,2}")
         ])
 
