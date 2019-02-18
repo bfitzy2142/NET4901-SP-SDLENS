@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # TODO: Organize imports properly
-from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
+from flask import Flask, render_template, flash, redirect, url_for, session, logging, request, jsonify
 from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
@@ -13,11 +13,11 @@ from auxiliary import Webapp_Auxiliary
 from forms import RegisterForm, GraphForm
 from user_db import create_user_db
 from gen_graphs import sql_graph_info
+from topo_db import Switch_Counter_Fetch
 
 # TODO: Find PEP8 way of importing modules
-from sys import path
-path.append('../agent')
 from authenticator import Authenticator
+import json
 
 auth = Authenticator()
 
@@ -94,6 +94,27 @@ def getControllerIP():
     return render_template('settings.html', odlIP=controllerIP)
 
 
+@app.route("/topo-switch-stats", methods=['GET', 'POST'])
+@is_logged_in
+def getSwitchCounters():
+    # TODO: Combine SQL modules for all webapp functions
+    if (request.method == 'POST'):
+        raw_json = request.get_json()
+        switch = raw_json['switch']
+
+        # Get SQL Auth & Creds
+        yaml_db_creds = auth.working_creds['database']
+        sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
+                     "password": yaml_db_creds['MYSQL_PASSWORD'],
+                     "host": yaml_db_creds['MYSQL_HOST']}
+        db = auth.working_creds['database']['MYSQL_DB']
+
+        # Get counters for switch
+        obj = Switch_Counter_Fetch(**sql_creds, db=db)
+        counters = obj.switch_query(switch)
+        return jsonify(counters)
+
+
 @app.route("/graphs", methods=['GET', 'POST'])
 @is_logged_in
 def graphs():
@@ -142,7 +163,8 @@ def login():
         # TODO: Use SQL tooling object once made.
         cur = mysql.connection.cursor()
         # Get user by username
-        result = cur.execute(f"SELECT * FROM users WHERE username = '{username}'")
+        result = cur.execute(
+            f"SELECT * FROM users WHERE username = '{username}'")
 
         if result > 0:
             # Get stored hash
