@@ -3,6 +3,7 @@ import requests
 
 from requests.auth import HTTPBasicAuth
 
+
 class odl_flow_collector(object):
 
     def __init__(self, controller_ip):
@@ -26,9 +27,30 @@ class odl_flow_collector(object):
         return raw_flows
 
     def clean_flows(self, flows):
+        # Long JSON key used to get flow stats
+        stats_str = "opendaylight-flow-statistics:flow-statistics"
         raw_flow_stats = flows["flow-node-inventory:table"][0]["flow"]
-        #print(raw_flow_stats)
+        flow_stats = []
         for flow in raw_flow_stats:
+            # print(flow)
+            print('*' * 20)
+            new_flow = {}
+            new_flow['id'] = flow['id']
+            new_flow['priority'] = flow["priority"]
+            new_flow['pckt-count'] = flow[stats_str]['packet-count']
+            new_flow['byte-count'] = flow[stats_str]['byte-count']
+            new_flow['duration'] = flow[stats_str]['duration']['second']
+            new_flow['hard-timeout'] = flow['hard-timeout']
+            new_flow['idle-timeout'] = flow['idle-timeout']
+            new_flow['table'] = flow['table_id']
+            new_flow['match_rules'] = flow['match']
+            new_flow['cookie'] = flow['cookie']
+            try:
+                print(flow['instructions']['instruction'])
+            # print(flow['instructions'])
+            except KeyError:
+                print({})
+            """
             flow_stats = flow["opendaylight-flow-statistics:flow-statistics"]
             flows["flow-id"] = flow["id"]
             flows["flow-priority"] = flow["priority"]
@@ -36,6 +58,7 @@ class odl_flow_collector(object):
             flows["flow-byte-cnt"] = flow[flow_stats]["byte-count"]
             flows["flow-table-id"] = flow["table_id"]
             flows["flow-match"] = flow["match"]
+            """
             #instructions
             #print(flows)
             #print("*"*200)
