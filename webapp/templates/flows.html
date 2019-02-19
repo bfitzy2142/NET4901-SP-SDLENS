@@ -29,7 +29,10 @@
         <td>{{flow['table']}}</td>
         <td>{{flow['cookie']}}</td>
         <td>{{flow['match_rules']}}</td>
-        <td>{{flow['actions']}}</td>
+        <td>{% for action in flow['actions'] %}
+            {{action['order']}}: {{action['output-action']}}<br>
+            {% endfor %}
+        </td>
     </tr>
 
 {% endfor %}
