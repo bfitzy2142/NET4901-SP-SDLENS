@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # TODO: Organize imports properly
-from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
+from flask import Flask, render_template, flash, redirect, url_for, session, logging, request, jsonify
 from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
@@ -13,11 +13,12 @@ from auxiliary import Webapp_Auxiliary
 from forms import RegisterForm, GraphForm
 from user_db import create_user_db
 from gen_graphs import sql_graph_info
+from topo_db import Switch_Counter_Fetch
+from get_flows import Odl_Flow_Collector
 
 # TODO: Find PEP8 way of importing modules
-from sys import path
-path.append('../agent')
 from authenticator import Authenticator
+import json
 
 auth = Authenticator()
 
@@ -41,6 +42,7 @@ app.config['MYSQL_CURSORCLASS'] = auth.working_creds['database']['CURSORCLASS']
 mysql = MySQL(app)
 
 # TODO: CLEAN UP CODE, MAKE INIT SCRIPT
+
 @app.route("/")
 def index():
     if 'logged_in' in session:
@@ -80,6 +82,27 @@ def node_stats():
     return render_template('nodes.html', nodes=o.run())
 
 
+@app.route("/flow-stats")
+@is_logged_in
+def flow_stats():
+    cur = mysql.connection.cursor()
+    # Repetitive code, move to sql tooling
+    switch_list = []
+    cur.execute("SELECT Node FROM nodes WHERE Type='switch';")
+    switch_tuples = cur.fetchall()
+    print(switch_tuples)
+    for switch in switch_tuples:
+        print(switch['Node'])
+        switch_list.append(switch['Node'])
+    cur.close()
+    flow_dict = {}
+    for switch in switch_list:
+        o = Odl_Flow_Collector(controllerIP, switch)
+        flow_dict[switch] = o.run()
+    return render_template('flows.html', flow_dict=flow_dict)
+    # print(flow_dict)
+
+
 @app.route("/device-info")
 @is_logged_in
 def device_info():
@@ -92,6 +115,27 @@ def device_info():
 def getControllerIP():
     # print(odlControllerList)
     return render_template('settings.html', odlIP=controllerIP)
+
+
+@app.route("/topo-switch-stats", methods=['GET', 'POST'])
+@is_logged_in
+def getSwitchCounters():
+    # TODO: Combine SQL modules for all webapp functions
+    if (request.method == 'POST'):
+        raw_json = request.get_json()
+        switch = raw_json['switch']
+
+        # Get SQL Auth & Creds
+        yaml_db_creds = auth.working_creds['database']
+        sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
+                     "password": yaml_db_creds['MYSQL_PASSWORD'],
+                     "host": yaml_db_creds['MYSQL_HOST']}
+        db = auth.working_creds['database']['MYSQL_DB']
+
+        # Get counters for switch
+        obj = Switch_Counter_Fetch(**sql_creds, db=db)
+        counters = obj.switch_query(switch)
+        return jsonify(counters)
 
 
 @app.route("/graphs", methods=['GET', 'POST'])
@@ -143,7 +187,8 @@ def login():
         # TODO: Use SQL tooling object once made.
         cur = mysql.connection.cursor()
         # Get user by username
-        result = cur.execute(f"SELECT * FROM users WHERE username = '{username}'")
+        result = cur.execute(
+            f"SELECT * FROM users WHERE username = '{username}'")
 
         if result > 0:
             # Get stored hash
