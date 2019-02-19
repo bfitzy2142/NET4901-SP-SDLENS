@@ -14,7 +14,7 @@ from forms import RegisterForm, GraphForm
 from user_db import create_user_db
 from gen_graphs import sql_graph_info
 from topo_db import Switch_Counter_Fetch
-from get_flows import odl_flow_collector
+from get_flows import Odl_Flow_Collector
 
 # TODO: Find PEP8 way of importing modules
 from authenticator import Authenticator
