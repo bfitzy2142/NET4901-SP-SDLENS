@@ -104,6 +104,7 @@ def graphs():
 
         graph_object = sql_graph_info(node, interface)
         data = graph_object.db_pull(node, interface)
+
         return render_template("graphs.html", form=graph_input, data=data)
     return render_template("graphs.html", form=graph_input)
 

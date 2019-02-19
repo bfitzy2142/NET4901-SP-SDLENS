@@ -11,7 +11,7 @@
     <div id="switch_input">
         {% from "includes/_formhelpers.html" import render_field%}
         <form method="POST", action="">
-            <table style="width:100%">
+            <table style="width:50%" align="left">
                 <tr>
                     <td>
                         <div class="form-group">
@@ -31,6 +31,11 @@
         </form>
     </div>
 
+    <br>
+    <br>
+    <br>
+    <br>
+    
     <!-- Graphs -->
     <div id="rx_pkts">
         {% if data %}
@@ -49,7 +54,13 @@
             var dataset = new vis.DataSet(items);
             var options = {
                 width: '100%',
-                height: '250px'
+                height: '325px',
+                drawPoints: false,
+                shaded: true,
+                
+                timeAxis: {scale: 'minute', step: 2},
+                zoomable: false,
+                moveable: true
             };
             var graph2d = new vis.Graph2d(container, dataset, options);
         </script>
@@ -74,7 +85,13 @@
             var dataset = new vis.DataSet(items);
             var options = {
                 width: '100%',
-                height: '250px'
+                height: '325px',
+                drawPoints: false,
+                shaded: true,
+
+                timeAxis: {scale: 'minute', step: 2},
+                zoomable: false,
+                moveable: true
             };
             var graph2d = new vis.Graph2d(container, dataset, options);
         </script>    
@@ -99,7 +116,13 @@
             var dataset = new vis.DataSet(items);
             var options = {
                 width: '100%',
-                height: '250px'
+                height: '325px',
+                drawPoints: false,
+                shaded: true,
+
+                timeAxis: {scale: 'minute', step: 2},
+                zoomable: false,
+                moveable: true
             };
             var graph2d = new vis.Graph2d(container, dataset, options);
         </script>
@@ -124,7 +147,13 @@
             var dataset = new vis.DataSet(items);
             var options = {
                 width: '100%',
-                height: '250px'
+                height: '325px',
+                drawPoints: false,
+                shaded: true,
+
+                timeAxis: {scale: 'minute', step: 2},
+                zoomable: false,
+                moveable: true
             };
             var graph2d = new vis.Graph2d(container, dataset, options);
         </script>    
