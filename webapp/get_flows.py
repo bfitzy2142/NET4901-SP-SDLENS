@@ -4,7 +4,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 
-class odl_flow_collector(object):
+class Odl_Flow_Collector(object):
 
     def __init__(self, controller_ip, node):
         self.controller_ip = controller_ip

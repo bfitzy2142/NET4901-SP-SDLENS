@@ -90,12 +90,17 @@ def flow_stats():
     switch_list = []
     cur.execute("SELECT Node FROM nodes WHERE Type='switch';")
     switch_tuples = cur.fetchall()
+    print(switch_tuples)
     for switch in switch_tuples:
-        switch_list.append(switch[0])
+        print(switch['Node'])
+        switch_list.append(switch['Node'])
     cur.close()
     flow_dict = {}
     for switch in switch_list:
-        o = 
+        o = Odl_Flow_Collector(controllerIP, switch)
+        flow_dict[switch] = o.run()
+    return render_template('flows.html', flow_dict=flow_dict)
+    # print(flow_dict)
 
 
 @app.route("/device-info")
