@@ -14,6 +14,7 @@ from forms import RegisterForm, GraphForm
 from user_db import create_user_db
 from gen_graphs import sql_graph_info
 from topo_db import Switch_Counter_Fetch
+from get_flows import odl_flow_collector
 
 # TODO: Find PEP8 way of importing modules
 from authenticator import Authenticator
@@ -41,6 +42,7 @@ app.config['MYSQL_CURSORCLASS'] = auth.working_creds['database']['CURSORCLASS']
 mysql = MySQL(app)
 
 # TODO: CLEAN UP CODE, MAKE INIT SCRIPT
+
 @app.route("/")
 def index():
     if 'logged_in' in session:
@@ -78,6 +80,22 @@ def topology():
 def node_stats():
     o = Odl_Stat_Collector(controllerIP)
     return render_template('nodes.html', nodes=o.run())
+
+
+@app.route("/flow-stats")
+@is_logged_in
+def flow_stats():
+    cur = mysql.connection.cursor()
+    # Repetitive code, move to sql tooling
+    switch_list = []
+    cur.execute("SELECT Node FROM nodes WHERE Type='switch';")
+    switch_tuples = cur.fetchall()
+    for switch in switch_tuples:
+        switch_list.append(switch[0])
+    cur.close()
+    flow_dict = {}
+    for switch in switch_list:
+        o = 
 
 
 @app.route("/device-info")
