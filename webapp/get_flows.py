@@ -6,12 +6,13 @@ from requests.auth import HTTPBasicAuth
 
 class odl_flow_collector(object):
 
-    def __init__(self, controller_ip):
+    def __init__(self, controller_ip, node):
         self.controller_ip = controller_ip
         self.headers = {'Accept': 'application/json',
                         'content-type': 'application/json'}
         self.base_url = f"http://{self.controller_ip}:8181/restconf/operational/"
         self.auth = HTTPBasicAuth("admin", "admin")
+        self.node = node
         self.flow_data = {}
 
     # Send get requests to the controller
@@ -20,8 +21,8 @@ class odl_flow_collector(object):
         response_data = response.json()
         return response_data
 
-    def get_flows(self, node):
-        target_uri = f"opendaylight-inventory:nodes/node/{node}/table/0"
+    def get_flows(self):
+        target_uri = f"opendaylight-inventory:nodes/node/{self.node}/table/0"
         url = self.base_url + target_uri
         flow_request = requests.get(url, headers=self.headers, auth=self.auth)
         raw_flows = flow_request.json()
@@ -61,8 +62,9 @@ class odl_flow_collector(object):
         for actions in flow_instructions:
             print(actions['apply-actions'])
         return flow_instructions
+    
+    def run(self):
+        raw_flows = self.get_flows()
+        flow_stats = self.clean_flows(raw_flows)
+        return flow_stats
 
-
-o = odl_flow_collector("134.117.89.138")
-flows = o.get_flows("openflow:7")
-o.clean_flows(flows)
