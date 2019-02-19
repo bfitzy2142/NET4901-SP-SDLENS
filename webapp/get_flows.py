@@ -8,7 +8,8 @@ class odl_flow_collector(object):
 
     def __init__(self, controller_ip):
         self.controller_ip = controller_ip
-        self.headers = {'Accept': 'application/json', 'content-type': 'application/json'}
+        self.headers = {'Accept': 'application/json',
+                        'content-type': 'application/json'}
         self.base_url = f"http://{self.controller_ip}:8181/restconf/operational/"
         self.auth = HTTPBasicAuth("admin", "admin")
         self.flow_data = {}
@@ -20,10 +21,10 @@ class odl_flow_collector(object):
         return response_data
 
     def get_flows(self, node):
-        url = f"http://{self.controller_ip}:8181/restconf/operational/opendaylight-inventory:nodes/node/{node}/table/0"
-        flow_request = requests.get(url, headers=self.headers, auth=HTTPBasicAuth("admin", "admin"))
+        target_uri = f"opendaylight-inventory:nodes/node/{node}/table/0"
+        url = self.base_url + target_uri
+        flow_request = requests.get(url, headers=self.headers, auth=self.auth)
         raw_flows = flow_request.json()
-        #print(raw_flows)
         return raw_flows
 
     def clean_flows(self, flows):
@@ -46,10 +47,13 @@ class odl_flow_collector(object):
             new_flow['match_rules'] = flow['match']
             new_flow['cookie'] = flow['cookie']
             try:
-                print(flow['instructions']['instruction'])
+                # actions = self.sort_flow_actions(flow['instructions']['instruction'])
+                # print(actions)
+                new_flow['actions'] = flow['instructions']['instruction']
+                # print(flow['instructions']['instruction'])
             # print(flow['instructions'])
             except KeyError:
-                print({})
+                new_flow['actions'] = []
             """
             flow_stats = flow["opendaylight-flow-statistics:flow-statistics"]
             flows["flow-id"] = flow["id"]
@@ -59,11 +63,18 @@ class odl_flow_collector(object):
             flows["flow-table-id"] = flow["table_id"]
             flows["flow-match"] = flow["match"]
             """
-            #instructions
-            #print(flows)
-            #print("*"*200)
+            # instructions
+            # print(flows)
+            # print("*"*200)
         return flows
-        #print(raw_flow_stats)
+        # print(raw_flow_stats)
+
+    def sort_flow_actions(self, flow_instructions):
+        flow_instructions.sort(key=lambda x: x['order'])
+        for actions in flow_instructions:
+            print(actions['apply-actions'])
+        return flow_instructions
+
 
 o = odl_flow_collector("134.117.89.138")
 o.get_flows("openflow:1")
