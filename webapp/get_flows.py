@@ -50,7 +50,8 @@ class odl_flow_collector(object):
             except KeyError:
                 new_flow['actions'] = []
             flow_stats.append(new_flow)
-
+        
+        flow_stats.sort(key=lambda x: x['priority'], reverse=True)
         return flow_stats
         # print(raw_flow_stats)
 
