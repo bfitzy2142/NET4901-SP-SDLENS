@@ -33,8 +33,6 @@ class odl_flow_collector(object):
         raw_flow_stats = flows["flow-node-inventory:table"][0]["flow"]
         flow_stats = []
         for flow in raw_flow_stats:
-            # print(flow)
-            print('*' * 20)
             new_flow = {}
             new_flow['id'] = flow['id']
             new_flow['priority'] = flow["priority"]
@@ -46,30 +44,18 @@ class odl_flow_collector(object):
             new_flow['table'] = flow['table_id']
             new_flow['match_rules'] = flow['match']
             new_flow['cookie'] = flow['cookie']
+            # TODO: Look for better data struct for actions
             try:
-                # actions = self.sort_flow_actions(flow['instructions']['instruction'])
-                # print(actions)
                 new_flow['actions'] = flow['instructions']['instruction']
-                # print(flow['instructions']['instruction'])
-            # print(flow['instructions'])
             except KeyError:
                 new_flow['actions'] = []
-            """
-            flow_stats = flow["opendaylight-flow-statistics:flow-statistics"]
-            flows["flow-id"] = flow["id"]
-            flows["flow-priority"] = flow["priority"]
-            flows["flow-pkt-cnt"] = flow[flow_stats]["packet-count"]
-            flows["flow-byte-cnt"] = flow[flow_stats]["byte-count"]
-            flows["flow-table-id"] = flow["table_id"]
-            flows["flow-match"] = flow["match"]
-            """
-            # instructions
-            # print(flows)
-            # print("*"*200)
-        return flows
+            flow_stats.append(new_flow)
+
+        return flow_stats
         # print(raw_flow_stats)
 
     def sort_flow_actions(self, flow_instructions):
+        """Helper function in case actions are out of order"""
         flow_instructions.sort(key=lambda x: x['order'])
         for actions in flow_instructions:
             print(actions['apply-actions'])
@@ -77,6 +63,5 @@ class odl_flow_collector(object):
 
 
 o = odl_flow_collector("134.117.89.138")
-o.get_flows("openflow:1")
-flows = o.get_flows("openflow:1")
+flows = o.get_flows("openflow:7")
 o.clean_flows(flows)
