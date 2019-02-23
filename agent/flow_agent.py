@@ -112,4 +112,3 @@ class FlowAgent(AbstractAgent):
                                       flow['hard-timeout'],
                                       flow['idle-timeout'], flow['table'])
             self.sql_tool.send_insert(query)
-

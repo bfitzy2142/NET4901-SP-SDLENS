@@ -11,6 +11,7 @@ from topology_agent import TopologyAgent
 from link_agent import LinkAgent
 from port_counter_agent import PortCounterAgent
 from device_agent import DeviceAgent
+from flow_agent import FlowAgent
 
 
 auth = Authenticator()
@@ -59,11 +60,14 @@ if __name__ == '__main__':
     link_agent.run_agent()
     counter_agents = {}
     device_agents = {}
+    flow_agents = {} # May have to change this if many flow tables
     for switch in switch_list:
         counter_agents[switch] = PortCounterAgent(controller_ip, switch)
         device_agents[switch] = DeviceAgent(controller_ip, switch)
+        flow_agents[switch] = FlowAgent(controller_ip, switch, 0)
         device_agents[switch].run_agent()
     while True:
         for switch in switch_list:
             counter_agents[switch].run_agent()
+            flow_agents[switch].run_agent()
         time.sleep(10)
