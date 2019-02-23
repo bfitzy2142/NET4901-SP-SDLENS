@@ -8,6 +8,7 @@ from abstract_agent import AbstractAgent
 
 class FlowAgent(AbstractAgent):
     def __init__(self, controller_ip, node, table_id):
+        """Initializer for FlowAgent instances"""
         super().__init__(controller_ip)
         self.node = node
         self.table_id = table_id
@@ -48,27 +49,47 @@ class FlowAgent(AbstractAgent):
         self.sql_tool.create_sql_table(table)
 
     def get_data(self):
+        """Method executes the necessary logic to make the API calls
+        to collect flow table stats and converts the response to a
+        usable data structure.
+    
+        Returns:
+            Dict -- Data structure that corresponds to the API calls sent.
+        """
         restconf_node = f"opendaylight-inventory:nodes/node/{self.node}/"
         restconf_table = f"table/{self.table_id}"
         url = self.base_url + restconf_node + restconf_table
-        print(url)
         response = self.send_get_request(url)
-        # print(response)
         return response
 
     def parse_response(self, response):
-        # print(response)
+        """Parse the API response for the relevant statistics we want.
+
+        Arguments:
+            response {dict} -- The dictionary response from the API call.
+
+        Returns:
+            dict -- Returns a dictionary with the desired flow stats.
+        """
         data = {}
         table_stats_str = "opendaylight-flow-table-statistics:flow-table-statistics"
         raw_stats = response["flow-node-inventory:table"][0]
         data["table-stats"] = raw_stats[table_stats_str]
         data["table-stats"]["timestamp"] = self.add_timestamp()
-
         raw_flow_stats = raw_stats["flow"]
         data["flow-stats"] = self.parse_flows(raw_flow_stats)
         return data
 
     def parse_flows(self, raw_flow_stats):
+        """Parse flows parses the flow specific stats obtained by get_data.
+        
+        Arguments:
+            raw_flow_stats {list} -- A list of flow stats provided by
+            parse_response.
+
+        Returns:
+            list -- A list of key-value pairs of statistics for each flow.
+        """
         stats_str = "opendaylight-flow-statistics:flow-statistics"
         flow_stats = []
         for flow in raw_flow_stats:
@@ -86,10 +107,16 @@ class FlowAgent(AbstractAgent):
         return(flow_stats)
 
     def store_data(self, data):
+        """Stores our flow data in the appropriate DB tables.
+
+        Arguments:
+            data {dict} -- Dictionary of flow stats to be stored.
+        """
         self.store_table_stats(data["table-stats"])
         self.store_flow_stats(data["flow-stats"])
     
     def store_table_stats(self, table_stats):
+        """Helper function that stores the flow table summary stats."""
         sql_insert = (f"INSERT INTO {self.node}_table{self.table_id}_summary"
                       "(Timestamp, Active_Flows, Packets_Looked_Up,"
                       "Packets_Matched) VALUES ('{}', {}, {}, {})")
@@ -100,6 +127,7 @@ class FlowAgent(AbstractAgent):
         self.sql_tool.send_insert(query)
 
     def store_flow_stats(self, flow_stats):
+        """Helper function to store the individual flow stats in the DB."""
         sql_insert = (f"INSERT INTO {self.node}_table{self.table_id}_flows"
                       "(Flow_ID, Timestamp, Priority, Packet_count, "
                       "Byte_count, Duration, Hard_timeout, Idle_timeout, "
