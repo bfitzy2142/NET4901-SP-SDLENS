@@ -38,9 +38,9 @@
         var edges = new vis.DataSet([
             {% for link in topologyInfo['connections'] %}
             {% if loop.index != topologyInfo['connections']|length %}
-            {from: '{{link['src']}}', to: '{{link['dst']}}'},
+            {id: '{{link['src']}}-{{link['dst']}}', from: '{{link['src']}}', to: '{{link['dst']}}'},
             {% elif  loop.index == topologyInfo['connections']|length %}
-            {from: '{{link['src']}}', to: '{{link['dst']}}'}
+            {id: '{{link['src']}}-{{link['dst']}}', from: '{{link['src']}}', to: '{{link['dst']}}'}
             {% endif %}
             {% endfor %}
         ]);
@@ -60,25 +60,34 @@
 
         
         network.on("selectNode", function (params) {
+            document.getElementById('titlebar').innerHTML = '';
+            document.getElementById('infobox').innerHTML = '';
             var node = String(params.nodes);
 
             if (node.includes('openflow')) {
                 //Create H2 Tag
                 document.getElementById('titlebar').innerHTML = '<h2>'+ node +'</h2>';
-                document.getElementById('infobox').innerHTML = '';
                 switchStats(node);
             } else {
-                document.getElementById('infobox').innerHTML = '';
                 document.getElementById('titlebar').innerHTML = '<h2>'+ node +'</h2>';
             }
         });
 
-        network.on("deselectNode", function (params) {
-            console.log('deselectNode Event:', params);
+        network.on("selectEdge", function (params) {
+            
+            var node = String(params.nodes);
+
+            if (node.length == 0){
+                var edgeName = String(params.edges);
+                edgeInfo(edgeName);
+                document.getElementById('titlebar').innerHTML = '';
+                document.getElementById('infobox').innerHTML = '';
+                document.getElementById('titlebar').innerHTML = '<h2>'+ edgeName +'</h2>';
+            }
+                
         });
 
-         //Prepare/Send request
-         function switchStats(node)
+        function edgeInfo(edge)
         {
             var xhr = new XMLHttpRequest();
             
@@ -89,7 +98,28 @@
                 // bind callback function
                 xhr.onreadystatechange = function()
                 {
-                  handleResponse(xhr);
+                  handleEdge(xhr);
+                };
+                // actually send the Ajax request 
+                var post_params = '{ "edge" : "' + edge + '"}';
+                xhr.setRequestHeader("Content-type", "application/json");
+                xhr.send(post_params); // Send request
+            }
+        }
+
+         
+        function switchStats(node)
+        {
+            var xhr = new XMLHttpRequest();
+            
+            if (xhr)
+            {
+                // open( method, location, isAsynchronous )
+                xhr.open("POST", "/topo-switch-stats", true);
+                // bind callback function
+                xhr.onreadystatechange = function()
+                {
+                    buildTable(xhr);
                 };
                 // actually send the Ajax request 
                 var post_params = '{ "switch" : "openflow' + node.slice(9) + '"}';
@@ -97,10 +127,60 @@
                 xhr.send(post_params); // Send request
             }
         }
+        
+        function handleEdge(xhr) {
+            if (xhr.readyState == 4 && xhr.status == 200)
+            {
+                responseJSON = JSON.parse(xhr.responseText);
 
+                var title = new Array();
+                title.push(["Source Port", "Destination Port"]);
+                
+                var table = document.createElement("TABLE");
+                table.classList.add("table-bordered");
+                table.classList.add("table");
+                table.border = "1";
+                
+                //Get the count of columns.
+                var columnCount = 2;
 
-         //Callback function that processes the server response
-        function handleResponse(xhr)
+                //Add the header row.
+                var row = table.insertRow(-1);
+                for (var i = 0; i < columnCount; i++) {
+                    var headerCell = document.createElement("TH");
+                    headerCell.innerHTML = title[0][i];
+                    row.appendChild(headerCell);
+                }
+
+                //Add the data rows.
+                
+                    row = table.insertRow(-1);
+                    for (var j = 0; j < columnCount; j++) {
+                        var cell = row.insertCell(-1);
+                        
+                        var src_port = responseJSON['src_port'];
+                        var dst_port = responseJSON['dst_port'];
+
+                        switch (j) {
+                            case 0:
+                                cell.innerHTML = src_port;
+                                break;
+                            case 1:
+                                cell.innerHTML = dst_port;
+                            }
+                    }
+                
+                //add table to infobox div
+                document.getElementById('infobox').appendChild(table);
+                //move page view to the bottom
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        }
+
+         /*Callback function that processes the server response for switch stats
+         and builds a table to present to the user
+         */
+        function buildTable(xhr)
         {
             if (xhr.readyState == 4 && xhr.status == 200)
             {
@@ -163,8 +243,9 @@
                             }
                     }
                 }
-
+                //add table to infobox div
                 document.getElementById('infobox').appendChild(table);
+                //move page view to the bottom
                 window.scrollTo(0, document.body.scrollHeight);
             }
         }
