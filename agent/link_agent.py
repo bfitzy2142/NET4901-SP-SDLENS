@@ -42,7 +42,10 @@ class LinkAgent(AbstractAgent):
         for node in response['topology']:
             for link in node['link']:
                 connection = {"src": link['source']['source-node'],
-                              "dst": link['destination']['dest-node']}
+                              "dst": link['destination']['dest-node'],
+                              "src_port": link['source']['source-tp'],
+                              "dst_port": link['destination']['dest-tp']
+                              }
                 connection_list.append(connection)
         # Cleanup redundant connections
         cleansed_list = self.remove_redundancy(connection_list)
@@ -90,18 +93,18 @@ class LinkAgent(AbstractAgent):
         self.create_links_table()
 
         for link in data:
-            self.store_links(link['src'], link['dst'])
+            self.store_links(link['src'], link['dst'], link['src_port'], link['dst_port'])
 
-    def store_links(self, src, dst):
+    def store_links(self, src, dst, src_port, dst_port):
         """Inserts a unique link into the 'links' table.
 
         Parameters:
         src - the source port for the current connection
         dst - the destination port for the current connection
         """
-        sql_insert = ("INSERT INTO links (SRC, DST) "
-                      "VALUES ('{}', '{}')")
-        self.send_sql_query(sql_insert.format(src, dst))
+        sql_insert = ("INSERT INTO links (SRC, DST, SRCPORT, DSTPORT) "
+                      "VALUES ('{}', '{}', '{}', '{}')")
+        self.send_sql_query(sql_insert.format(src, dst, src_port, dst_port))
 
     def create_links_table(self):
         """Creates table 'links' if not already created.
@@ -116,6 +119,8 @@ class LinkAgent(AbstractAgent):
             "ID int NOT NULL AUTO_INCREMENT,"
             "SRC VARCHAR(32) NOT NULL,"
             "DST VARCHAR(32) NOT NULL,"
+            "SRCPORT VARCHAR(32) NOT NULL,"
+            "DSTPORT VARCHAR(32) NOT NULL,"
             "PRIMARY KEY (ID) );")
         try:
             self.send_sql_query(table)
@@ -147,7 +152,8 @@ class LinkAgent(AbstractAgent):
         Returns:
         Single link to be added to a list of links
         """
-        return {'id': link_row[0], 'src': link_row[1], 'dst': link_row[2]}
+        return {'id': link_row[0], 'src': link_row[1], 'dst': link_row[2],
+                'src_port': link_row[3], 'dst_port': link_row[4]}
 
     def retrieve_devices(self):
         """ Query method to get a list of nodes from the sql database
