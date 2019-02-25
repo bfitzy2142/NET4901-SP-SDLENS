@@ -13,7 +13,7 @@ from auxiliary import Webapp_Auxiliary
 from forms import RegisterForm, GraphForm
 from user_db import create_user_db
 from gen_graphs import sql_graph_info
-from topo_db import Switch_Counter_Fetch
+from topo_db import Topo_DB_Interactions
 from get_flows import Odl_Flow_Collector
 
 # TODO: Find PEP8 way of importing modules
@@ -30,7 +30,6 @@ app = Flask(__name__)
 controllerIP = auth.working_creds['controller']['controller-ip']
 
 
-# TODO: Manage creds outside of app
 app.secret_key = auth.working_creds['application']['secret_key']
 app.config['MYSQL_HOST'] = auth.working_creds['database']['MYSQL_HOST']
 app.config['MYSQL_USER'] = auth.working_creds['database']['MYSQL_USER']
@@ -120,23 +119,28 @@ def getControllerIP():
 @app.route("/topo-switch-stats", methods=['GET', 'POST'])
 @is_logged_in
 def getSwitchCounters():
-    # TODO: Combine SQL modules for all webapp functions
-    if (request.method == 'POST'):
-        raw_json = request.get_json()
-        switch = raw_json['switch']
 
+    if (request.method == 'POST'):
         # Get SQL Auth & Creds
         yaml_db_creds = auth.working_creds['database']
         sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
-                     "password": yaml_db_creds['MYSQL_PASSWORD'],
-                     "host": yaml_db_creds['MYSQL_HOST']}
+                        "password": yaml_db_creds['MYSQL_PASSWORD'],
+                        "host": yaml_db_creds['MYSQL_HOST']}
         db = auth.working_creds['database']['MYSQL_DB']
 
         # Get counters for switch
-        obj = Switch_Counter_Fetch(**sql_creds, db=db)
-        counters = obj.switch_query(switch)
-        return jsonify(counters)
+        obj = Topo_DB_Interactions(**sql_creds, db=db)
+        raw_json = request.get_json()
+        key = ''.join(raw_json.keys())
 
+        if (key == 'switch'):
+            switch = raw_json['switch']
+            counters = obj.switch_query(switch)
+            return jsonify(counters)
+        elif (key == 'edge'):
+            edge = raw_json['edge']
+            edgeinfo = obj.edge_query(edge)
+            return jsonify(edgeinfo)
 
 @app.route("/graphs", methods=['GET', 'POST'])
 @is_logged_in

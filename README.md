@@ -85,6 +85,6 @@ OPPERATION SECTION - Once the application is closer to being finished and graphs
 
 ## Authors
 - Samuel Robillard - Carleton University, Canada
-- Bradly Fitzgerald - Carleton University, Canada
+- Bradley Fitzgerald - Carleton University, Canada
 - Josh Nelson - Carleton University, Canada
 - Samuel Cook - Carleton University, Canada
