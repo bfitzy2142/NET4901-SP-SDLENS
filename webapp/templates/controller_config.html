@@ -1,25 +1,33 @@
 {% extends 'layout.html' %}
 
-{% block body %}
-<h1>Controller Configuration</h1>
-
 <!-- 
     TODO:
         - If controller exists in the network, pull info from sql database and display it in table
         - Prompt user to enter device info into sql database
  -->
- 
+
+{% block body %}
+{% for column in columns %}                 <!-- * -->
+{% if condition %}                          <!-- * -->
+
+<h1>Controller Configuration</h1>
+
+<h2>{{ column }}</h2>                       <!-- * -->
+
 <table class="table table-bordered">
     <tr>
         <th>IP address</th>
         <th>Port Number</th>
         <th>Username</th>
     </tr>
+    {% for row in items %}                  <!-- * -->
     <tr>
-        <td>IP address</td> 
-        <td>Port Number</td>
-        <td>Username</td>
-      </tr>
+        <td>{{ row|attr(column) }}</td>     <!-- * -->
+        <td>{{ row|attr(column) }}</td>     <!-- * -->
+        <td>{{ row|attr(column) }}</td>     <!-- * -->
+    </tr>
+    {% endfor %}
 </table>
-
+{% endif %}
+{% endfor %}
 {% endblock %}
