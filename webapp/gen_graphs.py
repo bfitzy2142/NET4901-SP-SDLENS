@@ -4,20 +4,23 @@
 MySql Parser for graphical presentation
 """
 import mysql.connector
+import datetime
 from mysql.connector import Error
+from datetime import datetime, timedelta
 
 import json
 
 
 class sql_graph_info(object):
-    def __init__(self, node, interface):
+    def __init__(self, node, interface, time):
         """
         Initializer for the sql_graph_info Object.
         """
         self.node = node
         self.interface = interface
+        self.time = time
 
-    def db_pull(self, node, interface):
+    def db_pull(self, node, interface, time):
         """ Pulls the RX and TX information from the database
             to display for the graphs page.
         
@@ -31,11 +34,29 @@ class sql_graph_info(object):
             dict -- containing arrays of the counter values at
                     their coresponding timestamp.
         """
-        node_st = node.replace(":", "")
+        data_end = datetime.now()
+        if time == '1':
+            data_start = datetime.now() - timedelta(hours=0, minutes=30)
+        elif time == '2':
+            data_start = datetime.now() - timedelta(hours=1)
+        elif time == '3':
+            data_start = datetime.now() - timedelta(hours=2)
+        elif time == '4':
+            data_start = datetime.now() - timedelta(hours=6)
+        elif time == '5':
+            data_start = datetime.now() - timedelta(days=1)
+        else:
+            data_start = datetime.now() - timedelta(days=3650)
+        data_end.strftime('%Y-%m-%d %H:%M:%S')
+        data_start.strftime('%Y-%m-%d %H:%M:%S')
+
+        node_st = "openflow" + node
         query = (
             f"SELECT timestamp, Rx_pckts, Tx_pckts, Rx_drops, Tx_drops "
             f"FROM {node_st}_counters WHERE "
-            f"Interface='{node}:{interface}'"
+            f"Interface='openflow:{node}:{interface}'"
+            f"AND timestamp >= '{data_start}'"
+            f"AND timestamp < '{data_end}'"
         )
 
         mydb = mysql.connector.connect(

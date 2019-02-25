@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Module manages all form classes required by SDLens webapp."""
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators
+from wtforms import Form, StringField, SelectField, TextAreaField, PasswordField, validators
 
 
 class RegisterForm(Form):
@@ -20,12 +20,15 @@ class GraphForm(Form):
     """
     Class to select the device and interface for graphs
     """
-    node = StringField('Node', [
-        validators.length(min=10, max=12),
-        validators.Regexp("openflow:\d{1,3}")
+    node = StringField('Node (Switch #)', [
+        validators.length(min=1, max=3),
+        validators.Regexp("\d{1,3}")
         ])
     interface = StringField('Interface (Int #)', [
         validators.length(min=1, max=2),
         validators.Regexp("\d{1,2}")
         ])
-
+    time = SelectField('Graph Duration', choices=[(
+             '1', '30 Minutes'), ('2', '1 Hour'),
+            ('3', '2 Hours'), ('4', '6 Hours'),
+            ('5', '1 Day'), ('6', 'All Time')])

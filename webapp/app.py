@@ -145,9 +145,10 @@ def graphs():
     if request.method == 'POST' and graph_input.validate():
         node = graph_input.node.data
         interface = graph_input.interface.data
+        time = graph_input.time.data
 
-        graph_object = sql_graph_info(node, interface)
-        data = graph_object.db_pull(node, interface)
+        graph_object = sql_graph_info(node, interface, time)
+        data = graph_object.db_pull(node, interface, time)
 
         return render_template("graphs.html", form=graph_input, data=data)
     return render_template("graphs.html", form=graph_input)
