@@ -141,6 +141,11 @@ def getSwitchCounters():
             edge = raw_json['edge']
             edgeinfo = obj.edge_query(edge)
             return jsonify(edgeinfo)
+        elif (key == 'host'):
+            host = raw_json['host']
+            hostinfo = obj.host_query(host)
+            return jsonify(hostinfo)
+            
 
 @app.route("/graphs", methods=['GET', 'POST'])
 @is_logged_in

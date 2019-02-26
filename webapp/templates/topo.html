@@ -70,6 +70,7 @@
                 switchStats(node);
             } else {
                 document.getElementById('titlebar').innerHTML = '<h2>'+ node +'</h2>';
+                hostStats(node);
             }
         });
 
@@ -125,6 +126,78 @@
                 var post_params = '{ "switch" : "openflow' + node.slice(9) + '"}';
                 xhr.setRequestHeader("Content-type", "application/json");
                 xhr.send(post_params); // Send request
+            }
+        }
+
+        function hostStats(node)
+        {
+            var xhr = new XMLHttpRequest();
+            
+            if (xhr)
+            {
+                // open( method, location, isAsynchronous )
+                xhr.open("POST", "/topo-switch-stats", true);
+                // bind callback function
+                xhr.onreadystatechange = function()
+                {
+                    handleHost(xhr);
+                };
+                // actually send the Ajax request 
+                var post_params = '{ "host" : "' + node + '"}';
+                xhr.setRequestHeader("Content-type", "application/json");
+                xhr.send(post_params); // Send request
+            }
+        }
+
+        function handleHost(xhr) {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                responseJSON = JSON.parse(xhr.responseText);
+                var title = new Array();
+                title.push(["IP Address", "First Appearence", "Latest Interaction"]);
+                
+                var table = document.createElement("TABLE");
+                table.classList.add("table-bordered");
+                table.classList.add("table");
+                table.border = "1";
+                
+                //Get the count of columns.
+                var columnCount = 3;
+
+                //Add the header row.
+                var row = table.insertRow(-1);
+                for (var i = 0; i < columnCount; i++) {
+                    var headerCell = document.createElement("TH");
+                    headerCell.innerHTML = title[0][i];
+                    row.appendChild(headerCell);
+                }
+
+                //Add the data rows.
+                
+                    row = table.insertRow(-1);
+                    for (var j = 0; j < columnCount; j++) {
+                        var cell = row.insertCell(-1);
+                        
+                        var ip = responseJSON['ip'];
+                        var first_seen = responseJSON['first_seen'];
+                        var last_seen = responseJSON['last_seen'];
+
+                        switch (j) {
+                            case 0:
+                                cell.innerHTML = ip;
+                                break;
+                            case 1:
+                                cell.innerHTML = first_seen;
+                                break;
+                            case 2: 
+                                cell.innerHTML = last_seen;
+                            }
+                    }
+                
+                //add table to infobox div
+                document.getElementById('infobox').appendChild(table);
+                //move page view to the bottom
+                window.scrollTo(0, document.body.scrollHeight);
+                
             }
         }
         

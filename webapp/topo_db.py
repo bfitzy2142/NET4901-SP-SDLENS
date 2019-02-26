@@ -3,6 +3,7 @@
 import mysql.connector
 from mysql.connector import errorcode
 from json import dumps
+from time import strftime, localtime 
 
 
 class Topo_DB_Interactions():
@@ -61,15 +62,32 @@ class Topo_DB_Interactions():
 
     def edge_query(self, edge):
         node_list = edge.split('-')
-        print(node_list[0], node_list[1])
    
-        qry_edges = (f'select SRCPORT, DSTPORT from links where'
-                     f'(SRC = "{node_list[0]}" and DST = "{node_list[1]}") or'
-                     f'(SRC = "{node_list[1]}" and DST = "{node_list[0]}")')
+        query_edges = (f'select SRCPORT, DSTPORT from links where'
+                       f'(SRC = "{node_list[0]}" and DST = "{node_list[1]}") or'
+                       f'(SRC = "{node_list[1]}" and DST = "{node_list[0]}")')
 
-        print(qry_edges)
-        self.cursor.execute(qry_edges)
+        self.cursor.execute(query_edges)
         raw_result = self.cursor.fetchall()
-        print(raw_result)
+
         return {'src_port': raw_result[0][0], 'dst_port': raw_result[0][1]}
+
+    def host_query(self, host):
+
+        query_host = ('select IP_ADDRESS, FIRST_TIME_SEEN, LATEST_TIME_SEEN '
+                      f'from host_info where HOST = "{host}"')
+        print(query_host)
+        self.cursor.execute(query_host)
+        raw_result = self.cursor.fetchall()
         
+        # Get epoch in seconds by dividing by 1000
+        first_epoch = int(raw_result[0][1])/1000
+        latest_epoch = int(raw_result[0][2])/1000
+
+        first_seen = strftime('%Y-%m-%d %H:%M:%S', localtime(first_epoch))
+        last_seen = strftime('%Y-%m-%d %H:%M:%S', localtime(latest_epoch))
+
+        return {'ip': raw_result[0][0],
+                'first_seen': first_seen,
+                'last_seen': last_seen
+                }
