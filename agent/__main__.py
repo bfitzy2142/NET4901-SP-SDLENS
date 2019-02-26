@@ -41,6 +41,16 @@ def create_db():
             print("DB created!")  # debug
 
 
+def get_hosts():
+    host_list = []
+    cnx = mysql.connector.connect(**sql_creds, database=db)
+    cursor = cnx.cursor()
+    cursor.execute("SELECT Node FROM nodes WHERE Type='host';")
+    host_tuples = cursor.fetchall()
+    for host in host_tuples:
+        host_list.append(host[0])
+    return host_list
+
 def get_switches():
     switch_list = []
     cnx = mysql.connector.connect(**sql_creds, database=db)
@@ -67,6 +77,7 @@ if __name__ == '__main__':
         flow_agents[switch] = FlowAgent(controller_ip, switch, 0)
         device_agents[switch].run_agent()
     while True:
+        topo_agent.populate_host_table()
         for switch in switch_list:
             counter_agents[switch].run_agent()
             flow_agents[switch].run_agent()

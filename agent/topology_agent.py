@@ -34,6 +34,9 @@ class TopologyAgent(AbstractAgent):
             dict -- Returns a dictionary with the nodes and node interfaces
                 defined.
         """
+        # Store Host related data
+        self.populate_host_table()
+
         # TODO: Make this data structure more efficient
         nodes = {}
         for node in response['topology'][0]['node']:
@@ -115,4 +118,40 @@ class TopologyAgent(AbstractAgent):
             "PRIMARY KEY (Interface) );")
         # TODO: Converge steps below into a helper function
         self.sql_tool.create_sql_table(table)
+
+    def create_host_table(self):
+        """Creates a host_info table in the sql DB."""
+        table = (
+            "CREATE TABLE host_info("
+            "HOST VARCHAR(32) NOT NULL,"
+            "IP_ADDRESS VARCHAR(16) NOT NULL,"
+            "FIRST_TIME_SEEN VARCHAR(32) NOT NULL,"
+            "LATEST_TIME_SEEN VARCHAR(32) NOT NULL,"
+            "PRIMARY KEY (HOST) );")
+        self.sql_tool.create_sql_table(table)
+    
+    def populate_host_table(self):
+        """Stores host paramaters into host_info tbl"""
+        response = self.get_data()
+        self.create_host_table()
+        for node in response['topology'][0]['node']:
+            if 'host' in node['node-id']:
+                host_id = node['node-id']
+                host_data = node['host-tracker-service:addresses'][0]
+                ip = host_data['ip']
+                first_seen = host_data['first-seen']
+                last_seen = host_data['last-seen']
+                self.store_host_info(host_id, ip, first_seen, last_seen)
+    
+    def store_host_info(self, host, ip, first, latest):
+        """Stores host parameters in the host_info DB table
+        such as IP, first seen, and last seen.
+
+        Arguments:
+            host {string} -- Node Name: e.g. 'host:mac'
+        """
+        sql_insert = ("INSERT INTO host_info (HOST, IP_ADDRESS,"
+                      "FIRST_TIME_SEEN, LATEST_TIME_SEEN)"
+                      "VALUES ('{}', '{}','{}', '{}')")
+        self.sql_tool.send_insert(sql_insert.format(host, ip, first, latest))
 
