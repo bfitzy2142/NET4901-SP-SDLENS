@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-@author: Brad Fitzgerald
 OpenDayLight RESTCONF API parser for topology information
+
+***DEPRECATED***
+Use this module if you wish to query topology infomation
+from the OpenDaylight controller rather than a MySQL DB.
+
 """
 import requests
 import re
@@ -49,11 +53,11 @@ class odl_topo_builder(object):
         # Cleanup redundant connections
         cleansed_list = self.remove_redundancy(connectionList)
         return cleansed_list
-    
+
     # Compare first node with second deleting similar links
     def remove_redundancy(self, connectionList):
         for first_connection in connectionList: 
-            for index, second_connection in enumerate(connectionList, start=1):
+            for second_connection in connectionList[1:]:
                 if (self.link_comparison(first_connection, second_connection)):
                     connectionList.remove(second_connection)
         return connectionList

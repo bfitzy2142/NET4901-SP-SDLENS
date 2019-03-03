@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-
 import mysql.connector
 from mysql.connector import errorcode
-from json import dumps
-from time import strftime, localtime 
+from time import strftime, localtime
 
 
 class Topo_DB_Interactions():
@@ -32,13 +30,13 @@ class Topo_DB_Interactions():
         ctr_table = f"{switch}_counters"
 
         # Get lastest timestamp
-        qry_latest = "SELECT max(Timestamp) FROM " + ctr_table
+        qry_latest = f"SELECT max(Timestamp) FROM {ctr_table}"
 
         self.cursor.execute(qry_latest)
         raw_result = self.cursor.fetchall()
         date = str(raw_result[0][0])
 
-        qry_sw = "SELECT * FROM " + ctr_table + " WHERE Timestamp = '" + date + "'"
+        qry_sw = f'SELECT * FROM {ctr_table} WHERE Timestamp = "{date}"'
 
         self.cursor.execute(qry_sw)
         raw_result = self.cursor.fetchall()
@@ -62,7 +60,7 @@ class Topo_DB_Interactions():
 
     def edge_query(self, edge):
         node_list = edge.split('-')
-   
+
         query_edges = (f'select SRCPORT, DSTPORT from links where'
                        f'(SRC = "{node_list[0]}" and DST = "{node_list[1]}") or'
                        f'(SRC = "{node_list[1]}" and DST = "{node_list[0]}")')
@@ -76,10 +74,10 @@ class Topo_DB_Interactions():
 
         query_host = ('select IP_ADDRESS, FIRST_TIME_SEEN, LATEST_TIME_SEEN '
                       f'from host_info where HOST = "{host}"')
-        print(query_host)
+
         self.cursor.execute(query_host)
         raw_result = self.cursor.fetchall()
-        
+
         # Get epoch in seconds by dividing by 1000
         first_epoch = int(raw_result[0][1])/1000
         latest_epoch = int(raw_result[0][2])/1000
@@ -88,6 +86,8 @@ class Topo_DB_Interactions():
         last_seen = strftime('%Y-%m-%d %H:%M:%S', localtime(latest_epoch))
 
         return {'ip': raw_result[0][0],
+                'hostname': f'H{raw_result[0][0][-1]}',
                 'first_seen': first_seen,
-                'last_seen': last_seen
+                'last_seen': last_seen,
+                'mac': host[5:]
                 }

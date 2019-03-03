@@ -20,16 +20,16 @@
         var nodes = new vis.DataSet([
             {% for device in topologyInfo['devices'] %}
             {% if loop.index != topologyInfo['devices']|length %}
-            {% if "host" not in device %}
-            {id: '{{device}}', label: '{{device}}', image: "{{url_for('static', filename='switch.png')}}", shape: 'image'},
-            {% elif "host" in device %}
-            {id: '{{device}}', label: '{{device}}', image: '{{url_for('static', filename='host.png')}}', shape: 'image'},
+            {% if "host" not in device['id'] %}
+            {id: '{{device['id']}}', label: '{{device['id']}}', image: "{{url_for('static', filename='switch.png')}}", shape: 'image'},
+            {% elif "host" in device['id'] %}
+            {id: '{{device['id']}}', label: '{{device['hostname']}}', title: '{{device['ip']}}', image: '{{url_for('static', filename='host.png')}}', shape: 'image'},
             {% endif %}
             {% elif  loop.index == topologyInfo['devices']|length %}
-            {% if "host" not in device %}
-            {id: '{{device}}', label: '{{device}}', image: '{{url_for('static', filename='switch.png')}}', shape: 'image'}
-            {% elif "host" in device %}
-            {id: '{{device}}', label: '{{device}}', image: '{{url_for('static', filename='host.png')}}', shape: 'image'}
+            {% if "host" not in device['id'] %}
+            {id: '{{device['id']}}', label: '{{device['id']}}', image: "{{url_for('static', filename='switch.png')}}", shape: 'image'}
+            {% elif "host" in device['id'] %}
+            {id: '{{device['id']}}', label: '{{device['hostname']}}', title: '{{device['ip']}}', image: '{{url_for('static', filename='host.png')}}', shape: 'image'}
             {% endif %}
             {% endif %}
             {% endfor %}
@@ -69,7 +69,6 @@
                 document.getElementById('titlebar').innerHTML = '<h2>'+ node +'</h2>';
                 switchStats(node);
             } else {
-                document.getElementById('titlebar').innerHTML = '<h2>'+ node +'</h2>';
                 hostStats(node);
             }
         });
@@ -153,7 +152,7 @@
             if (xhr.readyState == 4 && xhr.status == 200) {
                 responseJSON = JSON.parse(xhr.responseText);
                 var title = new Array();
-                title.push(["IP Address", "First Appearence", "Latest Interaction"]);
+                title.push(["IP Address", "MAC Address", "First Appearence", "Latest Interaction"]);
                 
                 var table = document.createElement("TABLE");
                 table.classList.add("table-bordered");
@@ -161,7 +160,7 @@
                 table.border = "1";
                 
                 //Get the count of columns.
-                var columnCount = 3;
+                var columnCount = 4;
 
                 //Add the header row.
                 var row = table.insertRow(-1);
@@ -177,22 +176,29 @@
                     for (var j = 0; j < columnCount; j++) {
                         var cell = row.insertCell(-1);
                         
+                        var hostname = responseJSON['hostname'];
                         var ip = responseJSON['ip'];
                         var first_seen = responseJSON['first_seen'];
                         var last_seen = responseJSON['last_seen'];
+                        var mac = responseJSON['mac']
 
                         switch (j) {
                             case 0:
                                 cell.innerHTML = ip;
                                 break;
                             case 1:
-                                cell.innerHTML = first_seen;
+                                cell.innerHTML = mac;
                                 break;
                             case 2: 
+                                cell.innerHTML = first_seen;
+                                break;
+                            case 3:
                                 cell.innerHTML = last_seen;
-                            }
+                        }
+
                     }
                 
+                document.getElementById('titlebar').innerHTML = '<h2>'+ hostname +'</h2>';
                 //add table to infobox div
                 document.getElementById('infobox').appendChild(table);
                 //move page view to the bottom

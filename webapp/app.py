@@ -6,7 +6,10 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
 
-from generatetopo import odl_topo_builder
+# Deprecated in favour of gen_topo
+# from generatetopo import odl_topo_builder
+
+from gen_topo import generate_topology
 from get_stats import Odl_Stat_Collector
 from deviceInfo import odl_switch_info
 from auxiliary import Webapp_Auxiliary
@@ -70,7 +73,15 @@ def dashboard():
 @app.route("/topology")
 @is_logged_in
 def topology():
-    parser = odl_topo_builder(controllerIP)
+    # Get SQL Auth & Creds
+    yaml_db_creds = auth.working_creds['database']
+    sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
+                 "password": yaml_db_creds['MYSQL_PASSWORD'],
+                 "host": yaml_db_creds['MYSQL_HOST']
+                 }
+    db = auth.working_creds['database']['MYSQL_DB']
+
+    parser = generate_topology(**sql_creds, db=db)
     return render_template('topo.html', topologyInfo=parser.fetch_topology())
 
 
@@ -145,7 +156,7 @@ def getSwitchCounters():
             host = raw_json['host']
             hostinfo = obj.host_query(host)
             return jsonify(hostinfo)
-            
+          
 
 @app.route("/graphs", methods=['GET', 'POST'])
 @is_logged_in
