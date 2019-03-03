@@ -3,13 +3,15 @@
 import mysql.connector
 from mysql.connector import errorcode
 from abstract_agent import AbstractAgent
-
+from json import dumps
 
 class TopologyAgent(AbstractAgent):
+
     def __init__(self, controller_ip):
         """"Initalizer for LinkAgent, initializes parent object."""
         super().__init__(controller_ip)
         self.create_nodes_table()
+        
 
     def get_data(self):
         """Gets topology data from ODL controller.
@@ -34,9 +36,6 @@ class TopologyAgent(AbstractAgent):
             dict -- Returns a dictionary with the nodes and node interfaces
                 defined.
         """
-        # Store Host related data
-        self.populate_host_table()
-
         # TODO: Make this data structure more efficient
         nodes = {}
         for node in response['topology'][0]['node']:
@@ -129,11 +128,11 @@ class TopologyAgent(AbstractAgent):
             "LATEST_TIME_SEEN VARCHAR(32) NOT NULL,"
             "PRIMARY KEY (HOST) );")
         self.sql_tool.create_sql_table(table)
-    
+
     def populate_host_table(self):
         """Stores host paramaters into host_info tbl"""
+        self.sql_tool.send_sql_query('DELETE FROM host_info')
         response = self.get_data()
-        self.create_host_table()
         for node in response['topology'][0]['node']:
             if 'host' in node['node-id']:
                 host_id = node['node-id']
@@ -155,3 +154,15 @@ class TopologyAgent(AbstractAgent):
                       "VALUES ('{}', '{}','{}', '{}')")
         self.sql_tool.send_insert(sql_insert.format(host, ip, first, latest))
 
+    def delete_stale_nodes(self):
+        self.sql_tool.send_sql_query('DELETE FROM nodes')
+
+        response = self.get_data()
+        parsed_data = self.parse_response(response)
+
+        for node, inter in parsed_data.items():
+            if "openflow" in node:
+                node_type = "switch"
+            if "host" in node:
+                node_type = "host"
+            self.store_nodes(node, node_type)

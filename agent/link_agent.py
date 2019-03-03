@@ -3,7 +3,6 @@
 import mysql.connector
 from mysql.connector import errorcode
 from abstract_agent import AbstractAgent
-# import json
 
 
 class LinkAgent(AbstractAgent):

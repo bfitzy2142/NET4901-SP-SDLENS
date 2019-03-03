@@ -77,8 +77,16 @@ if __name__ == '__main__':
         flow_agents[switch] = FlowAgent(controller_ip, switch, 0)
         device_agents[switch].run_agent()
     while True:
+        # Delete and repopulate tables to keep topology relevant
+        topo_agent.delete_stale_nodes()
         topo_agent.populate_host_table()
+        link_agent.run_agent()
+
+        # Update switch and flow counters
         for switch in switch_list:
-            counter_agents[switch].run_agent()
-            flow_agents[switch].run_agent()
+            try:  # If topo changes mid execution agents are error prone
+                counter_agents[switch].run_agent()
+                flow_agents[switch].run_agent()
+            except:
+                continue
         time.sleep(10)
