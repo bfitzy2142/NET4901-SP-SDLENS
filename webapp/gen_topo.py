@@ -71,7 +71,6 @@ class generate_topology():
         last_seen = strftime('%Y-%m-%d %H:%M:%S', localtime(latest_epoch))
 
         return {'id': host,
-                'hostname': f'h{raw_result[0][0][-1]}',
                 'ip': raw_result[0][0],
                 'first_seen': first_seen,
                 'last_seen': last_seen

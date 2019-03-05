@@ -21,15 +21,15 @@
             {% for device in topologyInfo['devices'] %}
             {% if loop.index != topologyInfo['devices']|length %}
             {% if "host" not in device['id'] %}
-            {id: '{{device['id']}}', label: '{{device['id']}}', image: "{{url_for('static', filename='switch.png')}}", shape: 'image'},
+            {id: '{{device['id']}}', label: '{{device['id']}}', title: 'Node: <b> {{device['id']}} </b><br>Type: Switch', image: "{{url_for('static', filename='switch.png')}}", shape: 'image'},
             {% elif "host" in device['id'] %}
-            {id: '{{device['id']}}', label: '{{device['hostname']}}', title: '{{device['ip']}}', image: '{{url_for('static', filename='host.png')}}', shape: 'image'},
+            {id: '{{device['id']}}', label: '{{device['ip']}}', title: 'Node: <b> {{device['id']}} </b><br>Type: Host', image: '{{url_for('static', filename='host.png')}}', shape: 'image'},
             {% endif %}
             {% elif  loop.index == topologyInfo['devices']|length %}
             {% if "host" not in device['id'] %}
-            {id: '{{device['id']}}', label: '{{device['id']}}', image: "{{url_for('static', filename='switch.png')}}", shape: 'image'}
+            {id: '{{device['id']}}', label: '{{device['id']}}', title: 'Node: <b> {{device['id']}} </b><br>Type: Switch', image: "{{url_for('static', filename='switch.png')}}", shape: 'image'}
             {% elif "host" in device['id'] %}
-            {id: '{{device['id']}}', label: '{{device['hostname']}}', title: '{{device['ip']}}', image: '{{url_for('static', filename='host.png')}}', shape: 'image'}
+            {id: '{{device['id']}}', label: '{{device['ip']}}', title: 'Node: <b> {{device['id']}} </b><br>Type: Host', image: '{{url_for('static', filename='host.png')}}', shape: 'image'}
             {% endif %}
             {% endif %}
             {% endfor %}
@@ -152,7 +152,7 @@
             if (xhr.readyState == 4 && xhr.status == 200) {
                 responseJSON = JSON.parse(xhr.responseText);
                 var title = new Array();
-                title.push(["IP Address", "MAC Address", "First Appearence", "Latest Interaction"]);
+                title.push(["MAC Address", "First Appearence", "Latest Interaction"]);
                 
                 var table = document.createElement("TABLE");
                 table.classList.add("table-bordered");
@@ -160,7 +160,7 @@
                 table.border = "1";
                 
                 //Get the count of columns.
-                var columnCount = 4;
+                var columnCount = 3;
 
                 //Add the header row.
                 var row = table.insertRow(-1);
@@ -175,8 +175,7 @@
                     row = table.insertRow(-1);
                     for (var j = 0; j < columnCount; j++) {
                         var cell = row.insertCell(-1);
-                        
-                        var hostname = responseJSON['hostname'];
+                    
                         var ip = responseJSON['ip'];
                         var first_seen = responseJSON['first_seen'];
                         var last_seen = responseJSON['last_seen'];
@@ -184,21 +183,18 @@
 
                         switch (j) {
                             case 0:
-                                cell.innerHTML = ip;
-                                break;
-                            case 1:
                                 cell.innerHTML = mac;
                                 break;
-                            case 2: 
+                            case 1: 
                                 cell.innerHTML = first_seen;
                                 break;
-                            case 3:
+                            case 2:
                                 cell.innerHTML = last_seen;
                         }
 
                     }
                 
-                document.getElementById('titlebar').innerHTML = '<h2>'+ hostname +'</h2>';
+                document.getElementById('titlebar').innerHTML = '<h2>'+ ip +'</h2>';
                 //add table to infobox div
                 document.getElementById('infobox').appendChild(table);
                 //move page view to the bottom
