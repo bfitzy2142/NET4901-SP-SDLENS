@@ -65,8 +65,8 @@ class Odl_Flow_Collector(object):
     def sort_flow_actions(self, flow_instructions):
         """Helper function in case actions are out of order"""
         flow_instructions.sort(key=lambda x: x['order'])
-        for actions in flow_instructions:
-            print(actions['apply-actions'])
+        # for actions in flow_instructions:
+            # print(actions['apply-actions'])
         return flow_instructions
     
     def run(self):

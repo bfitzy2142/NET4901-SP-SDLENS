@@ -173,6 +173,18 @@ def graphs():
         return render_template("graphs.html", form=graph_input, data=data)
     return render_template("graphs.html", form=graph_input)
 
+@app.route("/switch/<string:switch_name>", methods=['GET'])
+@is_logged_in
+def switch_stats(switch_name):
+    switch = switch_name
+    # Get port counters using stat_collector
+    pc = Odl_Stat_Collector(controllerIP)
+    stats = pc.run()
+    node_pc = stats[switch]  # Only use this node's counters
+    flow_collector = Odl_Flow_Collector(controllerIP, switch)
+    flows = flow_collector.run()
+    return render_template("switch_stats.html", node_pc=node_pc, flows=flows)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

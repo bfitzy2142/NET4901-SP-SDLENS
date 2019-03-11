@@ -1,0 +1,72 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<h3>Port Counters</h3>
+<table class="table table-bordered">
+  <tr>
+      <th>Interface</th>
+      <th>Rx Pckts</th>
+      <th>Tx Pckts</th>
+      <th>Rx Bytes</th>
+      <th>Tx Bytes</th>
+      <th>Rx Drops</th>
+      <th>Tx Drops</th>
+      <th>Rx Errs</th>
+      <th>Tx Errs</th>
+      <th>Rx Frame-Errs</th>
+      <th>Rx Overrun-Errs</th>
+      <th>Rx CRC-Errs</th>
+  </tr>
+  {% for node_int in node_pc %}
+  <tr>
+    <td>{{node_int}}</td>
+    <td>{{node_pc[node_int]["rx-pckts"]}}</td>
+    <td>{{node_pc[node_int]["tx-pckts"]}}</td>
+    <td>{{node_pc[node_int]["rx-bytes"]}}</td>
+    <td>{{node_pc[node_int]["tx-bytes"]}}</td>
+    <td>{{node_pc[node_int]["rx-drops"]}}</td>
+    <td>{{node_pc[node_int]["tx-drops"]}}</td>
+    <td>{{node_pc[node_int]["rx-errs"]}}</td>
+    <td>{{node_pc[node_int]["tx-errs"]}}</td>
+    <td>{{node_pc[node_int]["rx-frame-errs"]}}</td>
+    <td>{{node_pc[node_int]["rx-OverRun-errs"]}}</td>
+    <td>{{node_pc[node_int]["rx-CRC-errs"]}}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h3>Flow Table</h3>
+<table class="table table-bordered">
+    <tr>
+        <th>Flow-ID</th>
+        <th>Priority</th>
+        <th>Packet-Count</th>
+        <th>Byte-Count</th>
+        <th>Duration</th>
+        <th>Hard-Timeout</th>
+        <th>Idle-Timeout</th>
+        <th>Table-ID</th>
+        <th>Cookie-ID</th>
+        <th>Match Rules</th>
+        <th>Actions</th>
+    </tr>
+{% for flow in flows %}
+    <tr>
+        <td>{{flow['id']}}</td>
+        <td>{{flow['priority']}}</td>
+        <td>{{flow['pckt-count']}}</td>
+        <td>{{flow['byte-count']}}</td>
+        <td>{{flow['duration']}}</td>
+        <td>{{flow['hard-timeout']}}</td>
+        <td>{{flow['idle-timeout']}}</td>
+        <td>{{flow['table']}}</td>
+        <td>{{flow['cookie']}}</td>
+        <td>{{flow['match_rules']}}</td>
+        <td>{% for action in flow['actions'] %}
+            {{action['order']}}: {{action['output-action']}}<br>
+            {% endfor %}
+        </td>
+    </tr>
+{% endfor %}
+</table>
+{% endblock %}
