@@ -11,6 +11,7 @@ class TopologyAgent(AbstractAgent):
         """"Initalizer for LinkAgent, initializes parent object."""
         super().__init__(controller_ip)
         self.create_nodes_table()
+        self.create_host_table()
         
 
     def get_data(self):

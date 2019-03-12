@@ -35,9 +35,10 @@ def create_db():
             host = sql_creds['host']
             cnx = mysql.connector.connect(**sql_creds)
             cnx.cmd_query(f'CREATE DATABASE {db}')
-            cnx.database = db
+            cnx.database = 'sdlens'
+            # cnx.commit()
             cursor = cnx.cursor()
-            cursor.execute(f"GRANT ALL ON {db}.* to '{user}'@'{host}';")
+            cursor.execute(f"GRANT ALL ON {db}.* to '{user}'@'localhost';")
             print("DB created!")  # debug
 
 

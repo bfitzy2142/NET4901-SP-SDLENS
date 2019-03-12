@@ -246,6 +246,30 @@ def login():
     return render_template('login.html')
 
 
+def get_switches():
+    cur = mysql.connection.cursor()
+    # Repetitive code, move to sql tooling
+    switch_list = []
+    cur.execute("SELECT Node FROM nodes WHERE Type='switch';")
+    switch_tuples = cur.fetchall()
+    print(switch_tuples)
+    for switch in switch_tuples:
+        # print(switch['Node'])
+        switch_list.append(switch['Node'])
+    cur.close()
+    return(switch_list)
+"""
+def get_switch_interfaces(switch_list):
+    switch_dict = {}
+    for switch in switch_list:
+        pass
+
+def switch_int_query(switch):
+    switch = switch.replace(':','')
+"""
+
+
+
 @app.route('/logout')
 @is_logged_in
 def logout():
