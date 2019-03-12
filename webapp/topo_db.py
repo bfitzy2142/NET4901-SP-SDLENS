@@ -91,3 +91,109 @@ class Topo_DB_Interactions():
                 'last_seen': last_seen,
                 'mac': host[5:]
                 }
+
+    def calculate_throughput(self, raw_node):
+        """ Query method to get specified node's
+        interfaces with transmitted and received bits
+        calcalated from stats in the sql database.
+
+        Returns:
+        Dict - device and their interface rx & tx bps
+        """
+        node = raw_node.replace(":", "")
+        # Find latest entry date and ID in DB
+        date_n_ID = f'select max(ID), max(Timestamp) from {node}_counters'
+        self.cursor.execute(date_n_ID)
+        raw_data = self.cursor.fetchall()
+        newest_ID = int(raw_data[0][0])
+        newest_date = str(raw_data[0][1])
+
+        # Find number of links for the given switch
+        link_num_query = (f'select ID from {node}_counters'
+                          f' where Timestamp = "{newest_date}"')
+        
+        self.cursor.execute(link_num_query)
+        raw_link_num = self.cursor.fetchall()
+        link_num = len(raw_link_num)
+
+        # Wait until there is at least two sets of
+        # DB entries for link comparision.148077998.4
+        while (newest_ID == link_num):
+            continue
+
+        # Find timestamp of penaltimate DB entries.
+        # Can be calculated from DB by finding the timestamp
+        # of the entry which's id is the latest ID minus the # of links.
+        penultimate_ID = newest_ID - link_num
+        penaltimate_qry = (f'SELECT Timestamp from {node}_counters'
+                           f' WHERE ID = "{penultimate_ID}"')
+        
+        self.cursor.execute(penaltimate_qry)
+        raw_pen_date = self.cursor.fetchall()
+        penultimate_date = str(raw_pen_date[0][0])
+
+        return {node: self.pdc(node, newest_date, penultimate_date)}
+
+    def pdc(self, node, latest_date, penultimate_date):
+        """
+        pdc stands for Per device calculation.
+
+        Returns:
+        Dict - Each interface name as key and Rx and Tx
+               port utalization in bps as value.
+        """
+
+        latest_counters = []
+        pen_counters = []
+        int_dict = {}
+
+        latest_query = (f'select Interface, Tx_bytes, Rx_bytes from {node}_counters'
+                        f' where Timestamp = "{latest_date}"')
+        
+        self.cursor.execute(latest_query)
+        latest_raw_data = self.cursor.fetchall()
+
+        pen_query = (f'select Interface, Tx_bytes, Rx_bytes from {node}_counters'
+                     f' where Timestamp = "{penultimate_date}"')
+        
+        self.cursor.execute(pen_query)
+        pen_raw_data = self.cursor.fetchall()
+
+        for latest_row in latest_raw_data:
+            new_tx = latest_row[1]
+            new_rx = latest_row[2]
+            latest_counters.append({'interface': latest_row[0],
+                                    'tx_bytes': new_tx,
+                                    'rx_bytes': new_rx})
+
+        for pen_row in pen_raw_data:
+            pen_tx = pen_row[1]
+            pen_rx = pen_row[2]
+
+            pen_counters.append({'interface': pen_row[0],
+                                 'tx_bytes': pen_tx,
+                                 'rx_bytes': pen_rx})
+
+        # Catch topology change, length should be same
+        if (len(latest_counters) != len(pen_counters)):
+            return "err"
+
+        for index, inter in enumerate(latest_counters):
+            new_bytes_tx = latest_counters[index]['tx_bytes']
+            new_bytes_rx = latest_counters[index]['rx_bytes']
+            pen_bytes_tx = pen_counters[index]['tx_bytes']
+            pen_bytes_rx = pen_counters[index]['rx_bytes']
+            int_name = inter['interface']
+
+            int_dict[int_name] = {
+                                'tx_bps': self.bps_cal(new_bytes_tx, pen_bytes_tx),
+                                'rx_bps': self.bps_cal(new_bytes_rx, pen_bytes_rx)
+                            }
+        return int_dict
+
+    def bps_cal(self, new_bytes, pen_bytes):
+        """ Bits per second calculation
+        Returns:
+        Double - Bits transmitted in 10 second interval
+        """
+        return ((new_bytes - pen_bytes) / 10) * 8

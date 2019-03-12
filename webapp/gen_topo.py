@@ -79,13 +79,14 @@ class generate_topology():
     def fetch_topology(self):
         # Gets topology data and stores as a dict
         deviceList = self.fetch_nodes()
-        connectionList = self.fetch_links()
-        
+        connectionList = self.fetch_links() 
+
         topologyInfo = {'devices': deviceList,
                         'connections': connectionList,
                         }
 
         return topologyInfo
-
+"""
 obj = generate_topology('root', 'root', '127.0.0.1', 'sdlens')
 print(dumps(obj.fetch_nodes(), indent=1))
+"""

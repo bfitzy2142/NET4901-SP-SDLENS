@@ -5,13 +5,14 @@ from mysql.connector import errorcode
 from abstract_agent import AbstractAgent
 from json import dumps
 
+
 class TopologyAgent(AbstractAgent):
 
     def __init__(self, controller_ip):
         """"Initalizer for LinkAgent, initializes parent object."""
         super().__init__(controller_ip)
         self.create_nodes_table()
-        
+        self.create_host_table()
 
     def get_data(self):
         """Gets topology data from ODL controller.

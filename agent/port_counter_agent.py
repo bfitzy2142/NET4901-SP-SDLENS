@@ -2,6 +2,7 @@
 """Monitoring Agent that tracks port counters."""
 import mysql.connector
 from mysql.connector import errorcode
+import json
 
 from abstract_agent import AbstractAgent
 
@@ -23,10 +24,10 @@ class PortCounterAgent(AbstractAgent):
             "ID INT NOT NULL AUTO_INCREMENT,"
             "Interface VARCHAR(32) NOT NULL,"
             "Timestamp DATETIME NOT NULL,"
-            "Rx_pckts INT NOT NULL,"
-            "Tx_pckts INT NOT NULL,"
-            "Rx_bytes INT NOT NULL,"
-            "Tx_bytes INT NOT NULL,"
+            "Rx_pckts BIGINT NOT NULL,"
+            "Tx_pckts BIGINT NOT NULL,"
+            "Rx_bytes BIGINT NOT NULL,"
+            "Tx_bytes BIGINT NOT NULL,"
             "Rx_drops INT NOT NULL,"
             "Tx_drops INT NOT NULL,"
             "Rx_errs INT NOT NULL,"
@@ -102,12 +103,12 @@ class PortCounterAgent(AbstractAgent):
     def store_data(self, data):
         """Takes the parsed API responses for the port counters and
         stores them in the sdlens DBs.
-
         Arguments:
             data {dict} -- Takes the dictionary returned my parse_data
             as the argument.
         """
         for interface in data:
+
             int_data = data[interface]
             sql_insert = (f"INSERT INTO {self.node}_counters "
                           "(Interface, Timestamp, Rx_pckts, Tx_pckts, "
@@ -120,3 +121,4 @@ class PortCounterAgent(AbstractAgent):
                                       int_data['rx-drops'], int_data['tx-drops'],
                                       int_data['rx-errs'], int_data['tx-errs'])
             self.sql_tool.send_insert(query)
+

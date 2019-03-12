@@ -37,29 +37,20 @@ def create_db():
             cnx.cmd_query(f'CREATE DATABASE {db}')
             cnx.database = db
             cursor = cnx.cursor()
-            cursor.execute(f"GRANT ALL ON {db}.* to '{user}'@'{host}';")
+            cursor.execute(f"GRANT ALL ON {db}.* to {user}@{host}")
             print("DB created!")  # debug
 
-
-def get_hosts():
-    host_list = []
-    cnx = mysql.connector.connect(**sql_creds, database=db)
-    cursor = cnx.cursor()
-    cursor.execute("SELECT Node FROM nodes WHERE Type='host';")
-    host_tuples = cursor.fetchall()
-    for host in host_tuples:
-        host_list.append(host[0])
-    return host_list
 
 def get_switches():
     switch_list = []
     cnx = mysql.connector.connect(**sql_creds, database=db)
     cursor = cnx.cursor()
-    cursor.execute("SELECT Node FROM nodes WHERE Type='switch';")
+    cursor.execute("SELECT Node FROM nodes WHERE Type='switch'")
     switch_tuples = cursor.fetchall()
     for switch in switch_tuples:
         switch_list.append(switch[0])
     return switch_list
+
 
 if __name__ == '__main__':
     create_db()
@@ -84,9 +75,9 @@ if __name__ == '__main__':
 
         # Update switch and flow counters
         for switch in switch_list:
-            try:  # If topo changes mid execution agents are error prone
-                counter_agents[switch].run_agent()
-                flow_agents[switch].run_agent()
-            except:
-                continue
+            #try:  # If topo changes mid execution agents are error prone
+            counter_agents[switch].run_agent()
+            flow_agents[switch].run_agent()
+            #except:
+                #continue
         time.sleep(10)

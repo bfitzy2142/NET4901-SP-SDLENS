@@ -38,9 +38,9 @@
         var edges = new vis.DataSet([
             {% for link in topologyInfo['connections'] %}
             {% if loop.index != topologyInfo['connections']|length %}
-            {id: '{{link['src']}}-{{link['dst']}}', from: '{{link['src']}}', to: '{{link['dst']}}'},
+            {id: '{{link['src_port']}}-{{link['dst_port']}}', from: '{{link['src']}}', to: '{{link['dst']}}', title: 'Source Port: <b> {{link['src_port']}} </b><br>Dst Port: <b>{{link['dst_port']}}</b>'},
             {% elif  loop.index == topologyInfo['connections']|length %}
-            {id: '{{link['src']}}-{{link['dst']}}', from: '{{link['src']}}', to: '{{link['dst']}}'}
+            {id: '{{link['src_port']}}-{{link['dst_port']}}', from: '{{link['src']}}', to: '{{link['dst']}}', title: 'Source Port: <b> {{link['src_port']}} </b><br>Dst Port: <b>{{link['dst_port']}}</b>'}
             {% endif %}
             {% endfor %}
         ]);
@@ -57,7 +57,16 @@
     
         // initialize your network!
         var network = new vis.Network(container, data, options);
-
+        
+        network.on("showPopup", function (params) {
+            var node = String(params);
+            
+            if (node.includes('openflow') && !node.includes('-')){
+                document.getElementById('titlebar').innerHTML = '';
+                document.getElementById('infobox').innerHTML = '';
+                throughputInfo(node);
+            }
+	    });
         
         network.on("selectNode", function (params) {
             document.getElementById('titlebar').innerHTML = '';
@@ -86,6 +95,74 @@
             }
                 
         });
+
+        function throughputInfo(node)
+        {
+            var xhr = new XMLHttpRequest();
+            
+            if (xhr)
+            {
+                // open( method, location, isAsynchronous )
+                xhr.open("POST", "/topo-switch-stats", true);
+                // bind callback function
+                xhr.onreadystatechange = function()
+                {
+                  handleThroughput(xhr, node);
+                };
+                // actually send the Ajax request 
+                var post_params = '{ "switch_throughput" : "' + node + '"}';
+                xhr.setRequestHeader("Content-type", "application/json");
+                xhr.send(post_params); // Send request
+            }
+        }
+
+        function handleThroughput(xhr, node) {
+            if (xhr.readyState == 4 && xhr.status == 200)
+            {   
+                console.log(responseJSON);
+                responseJSON = JSON.parse(xhr.responseText);
+                var title = new Array();
+                title.push(["Interface", "Tx Bits Per Second", "Rx Bits Per Second"]);
+                
+                var table = document.createElement("TABLE");
+                table.classList.add("table-bordered");
+                table.classList.add("table");
+                table.border = "1";
+                
+                //Get the count of columns.
+                var columnCount = 3;
+
+                //Add the data rows.
+                for (var i = 0; i < responseJSON.length; i++) {
+                    row = table.insertRow(-1);
+                    for (var j = 0; j < columnCount; j++) {
+                        var cell = row.insertCell(-1);
+                        if (j == 0){
+                        var interface = Object.keys(responseJSON[i]);
+                        var counters = responseJSON[i][interface];
+                        }
+
+                        switch (j) {
+                            case 0:
+                                cell.innerHTML = interface;
+                                break;
+                            case 1:
+                                cell.innerHTML = counters['tx_bps'];
+                                break;
+                            case 2:
+                                cell.innerHTML = counters["rx_bps"];
+                            }
+
+                    }
+                }
+                document.getElementById('titlebar').innerHTML = '<h2>'+ node +'</h2>';
+                //add table to infobox div
+                document.getElementById('infobox').appendChild(table);
+                //move page view to the bottom
+                window.scrollTo(0, document.body.scrollHeight);
+                
+            }
+        }
 
         function edgeInfo(edge)
         {

@@ -82,6 +82,7 @@ def topology():
     db = auth.working_creds['database']['MYSQL_DB']
 
     parser = generate_topology(**sql_creds, db=db)
+    topologyInfo=parser.fetch_topology()
     return render_template('topo.html', topologyInfo=parser.fetch_topology())
 
 
@@ -156,7 +157,9 @@ def getSwitchCounters():
             host = raw_json['host']
             hostinfo = obj.host_query(host)
             return jsonify(hostinfo)
-          
+        elif (key == 'switch_throughput'):
+            switch = raw_json['switch_throughput']
+            return jsonify(obj.calculate_throughput(switch))
 
 @app.route("/graphs", methods=['GET', 'POST'])
 @is_logged_in

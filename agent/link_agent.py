@@ -103,7 +103,8 @@ class LinkAgent(AbstractAgent):
         """
         sql_insert = ("INSERT INTO links (SRC, DST, SRCPORT, DSTPORT) "
                       "VALUES ('{}', '{}', '{}', '{}')")
-        self.send_sql_query(sql_insert.format(src, dst, src_port, dst_port))
+        query = sql_insert.format(src, dst, src_port, dst_port)
+        self.sql_tool.send_insert(query)
 
     def create_links_table(self):
         """Creates table 'links' if not already created.
@@ -121,12 +122,8 @@ class LinkAgent(AbstractAgent):
             "SRCPORT VARCHAR(32) NOT NULL,"
             "DSTPORT VARCHAR(32) NOT NULL,"
             "PRIMARY KEY (ID) );")
-        try:
-            self.send_sql_query(table)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                self.send_sql_query(f"DROP TABLE links")
-                self.send_sql_query(table)
+        
+        self.sql_tool.create_sql_table(table)
 
     def retrieve_links(self):
         """ Query method to get a list of links from the sql database
@@ -138,8 +135,8 @@ class LinkAgent(AbstractAgent):
         """
         connections = []
         link_query = "select * from links"
-        self.cursor.execute(link_query)
-        link_rows = self.cursor.fetchall()
+        
+        link_rows = self.sql_tool.send_select(link_query)
 
         for row in link_rows:
             connections.append(self.get_links_db(row))
@@ -162,8 +159,7 @@ class LinkAgent(AbstractAgent):
         """
         devices = []
         query = "select node from nodes"
-        self.cursor.execute(query)
-        raw_devices = self.cursor.fetchall()
+        raw_devices = self.sql_tool.send_select(query)
 
         for row in raw_devices:
             devices.append(row[0])
@@ -180,7 +176,3 @@ class LinkAgent(AbstractAgent):
         nodes = self.retrieve_devices()
         return {'links': links, 'nodes': nodes}
 
-# Debug
-# obj = LinkAgent('134.117.89.138')
-# obj.run_agent()
-# print(json.dumps(obj.topo_data_consolidater(), indent=1))
