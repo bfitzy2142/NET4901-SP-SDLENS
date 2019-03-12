@@ -111,7 +111,7 @@ class Topo_DB_Interactions():
         # Find number of links for the given switch
         link_num_query = (f'select ID from {node}_counters'
                           f' where Timestamp = "{newest_date}"')
-        
+
         self.cursor.execute(link_num_query)
         raw_link_num = self.cursor.fetchall()
         link_num = len(raw_link_num)
@@ -127,7 +127,7 @@ class Topo_DB_Interactions():
         penultimate_ID = newest_ID - link_num
         penaltimate_qry = (f'SELECT Timestamp from {node}_counters'
                            f' WHERE ID = "{penultimate_ID}"')
-        
+
         self.cursor.execute(penaltimate_qry)
         raw_pen_date = self.cursor.fetchall()
         penultimate_date = str(raw_pen_date[0][0])
@@ -149,13 +149,13 @@ class Topo_DB_Interactions():
 
         latest_query = (f'select Interface, Tx_bytes, Rx_bytes from {node}_counters'
                         f' where Timestamp = "{latest_date}"')
-        
+
         self.cursor.execute(latest_query)
         latest_raw_data = self.cursor.fetchall()
 
         pen_query = (f'select Interface, Tx_bytes, Rx_bytes from {node}_counters'
                      f' where Timestamp = "{penultimate_date}"')
-        
+
         self.cursor.execute(pen_query)
         pen_raw_data = self.cursor.fetchall()
 

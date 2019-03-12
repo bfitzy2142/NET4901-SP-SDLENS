@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 {% block body %}
-<h1 style="font-size: 50px;"> Active Topology: {{topologyInfo['controller']}}</h1>
+<h1 style="font-size: 50px;">Looking Glass</h1>
 
   
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -53,20 +53,30 @@
             nodes: nodes,
             edges: edges
         };
-        var options = {};
-    
-        // initialize your network!
+        
+        var options = {
+			interaction:{hover:true}
+		};
+
         var network = new vis.Network(container, data, options);
         
         network.on("showPopup", function (params) {
             var node = String(params);
             
-            if (node.includes('openflow') && !node.includes('-')){
-                document.getElementById('titlebar').innerHTML = '';
-                document.getElementById('infobox').innerHTML = '';
+            //if (node.includes('openflow') && !node.includes('-')){
+              //  document.getElementById('titlebar').innerHTML = '';
+                //document.getElementById('infobox').innerHTML = '';
+                //throughputInfo(node);
+            //}
+        });
+        
+        network.on("hoverNode", function (params) {
+            var node = String(params.node);
+            
+            if (node.includes('openflow')){
                 throughputInfo(node);
             }
-	    });
+        });
         
         network.on("selectNode", function (params) {
             document.getElementById('titlebar').innerHTML = '';
@@ -88,10 +98,8 @@
 
             if (node.length == 0){
                 var edgeName = String(params.edges);
-                edgeInfo(edgeName);
-                document.getElementById('titlebar').innerHTML = '';
-                document.getElementById('infobox').innerHTML = '';
-                document.getElementById('titlebar').innerHTML = '<h2>'+ edgeName +'</h2>';
+                //Feature disabled for now
+                //edgeInfo(edgeName);
             }
                 
         });
@@ -119,47 +127,34 @@
         function handleThroughput(xhr, node) {
             if (xhr.readyState == 4 && xhr.status == 200)
             {   
-                console.log(responseJSON);
+                var title_text = [];
+
                 responseJSON = JSON.parse(xhr.responseText);
-                var title = new Array();
-                title.push(["Interface", "Tx Bits Per Second", "Rx Bits Per Second"]);
+                var device = Object.keys(responseJSON);
                 
-                var table = document.createElement("TABLE");
-                table.classList.add("table-bordered");
-                table.classList.add("table");
-                table.border = "1";
                 
-                //Get the count of columns.
-                var columnCount = 3;
+                var keys = Object.keys(responseJSON[device])
+                
 
-                //Add the data rows.
-                for (var i = 0; i < responseJSON.length; i++) {
-                    row = table.insertRow(-1);
-                    for (var j = 0; j < columnCount; j++) {
-                        var cell = row.insertCell(-1);
-                        if (j == 0){
-                        var interface = Object.keys(responseJSON[i]);
-                        var counters = responseJSON[i][interface];
-                        }
-
-                        switch (j) {
-                            case 0:
-                                cell.innerHTML = interface;
-                                break;
-                            case 1:
-                                cell.innerHTML = counters['tx_bps'];
-                                break;
-                            case 2:
-                                cell.innerHTML = counters["rx_bps"];
-                            }
-
-                    }
+                for (var i = 0; i < keys.length; i++) {
+                    var inter =  keys[i];
+                    var tx_bps = responseJSON[device][keys[i]]['tx_bps'];
+                    var rx_bps = responseJSON[device][keys[i]]['rx_bps'];
+                    title_text.push('<br>Interface: <b>' + inter + '</b>',
+                                    '<br><span style="padding-left:2em">Tx: <b>'+ tx_bps + ' bps</b></span></br>',
+                                    '<span style="padding-left:2em">Rx: <b>'+ rx_bps + ' bps</b></span>');
                 }
-                document.getElementById('titlebar').innerHTML = '<h2>'+ node +'</h2>';
-                //add table to infobox div
-                document.getElementById('infobox').appendChild(table);
-                //move page view to the bottom
-                window.scrollTo(0, document.body.scrollHeight);
+
+
+                var basic_title = 'Node: <b>' + node + '</b>'
+                                + '<br>Type: <b>Switch<b></br>'
+                                + '<br><br><b>Throughput Looking Glass:</b><br>';
+                
+                
+                var throughput_stats = title_text.join("");
+                var title = basic_title + throughput_stats;
+                
+                network['body']['nodes'][node]['options']['title'] = title;
                 
             }
         }
@@ -271,7 +266,7 @@
 
                     }
                 
-                document.getElementById('titlebar').innerHTML = '<h2>'+ ip +'</h2>';
+                document.getElementById('titlebar').innerHTML = '<h2><b>Host: '+ ip +'</b></h2>';
                 //add table to infobox div
                 document.getElementById('infobox').appendChild(table);
                 //move page view to the bottom
