@@ -1,6 +1,7 @@
 {% extends 'layout.html' %}
 {% block body %}
-<h1 style="font-size: 50px;">Looking Glass</h1>
+
+    <h1 class ='retroshadow'>Viewing Glass</h1> 
 
   
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -60,14 +61,22 @@
 
         var network = new vis.Network(container, data, options);
         
-        network.on("showPopup", function (params) {
-            var node = String(params);
+        network.once("beforeDrawing", function() {
+            var nodes_list = Object.keys(network['body']['nodes']);
+            var node_index = Math.floor((Math.random() * nodes_list.length-1) + 0);
+            network.focus(nodes_list[node_index], {
+                scale: 8
+            });
             
-            //if (node.includes('openflow') && !node.includes('-')){
-              //  document.getElementById('titlebar').innerHTML = '';
-                //document.getElementById('infobox').innerHTML = '';
-                //throughputInfo(node);
-            //}
+        });
+        
+        network.once("afterDrawing", function() {
+            network.fit({
+                animation: {
+                    duration: 3500,
+                    easingFunction: "easeInOutCubic"
+                }
+            });
         });
         
         network.on("hoverNode", function (params) {
