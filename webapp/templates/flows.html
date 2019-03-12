@@ -2,7 +2,7 @@
 
 {% block body %}
 {% for node in flow_dict %}
-<h2>{{node}}</h2>
+<h2><a href="switch/{{node}}">{{node}}</a></h2>
 <table class="table table-bordered">
     <tr>
         <th>Flow-ID</th>
