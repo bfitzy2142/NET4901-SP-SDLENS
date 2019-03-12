@@ -75,7 +75,7 @@
 
             if (node.includes('openflow')) {
                 //Create H2 Tag
-                document.getElementById('titlebar').innerHTML = '<h2>'+ node +'</h2>';
+                document.getElementById('titlebar').innerHTML = '<h2>'+'<a href="switch/'+ node +'">' + node +'</a></h2>';
                 switchStats(node);
             } else {
                 hostStats(node);
