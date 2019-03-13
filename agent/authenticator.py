@@ -14,7 +14,7 @@ class Authenticator():
             from a yaml file to obtain credentials.
         """
         rootpath = path.abspath("")
-        credpath = self.find_cred_file(rootpath)
+        credpath = 'creds.yml'
  
         with open(credpath, "r") as file:
             try:
@@ -41,7 +41,4 @@ class Authenticator():
             return path.join(rootpath, '../agent/creds.yml')
         else:
             print('Authenticator Relative Path Error!')
-            print('-------------------------------------------------------------')
-            print('Run __main__ within NET49001-SP, agent or webapp directories!')
-            print('-------------------------------------------------------------')
             exit()

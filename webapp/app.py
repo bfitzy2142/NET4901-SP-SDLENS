@@ -19,8 +19,9 @@ from gen_graphs import sql_graph_info
 from topo_db import Topo_DB_Interactions
 from get_flows import Odl_Flow_Collector
 
-# TODO: Find PEP8 way of importing modules
 from authenticator import Authenticator
+# TODO: Find PEP8 way of importing modules
+
 import json
 
 auth = Authenticator()
@@ -82,7 +83,6 @@ def topology():
     db = auth.working_creds['database']['MYSQL_DB']
 
     parser = generate_topology(**sql_creds, db=db)
-    topologyInfo=parser.fetch_topology()
     return render_template('topo.html', topologyInfo=parser.fetch_topology())
 
 
