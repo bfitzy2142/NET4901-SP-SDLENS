@@ -40,7 +40,7 @@ class FlowAgent(AbstractAgent):
             "Timestamp DATETIME NOT NULL,"
             "Priority INT NOT NULL,"
             "Packet_count BLOB NOT NULL,"
-            "Byte_count BLOB NULL,"
+            "Byte_count BLOB NOT NULL,"
             "Duration INT NOT NULL,"
             "Hard_timeout INT NOT NULL,"
             "Idle_timeout INT NOT NULL,"
