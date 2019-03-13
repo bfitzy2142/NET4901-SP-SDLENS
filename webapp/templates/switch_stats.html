@@ -70,4 +70,125 @@
     </tr>
 {% endfor %}
 </table>
+
+    {% for interface, data in int_graphs.items()%}
+    <h3>{{interface}}</h3>
+    <!-- Graphs -->
+    <div id="{{interface}}rx_pkts">
+        <h4>Received Packets Forwarded</h4>
+        <script type="text/javascript">
+            var container = document.getElementById('{{interface}}rx_pkts');
+            var items = [
+            {% for point in data %}
+            {% if not loop.last %}
+            {x: '{{point["date"]}}', y: {{point["rx_count"]}} },
+            {% else %}
+            {x: '{{point["date"]}}', y: {{point["rx_count"]}} }
+            {% endif %}
+            {% endfor %}
+            ];
+            var dataset = new vis.DataSet(items);
+            var options = {
+                width: '100%',
+                height: '325px',
+                drawPoints: false,
+                shaded: true,
+                
+                timeAxis: {scale: 'minute', step: 2},
+                zoomable: false,
+                moveable: true
+            };
+            var graph2d = new vis.Graph2d(container, dataset, options);
+        </script>
+    </div>
+    <br>
+    <br>
+    <div id="{{interface}}tx_pkts">
+        <h4>Transmitted Packets Forwarded</h4>
+        <script type="text/javascript">
+            var container = document.getElementById("{{interface}}tx_pkts")
+            var items = [
+                {% for point in data %}
+                {%if not loop.last %}
+                {x: '{{point["date"]}}', y: {{point["tx_count"]}}},
+                {% else %}
+                {x: '{{point["date"]}}', y: {{point["tx_count"]}} }
+                {% endif %}
+                {% endfor %}
+            ];
+            var dataset = new vis.DataSet(items);
+            var options = {
+                width: '100%',
+                height: '325px',
+                drawPoints: false,
+                shaded: true,
+
+                timeAxis: {scale: 'minute', step: 2},
+                zoomable: false,
+                moveable: true
+            };
+            var graph2d = new vis.Graph2d(container, dataset, options);
+        </script>    
+    </div>
+    <br>
+    <br>
+    <div id="{{interface}}rx_dps">
+        <h4>Received Packet Drops</h4>
+        <script type="text/javascript">
+            var container = document.getElementById('{{interface}}rx_dps');
+            var items = [
+            {% for point in data %}
+            {% if not loop.last %}
+            {x: '{{point["date"]}}', y: {{point["rx_drops"]}} },
+            {% else %}
+            {x: '{{point["date"]}}', y: {{point["rx_drops"]}} }
+            {% endif %}
+            {% endfor %}
+            ];
+            var dataset = new vis.DataSet(items);
+            var options = {
+                width: '100%',
+                height: '325px',
+                drawPoints: false,
+                shaded: true,
+
+                timeAxis: {scale: 'minute', step: 2},
+                zoomable: false,
+                moveable: true
+            };
+            var graph2d = new vis.Graph2d(container, dataset, options);
+        </script>
+    </div>
+    <br>
+    <br>
+    <div id="{{interface}}tx_dps">
+        <h4>Transmitted Packet Drops</h4>
+        <script type="text/javascript">
+            var container = document.getElementById("{{interface}}tx_dps")
+            var items = [
+                {% for point in data %}
+                {%if not loop.last %}
+                {x: '{{point["date"]}}', y: {{point["rx_drops"]}}},
+                {% else %}
+                {x: '{{point["date"]}}', y: {{point["rx_drops"]}} }
+                {% endif %}
+                {% endfor %}
+            ];
+            var dataset = new vis.DataSet(items);
+            var options = {
+                width: '100%',
+                height: '325px',
+                drawPoints: false,
+                shaded: true,
+
+                timeAxis: {scale: 'minute', step: 2},
+                zoomable: false,
+                moveable: true
+            };
+            var graph2d = new vis.Graph2d(container, dataset, options);
+        </script>    
+    </div>
+    <br>
+    <br>
+    {% endfor %}
 {% endblock %}
