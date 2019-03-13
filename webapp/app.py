@@ -96,20 +96,6 @@ def node_stats():
 @is_logged_in
 def flow_stats():
     switch_list = get_switches()
-    get_switch_interfaces()
-    """
-    print(sw_list)
-    cur = mysql.connection.cursor()
-    # Repetitive code, move to sql tooling
-    switch_list = []
-    cur.execute("SELECT Node FROM nodes WHERE Type='switch';")
-    switch_tuples = cur.fetchall()
-    print(switch_tuples)
-    for switch in switch_tuples:
-        print(switch['Node'])
-        switch_list.append(switch['Node'])
-    cur.close()
-    """
     flow_dict = {}
     for switch in switch_list:
         o = Odl_Flow_Collector(controllerIP, switch)
@@ -270,7 +256,7 @@ def get_switch_interfaces():
     switch_list = get_switches()
     for switch in switch_list:
         switch_dict[switch] = switch_int_query(switch)
-    print(switch_dict)
+    return switch_dict
 
 
 def switch_int_query(switch):
