@@ -1,5 +1,5 @@
 # NET4901-SP
-SDLens is a monitoring application for OpenFlow based networks which use the OpenDaylight controller. It proviedes real time information from the OpenFlow switches, as well as an interactive topology of the network.
+SDLens is a monitoring application for OpenFlow based networks which use the OpenDaylight controller. It provides real time information from the OpenFlow switches, as well as an interactive topology of the network.
 
 This entire application was built using the web-framework Flask.
 
