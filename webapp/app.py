@@ -95,6 +95,10 @@ def node_stats():
 @app.route("/flow-stats")
 @is_logged_in
 def flow_stats():
+    switch_list = get_switches()
+    get_switch_interfaces()
+    """
+    print(sw_list)
     cur = mysql.connection.cursor()
     # Repetitive code, move to sql tooling
     switch_list = []
@@ -105,6 +109,7 @@ def flow_stats():
         print(switch['Node'])
         switch_list.append(switch['Node'])
     cur.close()
+    """
     flow_dict = {}
     for switch in switch_list:
         o = Odl_Flow_Collector(controllerIP, switch)
@@ -252,22 +257,31 @@ def get_switches():
     switch_list = []
     cur.execute("SELECT Node FROM nodes WHERE Type='switch';")
     switch_tuples = cur.fetchall()
-    print(switch_tuples)
+    # print(switch_tuples)
     for switch in switch_tuples:
         # print(switch['Node'])
         switch_list.append(switch['Node'])
     cur.close()
     return(switch_list)
-"""
-def get_switch_interfaces(switch_list):
+
+
+def get_switch_interfaces():
     switch_dict = {}
+    switch_list = get_switches()
     for switch in switch_list:
-        pass
+        switch_dict[switch] = switch_int_query(switch)
+    print(switch_dict)
+
 
 def switch_int_query(switch):
-    switch = switch.replace(':','')
-"""
-
+    interface_list = []
+    switch = switch.replace(':', '')
+    cursor = mysql.connection.cursor()
+    cursor.execute(f"SELECT Interface FROM {switch}_interfaces;")
+    interface_tuples = cursor.fetchall()
+    for interface in interface_tuples:
+        interface_list.append(interface['Interface'])
+    return interface_list
 
 
 @app.route('/logout')
