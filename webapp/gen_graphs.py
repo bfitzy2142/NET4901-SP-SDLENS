@@ -25,11 +25,11 @@ class sql_graph_info(object):
             to display for the graphs page.
         
         Arguments:
-            node [str] -- The node that holds the interface which
+            node [int] -- The node that holds the interface which
                           is to presented.
-            interface [str] -- The interface in which the counter
+            interface [int] -- The interface in which the counter
                                information will be based off of.
-
+            time [int] -- Time ranging from 30 minutes to 10 Years
         Returns:
             dict -- containing arrays of the counter values at
                     their coresponding timestamp.
