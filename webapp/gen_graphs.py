@@ -75,16 +75,16 @@ class sql_graph_info(object):
 
         for dataPoint in response:
             date = str(dataPoint[0])
-            rx_count = dataPoint[1]
-            tx_count = dataPoint[2]
-            rx_drops = dataPoint[3]
-            tx_drops = dataPoint[4]
+            rx_count = int(dataPoint[1])
+            tx_count = int(dataPoint[2])
+            rx_drops = int(dataPoint[3])
+            tx_drops = int(dataPoint[4])
 
             if dataPointDict:
-                old_rx_c = dataPointDict['rx_count']
-                old_tx_c = dataPointDict["tx_count"]
-                old_rx_d = dataPointDict["rx_drops"]
-                old_tx_d = dataPointDict["tx_drops"]
+                old_rx_c = int(dataPointDict['rx_count'])
+                old_tx_c = int(dataPointDict["tx_count"])
+                old_rx_d = int(dataPointDict["rx_drops"])
+                old_tx_d = int(dataPointDict["tx_drops"])
 
                 dif_rx_c = rx_count - old_rx_c
                 dif_tx_c = tx_count - old_tx_c

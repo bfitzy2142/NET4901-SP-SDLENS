@@ -160,15 +160,15 @@ class Topo_DB_Interactions():
         pen_raw_data = self.cursor.fetchall()
 
         for latest_row in latest_raw_data:
-            new_tx = latest_row[1]
-            new_rx = latest_row[2]
+            new_tx = int(latest_row[1])
+            new_rx = int(latest_row[2])
             latest_counters.append({'interface': latest_row[0],
                                     'tx_bytes': new_tx,
                                     'rx_bytes': new_rx})
 
         for pen_row in pen_raw_data:
-            pen_tx = pen_row[1]
-            pen_rx = pen_row[2]
+            pen_tx = int(pen_row[1])
+            pen_rx = int(pen_row[2])
 
             pen_counters.append({'interface': pen_row[0],
                                  'tx_bytes': pen_tx,
