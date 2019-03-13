@@ -1,9 +1,8 @@
 {% extends 'layout.html' %}
 {% block body %}
 
-    <h1 class ='retroshadow'>Viewing Glass</h1> 
-
-  
+    <h1 class ='retroshadow'><img width="40" height="40" src="{{url_for('static', filename='icon.png')}}"/>Viewing Glass</h1> 
+    
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="//cdn.ckeditor.com/4.6.2/basic/ckeditor.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
@@ -61,39 +60,23 @@
 
         var network = new vis.Network(container, data, options);
         
-        network.once("beforeDrawing", function() {
-            var nodes_list = Object.keys(network['body']['nodes']);
-            var node_index = Math.floor((Math.random() * nodes_list.length-1) + 0);
-            network.focus(nodes_list[node_index], {
-                scale: 8
-            });
-            
-        });
-        
-        network.once("afterDrawing", function() {
-            network.fit({
-                animation: {
-                    duration: 3500,
-                    easingFunction: "easeInOutCubic"
-                }
-            });
-        });
-        
+        //Event Handler to catch when user hovers a node
         network.on("hoverNode", function (params) {
             var node = String(params.node);
-            
+            //Limitation: Switch names must include openflow atm.
             if (node.includes('openflow')){
                 throughputInfo(node);
             }
         });
         
+        //Event Handler to catch when user right clicks on a node
         network.on("selectNode", function (params) {
             document.getElementById('titlebar').innerHTML = '';
             document.getElementById('infobox').innerHTML = '';
             var node = String(params.nodes);
 
+            //Limitation: Switch names must include openflow atm. 
             if (node.includes('openflow')) {
-                //Create H2 Tag
                 document.getElementById('titlebar').innerHTML = '<h2>'+'<a href="switch/'+ node +'">' + node +'</a></h2>';
                 switchStats(node);
             } else {
@@ -101,6 +84,7 @@
             }
         });
 
+        //Event Handler to catch when user right clicks on an edge
         network.on("selectEdge", function (params) {
             
             var node = String(params.nodes);
@@ -109,302 +93,8 @@
                 var edgeName = String(params.edges);
                 //Feature disabled for now
                 //edgeInfo(edgeName);
-            }
-                
+            }      
         });
-
-        function throughputInfo(node)
-        {
-            var xhr = new XMLHttpRequest();
-            
-            if (xhr)
-            {
-                // open( method, location, isAsynchronous )
-                xhr.open("POST", "/topo-switch-stats", true);
-                // bind callback function
-                xhr.onreadystatechange = function()
-                {
-                  handleThroughput(xhr, node);
-                };
-                // actually send the Ajax request 
-                var post_params = '{ "switch_throughput" : "' + node + '"}';
-                xhr.setRequestHeader("Content-type", "application/json");
-                xhr.send(post_params); // Send request
-            }
-        }
-
-        function handleThroughput(xhr, node) {
-            if (xhr.readyState == 4 && xhr.status == 200)
-            {   
-                var title_text = [];
-
-                responseJSON = JSON.parse(xhr.responseText);
-                var device = Object.keys(responseJSON);
-                
-                
-                var keys = Object.keys(responseJSON[device])
-                
-
-                for (var i = 0; i < keys.length; i++) {
-                    var inter =  keys[i];
-                    var tx_bps = responseJSON[device][keys[i]]['tx_bps'];
-                    var rx_bps = responseJSON[device][keys[i]]['rx_bps'];
-                    title_text.push('<br>Interface: <b>' + inter + '</b>',
-                                    '<br><span style="padding-left:2em">Tx: <b>'+ tx_bps + ' bps</b></span></br>',
-                                    '<span style="padding-left:2em">Rx: <b>'+ rx_bps + ' bps</b></span>');
-                }
-
-
-                var basic_title = 'Node: <b>' + node + '</b>'
-                                + '<br>Type: <b>Switch<b></br>'
-                                + '<br><br><b>Throughput Looking Glass:</b><br>';
-                
-                
-                var throughput_stats = title_text.join("");
-                var title = basic_title + throughput_stats;
-                
-                network['body']['nodes'][node]['options']['title'] = title;
-                
-            }
-        }
-
-        function edgeInfo(edge)
-        {
-            var xhr = new XMLHttpRequest();
-            
-            if (xhr)
-            {
-                // open( method, location, isAsynchronous )
-                xhr.open("POST", "/topo-switch-stats", true);
-                // bind callback function
-                xhr.onreadystatechange = function()
-                {
-                  handleEdge(xhr);
-                };
-                // actually send the Ajax request 
-                var post_params = '{ "edge" : "' + edge + '"}';
-                xhr.setRequestHeader("Content-type", "application/json");
-                xhr.send(post_params); // Send request
-            }
-        }
-
-         
-        function switchStats(node)
-        {
-            var xhr = new XMLHttpRequest();
-            
-            if (xhr)
-            {
-                // open( method, location, isAsynchronous )
-                xhr.open("POST", "/topo-switch-stats", true);
-                // bind callback function
-                xhr.onreadystatechange = function()
-                {
-                    buildTable(xhr);
-                };
-                // actually send the Ajax request 
-                var post_params = '{ "switch" : "openflow' + node.slice(9) + '"}';
-                xhr.setRequestHeader("Content-type", "application/json");
-                xhr.send(post_params); // Send request
-            }
-        }
-
-        function hostStats(node)
-        {
-            var xhr = new XMLHttpRequest();
-            
-            if (xhr)
-            {
-                // open( method, location, isAsynchronous )
-                xhr.open("POST", "/topo-switch-stats", true);
-                // bind callback function
-                xhr.onreadystatechange = function()
-                {
-                    handleHost(xhr);
-                };
-                // actually send the Ajax request 
-                var post_params = '{ "host" : "' + node + '"}';
-                xhr.setRequestHeader("Content-type", "application/json");
-                xhr.send(post_params); // Send request
-            }
-        }
-
-        function handleHost(xhr) {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                responseJSON = JSON.parse(xhr.responseText);
-                var title = new Array();
-                title.push(["MAC Address", "First Appearence", "Latest Interaction"]);
-                
-                var table = document.createElement("TABLE");
-                table.classList.add("table-bordered");
-                table.classList.add("table");
-                table.border = "1";
-                
-                //Get the count of columns.
-                var columnCount = 3;
-
-                //Add the header row.
-                var row = table.insertRow(-1);
-                for (var i = 0; i < columnCount; i++) {
-                    var headerCell = document.createElement("TH");
-                    headerCell.innerHTML = title[0][i];
-                    row.appendChild(headerCell);
-                }
-
-                //Add the data rows.
-                
-                    row = table.insertRow(-1);
-                    for (var j = 0; j < columnCount; j++) {
-                        var cell = row.insertCell(-1);
-                    
-                        var ip = responseJSON['ip'];
-                        var first_seen = responseJSON['first_seen'];
-                        var last_seen = responseJSON['last_seen'];
-                        var mac = responseJSON['mac']
-
-                        switch (j) {
-                            case 0:
-                                cell.innerHTML = mac;
-                                break;
-                            case 1: 
-                                cell.innerHTML = first_seen;
-                                break;
-                            case 2:
-                                cell.innerHTML = last_seen;
-                        }
-
-                    }
-                
-                document.getElementById('titlebar').innerHTML = '<h2><b>Host: '+ ip +'</b></h2>';
-                //add table to infobox div
-                document.getElementById('infobox').appendChild(table);
-                //move page view to the bottom
-                window.scrollTo(0, document.body.scrollHeight);
-                
-            }
-        }
-        
-        function handleEdge(xhr) {
-            if (xhr.readyState == 4 && xhr.status == 200)
-            {
-                responseJSON = JSON.parse(xhr.responseText);
-
-                var title = new Array();
-                title.push(["Source Port", "Destination Port"]);
-                
-                var table = document.createElement("TABLE");
-                table.classList.add("table-bordered");
-                table.classList.add("table");
-                table.border = "1";
-                
-                //Get the count of columns.
-                var columnCount = 2;
-
-                //Add the header row.
-                var row = table.insertRow(-1);
-                for (var i = 0; i < columnCount; i++) {
-                    var headerCell = document.createElement("TH");
-                    headerCell.innerHTML = title[0][i];
-                    row.appendChild(headerCell);
-                }
-
-                //Add the data rows.
-                
-                    row = table.insertRow(-1);
-                    for (var j = 0; j < columnCount; j++) {
-                        var cell = row.insertCell(-1);
-                        
-                        var src_port = responseJSON['src_port'];
-                        var dst_port = responseJSON['dst_port'];
-
-                        switch (j) {
-                            case 0:
-                                cell.innerHTML = src_port;
-                                break;
-                            case 1:
-                                cell.innerHTML = dst_port;
-                            }
-                    }
-                
-                //add table to infobox div
-                document.getElementById('infobox').appendChild(table);
-                //move page view to the bottom
-                window.scrollTo(0, document.body.scrollHeight);
-            }
-        }
-
-         /*Callback function that processes the server response for switch stats
-         and builds a table to present to the user
-         */
-        function buildTable(xhr)
-        {
-            if (xhr.readyState == 4 && xhr.status == 200)
-            {
-                responseJSON = JSON.parse(xhr.responseText);
-                
-                
-                var title = new Array();
-                title.push(["Interface", "Tx Packets", "Rx Packets", "Tx Errors", 
-                                        "Rx Errors", "Tx Drops", "Rx Drops"]);
-                
-                //Create a HTML Table element.
-                var table = document.createElement("TABLE");
-                table.classList.add("table-bordered");
-                table.classList.add("table");
-                table.border = "1";
-            
-                //Get the count of columns.
-                var columnCount = 7;
-            
-                //Add the header row.
-                var row = table.insertRow(-1);
-                for (var i = 0; i < columnCount; i++) {
-                    var headerCell = document.createElement("TH");
-                    headerCell.innerHTML = title[0][i];
-                    row.appendChild(headerCell);
-                }
-            
-                //Add the data rows.
-                for (var i = 0; i < responseJSON.length; i++) {
-                    row = table.insertRow(-1);
-                    for (var j = 0; j < columnCount; j++) {
-                        var cell = row.insertCell(-1);
-                        if (j == 0){
-                        var interface = Object.keys(responseJSON[i]);
-                        var counters = responseJSON[i][interface];
-                        }
-
-                        switch (j) {
-                            case 0:
-                                cell.innerHTML = interface;
-                                break;
-                            case 1:
-                                cell.innerHTML = counters['Tx_packs'];
-                                break;
-                            case 2:
-                                cell.innerHTML = counters["Rx_pckts"];
-                                break;
-                            case 3:
-                                cell.innerHTML = counters["Tx_errs"];
-                                break;
-                            case 4:
-                                cell.innerHTML = counters["Rx_errs"];
-                                break;
-                            case 5:
-                                cell.innerHTML = counters["Tx_drops"]; 
-                                break;
-                            case 6:
-                                cell.innerHTML = counters["Rx_drops"];
-                                 
-                            }
-                    }
-                }
-                //add table to infobox div
-                document.getElementById('infobox').appendChild(table);
-                //move page view to the bottom
-                window.scrollTo(0, document.body.scrollHeight);
-            }
-        }
     </script>
 
 {% endblock %}
