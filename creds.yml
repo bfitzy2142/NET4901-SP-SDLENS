@@ -1,0 +1,18 @@
+---
+application:
+  username:  admin
+  password:  admin
+  secret_key: secret123
+  app-ip: 127.0.0.1
+
+controller:
+  controller-ip: 134.117.89.138
+  username: admin
+  password: admin
+
+database:
+  MYSQL_HOST: localhost
+  MYSQL_USER: root
+  MYSQL_PASSWORD: root
+  MYSQL_DB: sdlens
+  CURSORCLASS: DictCursor
