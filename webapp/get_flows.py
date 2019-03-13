@@ -50,7 +50,7 @@ class Odl_Flow_Collector(object):
                 action_list =[]
                 action_set = flow['instructions']['instruction']
                 for actions in action_set:
-                    print(actions['apply-actions']['action'])
+                    # print(actions['apply-actions']['action'])
                     for action in actions['apply-actions']['action']:
                         action_list.append(action)
                 new_flow['actions'] = action_list
