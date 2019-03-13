@@ -238,6 +238,7 @@ def login():
 
 
 def get_switches():
+    """Returns a list of switches stored in the DB."""
     cur = mysql.connection.cursor()
     # Repetitive code, move to sql tooling
     switch_list = []
@@ -252,6 +253,8 @@ def get_switches():
 
 
 def get_switch_interfaces():
+    """Returns a dictionary of switches w/ a list of interfaces
+    from the DB."""
     switch_dict = {}
     switch_list = get_switches()
     for switch in switch_list:
@@ -260,6 +263,8 @@ def get_switch_interfaces():
 
 
 def switch_int_query(switch):
+    """Helper function that returns the list of interfaces for a
+    given switch from the DB."""
     interface_list = []
     switch = switch.replace(':', '')
     cursor = mysql.connection.cursor()
