@@ -179,7 +179,17 @@ def switch_stats(switch_name):
     node_pc = stats[switch]  # Only use this node's counters
     flow_collector = Odl_Flow_Collector(controllerIP, switch)
     flows = flow_collector.run()
-    return render_template("switch_stats.html", sw=switch, node_pc=node_pc, flows=flows)
+    # Get port graph stats
+    interface_graphs = {}
+    time = '6'
+    interfaces = switch_int_query(switch)
+    switch_num = switch.replace("openflow:", "")
+    for interface in interfaces:
+        int_num = interface.replace(f"{switch}:", "")
+        graph_object = sql_graph_info(switch_num, int_num, time)
+        data = graph_object.db_pull(switch_num, int_num, time)
+        interface_graphs[interface] = data
+    return render_template("switch_stats.html", sw=switch, node_pc=node_pc, flows=flows, int_graphs=interface_graphs)
 
 
 @app.route('/register', methods=['GET', 'POST'])
