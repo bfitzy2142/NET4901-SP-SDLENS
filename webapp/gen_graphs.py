@@ -23,13 +23,13 @@ class sql_graph_info(object):
     def db_pull(self, node, interface, time):
         """ Pulls the RX and TX information from the database
             to display for the graphs page.
-        
+
         Arguments:
-            node [int] -- The node that holds the interface which
+            node [str] -- The node that holds the interface which
                           is to presented.
-            interface [int] -- The interface in which the counter
+            interface [str] -- The interface in which the counter
                                information will be based off of.
-            time [int] -- Time ranging from 30 minutes to 10 Years
+            time [str] -- Time ranging from 30 minutes to 10 Years
         Returns:
             dict -- containing arrays of the counter values at
                     their coresponding timestamp.
