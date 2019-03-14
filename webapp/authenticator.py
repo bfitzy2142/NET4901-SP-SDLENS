@@ -14,13 +14,13 @@ class Authenticator():
             from a yaml file to obtain credentials.
         """
         try:
-            with open('creds.yml', "r") as file:
+            with open('../creds.yml', "r") as file:
                 try:
                     self.working_creds = load(file)
                 except YAMLError as err:
                     print(err)
         except FileNotFoundError:
-                print('----------------------------------')
-                print('Run ./app within webapp directory!')
-                print('----------------------------------')
+                print('-------------------------')
+                print('YAML file does not exist!')
+                print('-------------------------')
                 exit()

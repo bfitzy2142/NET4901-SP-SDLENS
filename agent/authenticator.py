@@ -1,5 +1,4 @@
 from yaml import load, YAMLError
-from os import path
 
 
 class Authenticator():
@@ -8,37 +7,20 @@ class Authenticator():
     module can be used across all aspects of our application to
     alleviate hard coded values such as usernames and passwords.
     """
+    #TODO: Make seperate YAML files for app auth and agent auth
 
     def __init__(self):
         """ Initilizer for the authenticator module. Pulls data
             from a yaml file to obtain credentials.
         """
-        rootpath = path.abspath("")
-        credpath = 'creds.yml'
- 
-        with open(credpath, "r") as file:
-            try:
-                self.working_creds = load(file)
-            except YAMLError as err:
-                print(err)
-
-    def find_cred_file(self, rootpath):
-        """ Helper funciton to get the correct path to the yaml file.
-            Must be excecuted on a linux machine.
-        """
-        rootdir = ''
-        for char in rootpath:
-            if (char != '/'):
-                rootdir += char
-            else:
-                rootdir = ""
-
-        if (rootdir == 'agent'):
-            return path.join(rootpath, 'creds.yml')
-        elif (rootdir == 'NET4901-SP'):
-            return path.join(rootpath, 'agent/creds.yml')
-        elif (rootdir == 'webapp'):
-            return path.join(rootpath, '../agent/creds.yml')
-        else:
-            print('Authenticator Relative Path Error!')
-            exit()
+        try:
+            with open('../creds.yml', "r") as file:
+                try:
+                    self.working_creds = load(file)
+                except YAMLError as err:
+                    print(err)
+        except FileNotFoundError:
+                print('-------------------------')
+                print('YAML file does not exist!')
+                print('-------------------------')
+                exit()
