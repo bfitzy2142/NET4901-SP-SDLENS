@@ -63,16 +63,9 @@ def pull_flow_graphs(node, time):
         # Response == Full sql query response
         date = str(dataPoint[0])
         flow_count = int(dataPoint[1])
-        
-        if dataPointDict:
-            old_flow_count = int(dataPointDict['rx_count'])
-            dif_flow_count = flow_count - old_flow_count
 
-            difDict = {"date": date, "rx_count": dif_flow_count}
-            displayPoints.append(difDict)
-
-        dataPointDict = {"date": date, "rx_count": flow_count}
-        graphPoints.append(dataPointDict)
+        dataPointDict = {"date": date, "flow_count": flow_count}
+        displayPoints.append(dataPointDict)
     return displayPoints
 
 

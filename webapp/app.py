@@ -102,6 +102,9 @@ def flow_stats():
     for switch in switch_list:
         o = Odl_Flow_Collector(controllerIP, switch)
         flow_dict[switch] = o.run()
+    for key, val in flow_dict.items():
+        print(key)
+        print(val)
     return render_template('flows.html', flow_dict=flow_dict)
     # print(flow_dict)
 
@@ -195,9 +198,10 @@ def switch_stats(switch_name):
         data = graph_object.db_pull(switch_num, int_num, time)
         interface_graphs[interface] = data
     render_kwargs["int_graphs"] = interface_graphs
+    # Get flow summary stats
+    flow_s_graphs = pull_flow_graphs(switch_num, time)
+    render_kwargs["flow_s_graph"] = flow_s_graphs
     
-    # Add args to render args
-
     return render_template("switch_stats.html", **render_kwargs)
 
 
