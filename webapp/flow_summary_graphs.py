@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 import json
 
 
-
 def pull_flow_graphs(node, time):
     """ Pulls the RX and TX information from the database
         to display for the graphs page.
