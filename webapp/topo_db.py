@@ -132,11 +132,36 @@ class Topo_DB_Interactions():
         raw_pen_date = self.cursor.fetchall()
         penultimate_date = str(raw_pen_date[0][0])
 
-        return {node: self.pdc(node, newest_date, penultimate_date)}
+        device_info = {}
+        device_info[node] = self.pdtc(node, newest_date, penultimate_date)
 
-    def pdc(self, node, latest_date, penultimate_date):
+        # Get flow stats
+        # Get latest id in db
+        id_query = f'select max(ID) from {node}_table0_summary'
+        self.cursor.execute(id_query)
+        raw_data = self.cursor.fetchall()
+        latest_id = raw_data[0][0]
+
+        # Flow stat query
+        fsq = ('select Active_Flows, Packets_Looked_Up, Packets_Matched '
+               f'from {node}_table0_summary where ID = {latest_id}')
+
+        self.cursor.execute(fsq)
+        raw_data = self.cursor.fetchall()
+
+        active_flows = raw_data[0][0]
+        pckts_looked_up = raw_data[0][1]
+        pckts_matched = raw_data[0][2]
+
+        device_info[node]['flow-stats'] = {'active_flows': active_flows,
+                                           'packets_looked_up': pckts_looked_up,
+                                           'packets_matched': pckts_matched
+                                        }
+        return device_info
+
+    def pdtc(self, node, latest_date, penultimate_date):
         """
-        pdc stands for Per device calculation.
+        pdtc stands for Per device throughput calculation.
 
         Returns:
         Dict - Each interface name as key and Rx and Tx
@@ -184,10 +209,12 @@ class Topo_DB_Interactions():
             pen_bytes_tx = pen_counters[index]['tx_bytes']
             pen_bytes_rx = pen_counters[index]['rx_bytes']
             int_name = inter['interface']
+            tx_bps = self.bps_cal(new_bytes_tx, pen_bytes_tx)
+            rx_bps = self.bps_cal(new_bytes_rx, pen_bytes_rx)
 
             int_dict[int_name] = {
-                                'tx_bps': self.bps_cal(new_bytes_tx, pen_bytes_tx),
-                                'rx_bps': self.bps_cal(new_bytes_rx, pen_bytes_rx)
+                                'tx_bps': tx_bps,
+                                'rx_bps': rx_bps
                             }
         return int_dict
 

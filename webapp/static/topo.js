@@ -39,30 +39,40 @@ function throughputInfo(node)
 function handleThroughput(xhr, node) {
     if (xhr.readyState == 4 && xhr.status == 200)
     {   
-        var title_text = [];
+        var tp_stats = [];
+        var flow_stats = '';
 
         responseJSON = JSON.parse(xhr.responseText);
         var device = Object.keys(responseJSON);
+
+        // Contains the name of the keys which are interface names or flow-stats
         var keys = Object.keys(responseJSON[device])
         
-
+        var basic_title = 'Node: <b>' + node + '</b>'
+                        + '<br>Type: <b>Switch<b></br>';
+                        
+        var flow_title = '<span style="text-align:center"><br><b>Flow Stats:</b></span>';
+        var tp_title = '<span style="text-align:center">Throughput Stats:</span>';
         for (var i = 0; i < keys.length; i++) {
-            var inter =  keys[i];
-            var tx_bps = responseJSON[device][keys[i]]['tx_bps'];
-            var rx_bps = responseJSON[device][keys[i]]['rx_bps'];
-            title_text.push('<br>Interface: <b>' + inter + '</b>',
-                            '<br><span style="padding-left:2em">Tx: <b>'+ tx_bps + ' bps</b></span></br>',
-                            '<span style="padding-left:2em">Rx: <b>'+ rx_bps + ' bps</b></span>');
+            if (keys[i] != 'flow-stats'){
+                var inter =  keys[i];
+                var tx_bps = responseJSON[device][keys[i]]['tx_bps'];
+                var rx_bps = responseJSON[device][keys[i]]['rx_bps'];
+                tp_stats.push('<br>Interface: <b>' + inter + '</b>',
+                                '<br><span style="padding-left:2em">Tx: <b>'+ tx_bps + ' bps</b></span></br>',
+                                '<span style="padding-left:2em">Rx: <b>'+ rx_bps + ' bps</b></span>');
+            }else {
+              active_flows = responseJSON[device][keys[i]]['active_flows']
+              packets_looked_up = responseJSON[device][keys[i]]['packets_looked_up']
+              packets_matched = responseJSON[device][keys[i]]['packets_matched']
+              flow_stats = '<br><span style="padding-left:2em">Active Flows: <b>'+ active_flows + '</b></span></br>'
+                         + '<span style="padding-left:2em">Packets Looked Up: <b>'+ packets_looked_up + '</b></span></br>'
+                         + '<span style="padding-left:2em">Packets Matched: <b>'+ packets_matched + '</b></span></br>'
+            }
         }
 
-
-        var basic_title = 'Node: <b>' + node + '</b>'
-                        + '<br>Type: <b>Switch<b></br>'
-                        + '<br><br><b>Throughput Looking Glass:</b><br>';
-        
-        
-        var throughput_stats = title_text.join("");
-        var title = basic_title + throughput_stats;
+        var throughput_stats = tp_stats.join("");
+        var title = basic_title + flow_title + flow_stats + tp_title + throughput_stats;
         
         network['body']['nodes'][node]['options']['title'] = title;
         
