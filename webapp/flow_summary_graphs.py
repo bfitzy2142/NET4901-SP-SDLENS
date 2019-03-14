@@ -55,7 +55,6 @@ def pull_flow_graphs(node, time):
     cur.execute(query)
     response = cur.fetchall()
 
-    graphPoints = []
     displayPoints = []
     dataPointDict = {}
 
@@ -67,5 +66,3 @@ def pull_flow_graphs(node, time):
         dataPointDict = {"date": date, "flow_count": flow_count}
         displayPoints.append(dataPointDict)
     return displayPoints
-
-
