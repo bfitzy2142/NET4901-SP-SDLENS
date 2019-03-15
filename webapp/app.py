@@ -18,6 +18,7 @@ from user_db import create_user_db
 from gen_graphs import sql_graph_info
 from topo_db import Topo_DB_Interactions
 from get_flows import Odl_Flow_Collector
+from flow_summary_graphs import pull_flow_graphs
 
 from authenticator import Authenticator
 # TODO: Find PEP8 way of importing modules
@@ -171,14 +172,18 @@ def graphs():
 @app.route("/switch/<string:switch_name>", methods=['GET'])
 @is_logged_in
 def switch_stats(switch_name):
+    render_kwargs = {}
     switch = switch_name
+    render_kwargs["sw"] = switch
     # Get port counters using stat_collector
     pc = Odl_Stat_Collector(controllerIP)
     stats = pc.run()
-    # Get flow stats
     node_pc = stats[switch]  # Only use this node's counters
+    render_kwargs["node_pc"] = node_pc
+    # Get flow stats
     flow_collector = Odl_Flow_Collector(controllerIP, switch)
     flows = flow_collector.run()
+    render_kwargs["flows"] = flows
     # Get port graph stats
     interface_graphs = {}
     time = '6'
@@ -189,7 +194,12 @@ def switch_stats(switch_name):
         graph_object = sql_graph_info(switch_num, int_num, time)
         data = graph_object.db_pull(switch_num, int_num, time)
         interface_graphs[interface] = data
-    return render_template("switch_stats.html", sw=switch, node_pc=node_pc, flows=flows, int_graphs=interface_graphs)
+    render_kwargs["int_graphs"] = interface_graphs
+    # Get flow summary stats
+    flow_s_graphs = pull_flow_graphs(switch_num, time)
+    render_kwargs["flow_s_graph"] = flow_s_graphs
+    
+    return render_template("switch_stats.html", **render_kwargs)
 
 
 @app.route('/register', methods=['GET', 'POST'])

@@ -5,10 +5,10 @@
     <title>SDN Network Monitoring Project</title>
     <link rel="icon" href="{{ url_for('static', filename='icon.png') }}">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='topo.js') }}"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="{{ url_for('static', filename='vis.min.js') }}"></script>
+    <link href="{{ url_for('static', filename='vis.min.css') }}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='topo.css') }}">
     
 
@@ -20,7 +20,7 @@
       {% block body %}{% endblock %}
     </div>
 
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     
   </body>
 </html>
