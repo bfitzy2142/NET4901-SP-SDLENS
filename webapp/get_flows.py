@@ -19,8 +19,6 @@ class Odl_Flow_Collector(object):
     def send_get_request(self, url):
         response = requests.get(url, headers=self.headers, auth=self.auth)
         response_data = response.json()
-        print("here")
-        print(response_data)
         return response_data
 
     def get_flows(self):

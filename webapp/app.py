@@ -102,9 +102,6 @@ def flow_stats():
     for switch in switch_list:
         o = Odl_Flow_Collector(controllerIP, switch)
         flow_dict[switch] = o.run()
-    for key, val in flow_dict.items():
-        print(key)
-        print(val)
     return render_template('flows.html', flow_dict=flow_dict)
     # print(flow_dict)
 
