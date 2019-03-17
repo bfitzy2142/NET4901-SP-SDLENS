@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+import re
+
 import mysql.connector
 from mysql.connector import errorcode
 
-
 from abstract_flow_tracer import FlowTracer
-
+from .webapp.get_flows import Odl_Flow_Collector
 
 class L2FlowTracer(FlowTracer):
 
@@ -12,11 +13,11 @@ class L2FlowTracer(FlowTracer):
         super().__init__()
 
     def trace_flows(self, source, dest):
-        source_host = self.find_host(source)
+        src_host = self.find_host(source)
         dest_host = self.find_host(dest)
-        source_switch = self.find_switch_by_host(source_host)
+        src_switch = self.find_switch_by_host(src_host)
         dest_switch = self.find_switch_by_host(dest_host)
-        print(f"{source_switch} <-> {dest_switch}")
+        print(f"{src_switch} <-> {dest_switch}")
 
     def find_host(self, ip):
         """[summary]
@@ -48,6 +49,12 @@ class L2FlowTracer(FlowTracer):
         result = cursor.fetchall()
         cursor.close()
         return result
+
+    def find_flow_rules(self, src_host, dest_host, src_switch, dest_switch):
+        src_mac = src_host.replace("host:", "")
+        dest_mac = dest_host.replace("host:", "")
+
+
 
 
 l = L2FlowTracer()
