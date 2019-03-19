@@ -10,11 +10,11 @@ Step 1: Clear the database.
 import mysql.connector
 import multiprocessing
 import getpass
-import yaml
 import json
+import yaml
+import os
 
 from mysql.connector import errorcode
-#from authenticator import Authenticator
 
 
 def get_admin_info():
@@ -24,7 +24,7 @@ def get_admin_info():
             with open("creds-new.yml", 'r') as stream:
                 try:
                     creds = yaml.load(stream)
-                    print(json.dumps(creds, indent=1))
+                    #print(json.dumps(creds, indent=1))
                 except yaml.YAMLError as err:
                     print(err)
 
@@ -84,45 +84,21 @@ def clear_db():
     Clears all tables but does not clear the users
     """
 
-    auth = Authenticator()
-    yaml_db_creds = auth.working_creds['database']
+    with open('creds.yml', "r") as file:
+        try:
+            working_creds = yaml.load(file)
+        except yaml.YAMLError as err:
+            print(err)
+
+    yaml_db_creds = working_creds['database']
     sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
                  "password": yaml_db_creds['MYSQL_PASSWORD'],
                  "host": yaml_db_creds['MYSQL_HOST']}
-    db = auth.working_creds['database']['MYSQL_DB']
-    controller_ip = auth.working_creds['controller']['controller-ip']
+    db = working_creds['database']['MYSQL_DB']
 
-    try:
-        connection = mysql.connector.connect(**sql_creds, database=db)
-        cursor = connection.cursor()
-        cursor.execute(
-            f"SET @sdlens = 'sdlens';"
-        )
-        cursor.execute(
-            f"SET @pattern = 'openflow%';"
-        )
-        cursor.execute(
-            f"SELECT CONCAT('DROP TABLE ',"
-            f"GROUP_CONCAT(CONCAT(@schema,'.',table_name)),';')"
-            f"INTO @droplike"
-            f"FROM information_schema.tables"
-            f"WHERE @sdlens = database()"
-            f"AND table_name LIKE @pattern;"
-        )
-        cursor.execute(
-            f"PREPARE stmt FROM @droplike;"
-        )
-        cursor.execute(
-            f"EXECUTE stmt;"
-        )
-        cursor.execute(
-            f"DEALLOCATE PREPARE stmt;"
-        )
-        cursor.execute(
-            f"DROP TABLE sdlens.nodes,sdlens.links;"
-        )
-    except mysql.connector.Error as err:
-        if err.errno == errorcode.ER_BAD_DB_ERROR:
+    check_db = input("Does the database exist [Y/n]: ")
+    if check_db.lower() == "n":
+        try:
             user = sql_creds['user']
             host = sql_creds['host']
             connection = mysql.connector.connect(**sql_creds)
@@ -130,8 +106,62 @@ def clear_db():
             connection.database = db
             cursor = connection.cursor()
             cursor.execute(f"GRANT ALL ON {db}.* to '{user}'@'{host}';")
-        else:
-            print(err)
+        except mysql.connector.Error as err:
+            print(str(err))
+    elif check_db.lower() == "y":
+        pass
+    else:
+        print("Please enter a valid input.")
+        exit()
+
+    table_check = input("Does the database need to be cleared [Y/n]:")
+    if table_check.lower() == "y":
+        try:
+            connection = mysql.connector.connect(**sql_creds, database=db)
+            cursor = connection.cursor(buffered=True)
+            set_1 = f"SET @sdlens = '{db}';"
+            set_2 = "SET @pattern = 'openflow%';"
+            select = (f"SELECT CONCAT('DROP TABLE ',GROUP_CONCAT(TABLE_NAME)) "
+                    f"INTO @drop "
+                    f"FROM information_schema.TABLES "
+                    f"WHERE TABLE_SCHEMA = @sdlens "
+                    f"AND TABLE_NAME LIKE @pattern;")
+            prepare = "PREPARE stmt FROM @drop;"
+            execute = "EXECUTE stmt;"
+            deallocate = "DEALLOCATE PREPARE stmt;"
+            drop_others = "DROP TABLE sdlens.nodes,sdlens.links;"
+
+            cursor.execute(set_1)
+            cursor.execute(set_2)
+            cursor.execute(select)
+            try:
+                cursor.execute(prepare)
+                cursor.execute(execute)
+                cursor.execute(deallocate)
+            finally:
+                try:
+                    cursor.execute(drop_others)
+                except mysql.connector.Error as err:
+                    if err.errno == "1051":
+                        print("Test")
+
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_BAD_DB_ERROR:
+                user = sql_creds['user']
+                host = sql_creds['host']
+                connection = mysql.connector.connect(**sql_creds)
+                connection.cmd_query(f'CREATE DATABASE {db}')
+                connection.database = db
+                cursor = connection.cursor()
+                cursor.execute(f"GRANT ALL ON {db}.* to '{user}'@'{host}';")
+            else:
+                print(str(err))
+                print("Tables already cleared")
+    elif table_check.lower() == "n":
+        pass
+    else:
+        print("Please enter a valid input.")
+        exit()
 
 
 def app_info():
@@ -140,10 +170,12 @@ def app_info():
 | Application Information    |
 ------------------------------ """)
     app_IP = input("Application IP: ")
+    app_SK = "secret123"
     app_username = input("Username: ")
     app_password = getpass.getpass(prompt='Password: ')
 
     application = {'app-ip': app_IP,
+                   'secret_key': app_SK,
                    'username': app_username,
                    'password': app_password
                    }
@@ -204,10 +236,8 @@ def leave():
 
 if __name__ == '__main__':
     get_admin_info()
-    """
     clear_db()
-    files = ["agent/__main__.py", "webapp/app.py"]
-    for apps in files:
-        process = multiprocessing.Process(target=None, args=())
-        process.start()
-    """
+
+    #Questionable Multi-threading
+    os.system("python3 webapp/app.py &")
+    os.system("python3 agent/__main__.py &")
