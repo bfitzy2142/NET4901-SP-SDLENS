@@ -10,7 +10,7 @@ from requests.auth import HTTPBasicAuth
 
 class FlowTracer(metaclass=abc.ABCMeta):
     def __init__(self):
-        self.flow_rule_hits = {}
+        self.flow_rule_hits = []
         self.links_traversed = []
         # TODO: Change to the dynamic auth
         self.sql_auth = {
@@ -20,6 +20,7 @@ class FlowTracer(metaclass=abc.ABCMeta):
             "db": "sdlens"
         }
         self.cnx = mysql.connector.connect(**self.sql_auth)
+        self.controller = "134.117.89.138"
 
 
     @abc.abstractmethod
