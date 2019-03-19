@@ -19,9 +19,10 @@ from mysql.connector import errorcode
 
 def get_admin_info():
     # Read from existing
+    comp_user = getpass.getuser()
     file_check = input("Does an existing credintials file exist [Y/n]: ")
     if file_check.lower() == "y":
-            with open("creds-new.yml", 'r') as stream:
+            with open(f"/home/{comp_user}/.sdlens/creds.yml", 'r') as stream:
                 try:
                     creds = yaml.load(stream)
                     #print(json.dumps(creds, indent=1))
@@ -83,8 +84,8 @@ def clear_db():
     """
     Clears all tables but does not clear the users
     """
-
-    with open('creds.yml', "r") as file:
+    comp_user = getpass.getuser()
+    with open(f"/home/{comp_user}/.sdlens/creds.yml", "r") as file:
         try:
             working_creds = yaml.load(file)
         except yaml.YAMLError as err:
@@ -219,7 +220,11 @@ def db_info():
 
 
 def update_file(credentials):
-    with open('creds-new.yml', 'w') as yaml_file:
+    comp_user = getpass.getuser()
+    folder_check = os.path.exists(f'/home/{comp_user}/.sdlens')
+    if not folder_check:
+        os.system(f'mkdir /home/{comp_user}/.sdlens')
+    with open(f'/home/{comp_user}/.sdlens/creds.yml', 'w') as yaml_file:
         yaml.dump(credentials, yaml_file, default_flow_style=False)
 
 

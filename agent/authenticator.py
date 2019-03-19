@@ -1,4 +1,5 @@
 from yaml import load, YAMLError
+import getpass
 
 
 class Authenticator():
@@ -13,8 +14,9 @@ class Authenticator():
         """ Initilizer for the authenticator module. Pulls data
             from a yaml file to obtain credentials.
         """
+        comp_user = getpass.getuser()
         try:
-            with open('../creds.yml', "r") as file:
+            with open(f'/home/{comp_user}/.sdlens/creds.yml', "r") as file:
                 try:
                     self.working_creds = load(file)
                 except YAMLError as err:
