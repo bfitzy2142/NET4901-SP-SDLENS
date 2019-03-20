@@ -76,8 +76,8 @@ def dashboard():
 @app.route('/l2_trace_flow/<string:source_ip>/<string:dest_ip>', methods=['GET'])
 def rest_trace_flows(source_ip, dest_ip):
     flow_tracer = L2FlowTracer()
-    flow_path = flow_tracer.trace_flows(source_ip, dest_ip)
-    return jsonify(flow_path)
+    flow_trace_results = flow_tracer.trace_flows(source_ip, dest_ip)
+    return jsonify(flow_trace_results)
 
 
 @app.route("/topology")
