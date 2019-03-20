@@ -21,6 +21,7 @@ class L2FlowTracer(FlowTracer):
         src_switch = self.find_switch_by_host(src_host)
         dest_switch = self.find_switch_by_host(dest_host)
         self.find_flow_rules(src_host, dest_host, src_switch, dest_switch)
+        return self.flow_path
 
     def find_host(self, ip):
         """[summary]
@@ -53,13 +54,17 @@ class L2FlowTracer(FlowTracer):
         cursor.close()
         return result
 
+# TODO: TEST DICTIONARY PAIR
+# TODO: ADD DOC STRINGS
+# TODO: HANDLE ARP CASE
+# TODO: FIGURE OUT HOW TO IMPLEMENT WEB APP
     def find_flow_rules(self, src_host, dest_host, src_switch, dest_switch):
         last_flow = False
         src_mac = src_host.replace("host:", "")
         dest_mac = dest_host.replace("host:", "")
-        print(f"dest switch: {dest_switch}")
+        # print(f"dest switch: {dest_switch}")
         current_switch = src_switch
-        print(f"Current Switch {current_switch}")
+        # print(f"Current Switch {current_switch}")
         while last_flow is not True:
             if current_switch == dest_switch:
                 last_flow = True
@@ -68,8 +73,8 @@ class L2FlowTracer(FlowTracer):
                 flow_match = False
                 flow_match = self.find_matching_flow(flow, src_mac, dest_mac)
                 if flow_match is True:
-                    print(current_switch)
-                    print(flow)
+                    flow_pair = {'switch': current_switch, 'flow': flow}
+                    self.flow_path.append(flow_pair)
                     next_switch = self.find_next_node(current_switch, flow)
                     break
             current_switch = next_switch
@@ -105,5 +110,3 @@ class L2FlowTracer(FlowTracer):
                 new_switch = node_name
         return new_switch
 
-l = L2FlowTracer()
-l.trace_flows('10.0.0.4', '10.0.0.7')
