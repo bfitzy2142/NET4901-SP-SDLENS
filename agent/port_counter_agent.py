@@ -13,8 +13,9 @@ class PortCounterAgent(AbstractAgent):
         super().__init__(controller_ip)
         self.node = node
         self.create_pc_table(self.node)
-        self.odl_string = ("opendaylight-port-statistics:"
-                           "flow-capable-node-connector-statistics")
+        self.int_counter_str = ("opendaylight-port-statistics:"
+                                "flow-capable-node-connector-statistics")
+        self.int_state = "flow-node-inventory:state"
 
     def create_pc_table(self, node):
         """Creates a DB table listing port counters
@@ -32,6 +33,7 @@ class PortCounterAgent(AbstractAgent):
             "Tx_drops INT NOT NULL,"
             "Rx_errs INT NOT NULL,"
             "Tx_errs INT NOT NULL,"
+            "Port_down BOOL NOT NULL,"
             "PRIMARY KEY (ID) );")
         self.sql_tool.create_sql_table(table)
 
@@ -69,7 +71,7 @@ class PortCounterAgent(AbstractAgent):
         """
         restconf_node = f"opendaylight-inventory:nodes/node/{self.node}/"
         restconf_int = f"node-connector/{interface}/"
-        url = self.base_url + restconf_node + restconf_int + self.odl_string
+        url = self.base_url + restconf_node + restconf_int
         response = self.send_get_request(url)
         return response
 
@@ -87,7 +89,8 @@ class PortCounterAgent(AbstractAgent):
         port_stats = {}
         for interface in response:
             int_id = interface
-            int_stats = response[interface][self.odl_string]
+            int_stats = response[interface]['node-connector'][0][self.int_counter_str]
+            int_status = response[interface]['node-connector'][0][self.int_state]
             port_stats[int_id] = {}
             port_stats[int_id]["rx-pckts"] = int_stats["packets"]["received"]
             port_stats[int_id]["tx-pckts"] = int_stats["packets"]["transmitted"]
@@ -97,6 +100,7 @@ class PortCounterAgent(AbstractAgent):
             port_stats[int_id]["tx-drops"] = int_stats["transmit-drops"]
             port_stats[int_id]["rx-errs"] = int_stats["receive-errors"]
             port_stats[int_id]["tx-errs"] = int_stats["transmit-errors"]
+            port_stats[int_id]['port-down'] = int_status["link-down"]
             port_stats[int_id]["timestamp"] = self.add_timestamp()
         return port_stats
 
@@ -113,12 +117,13 @@ class PortCounterAgent(AbstractAgent):
             sql_insert = (f"INSERT INTO {self.node}_counters "
                           "(Interface, Timestamp, Rx_pckts, Tx_pckts, "
                           "Rx_bytes, Tx_bytes, Rx_drops, Tx_drops, "
-                          "Rx_errs, Tx_errs) VALUES "
-                          "('{}', '{}', {}, {}, {}, {}, {}, {}, {}, {})")
+                          "Rx_errs, Tx_errs, Port_down) VALUES "
+                          "('{}', '{}', {}, {}, {}, {}, {}, {}, {}, {}, {})")
             query = sql_insert.format(interface, int_data['timestamp'],
                                       int_data['rx-pckts'], int_data['tx-pckts'],
                                       int_data['rx-bytes'], int_data['tx-bytes'],
                                       int_data['rx-drops'], int_data['tx-drops'],
-                                      int_data['rx-errs'], int_data['tx-errs'])
+                                      int_data['rx-errs'], int_data['tx-errs'],
+                                      int_data['port-down'])
             self.sql_tool.send_insert(query)
 
