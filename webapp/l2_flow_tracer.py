@@ -18,10 +18,14 @@ class L2FlowTracer(FlowTracer):
     def trace_flows(self, source, dest):
         src_host = self.find_host(source)
         dest_host = self.find_host(dest)
-        src_switch = self.find_switch_by_host(src_host)
+        src_switch = self.find_switch_by_host(src_host, first_switch=True)
         dest_switch = self.find_switch_by_host(dest_host)
         self.find_flow_rules(src_host, dest_host, src_switch, dest_switch)
-        return self.flow_path
+        # print(self.links_traversed)
+        flow_trace_results = {}
+        flow_trace_results["flow_path"] = self.flow_path
+        flow_trace_results["links_traversed"] = self.links_traversed
+        return flow_trace_results
 
     def find_host(self, ip):
         """[summary]
@@ -37,7 +41,7 @@ class L2FlowTracer(FlowTracer):
         # get host-ip pair from host
         # get link tuple?
 
-    def find_switch_by_host(self, host):
+    def find_switch_by_host(self, host, first_switch=False):
         switch = ""
         query = f"SELECT * FROM links WHERE SRC = '{host}' OR DST = '{host}'"
         result = self.sql_select_query(query)
@@ -45,6 +49,11 @@ class L2FlowTracer(FlowTracer):
         for node_name in link_tuple[1:3]:
             if node_name != host:
                 switch = node_name
+        if first_switch:
+            link_pair = {}
+            link_pair['SRCPORT'] = link_tuple[3]
+            link_pair['DSTPORT'] = link_tuple[4]
+            self.links_traversed.append(link_pair)
         return switch
 
     def sql_select_query(self, query):
@@ -54,10 +63,8 @@ class L2FlowTracer(FlowTracer):
         cursor.close()
         return result
 
-# TODO: TEST DICTIONARY PAIR
 # TODO: ADD DOC STRINGS
 # TODO: HANDLE ARP CASE
-# TODO: FIGURE OUT HOW TO IMPLEMENT WEB APP
     def find_flow_rules(self, src_host, dest_host, src_switch, dest_switch):
         last_flow = False
         src_mac = src_host.replace("host:", "")
@@ -99,6 +106,7 @@ class L2FlowTracer(FlowTracer):
             return True  
 
     def find_next_node(self, switch, flow):
+        link_pair = {}
         port_num = flow['actions'][0]['output-action']['output-node-connector']
         port_name = f"{switch}:{port_num}"
         query = (f"SELECT * FROM links WHERE SRCPORT = '{port_name}' "
@@ -108,5 +116,8 @@ class L2FlowTracer(FlowTracer):
         for node_name in link_tuple[1:3]:
             if node_name != switch:
                 new_switch = node_name
+        link_pair['SRCPORT'] = link_tuple[3]
+        link_pair['DSTPORT'] = link_tuple[4]
+        self.links_traversed.append(link_pair)
         return new_switch
 
