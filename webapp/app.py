@@ -19,6 +19,7 @@ from gen_graphs import sql_graph_info
 from topo_db import Topo_DB_Interactions
 from get_flows import Odl_Flow_Collector
 from flow_summary_graphs import pull_flow_graphs
+from l2_flow_tracer import L2FlowTracer
 
 from authenticator import Authenticator
 # TODO: Find PEP8 way of importing modules
@@ -70,6 +71,13 @@ def is_logged_in(f):
 @is_logged_in
 def dashboard():
     return render_template('home.html')
+
+
+@app.route('/l2_trace_flow/<string:source_ip>/<string:dest_ip>', methods=['GET'])
+def rest_trace_flows(source_ip, dest_ip):
+    flow_tracer = L2FlowTracer()
+    flow_trace_results = flow_tracer.trace_flows(source_ip, dest_ip)
+    return jsonify(flow_trace_results)
 
 
 @app.route("/topology")
