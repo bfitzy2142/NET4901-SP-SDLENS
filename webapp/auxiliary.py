@@ -2,8 +2,6 @@
 """
 This script will be used to automatically detect what host(s)
 that is/are available running Opendaylight on the LAN
-Author: Brad Fitzgerald
-Version: 1.0
 """
 import socket
 import re

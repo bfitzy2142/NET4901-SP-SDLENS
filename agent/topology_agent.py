@@ -13,7 +13,6 @@ class TopologyAgent(AbstractAgent):
         super().__init__(controller_ip)
         self.create_nodes_table()
         self.create_host_table()
-        
 
     def get_data(self):
         """Gets topology data from ODL controller.
