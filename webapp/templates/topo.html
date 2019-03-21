@@ -23,7 +23,7 @@
                             <div class="form-group">
                                 <label class='form_title' for="src_ip">Source Host IP</label><br>
                                 <select name='src_ip' id='src_ip' class = "form-control">
-                                    <option value="" disabled selected>Select your option</option>
+                                    <option value="na" disabled selected>Select your option</option>
                                     {% for ip in topologyInfo['hosts'] %}
                                     <option value="{{ip}}">{{ip}}</option>
                                     {% endfor %}
@@ -37,7 +37,7 @@
                             <div class="form-group">
                                 <label class='form_title', for="dst_ip">Destination Host IP</label><br>
                                 <select name='dst_ip' id='dst_ip' class = "form-control">
-                                    <option value="" disabled selected>Select your option</option>
+                                    <option value="na" disabled selected>Select your option</option>
                                     {% for ip in topologyInfo['hosts'] %}
                                     <option value="{{ip}}">{{ip}}</option>
                                     {% endfor %}
@@ -45,7 +45,7 @@
                             </div>
                         </td>
                         <td colspan="3" align="right">
-                            <input type="submit" class="btn btn-primary" value="Trace">
+                            <input disabled id="submit" type="submit" class="btn btn-primary" value="Trace">
                         </td>
                     </tr>
                 </table>
@@ -120,19 +120,24 @@
         $("#src_ip").change(function() {
             src_ip = $("#src_ip option:selected").val();
             dst_ip = $("#dst_ip option:selected").val();
-
-            if (dst_ip == src_ip){
-                console.log('problem')
+            
+            if (src_ip == dst_ip || dst_ip == 'na'){
+                $("#submit").attr("disabled", true);
+            } else {
+                $("#submit").attr("disabled", false);
             }
         });
 
         $("#dst_ip").change(function() {
             src_ip = $("#src_ip option:selected").val();
             dst_ip = $("#dst_ip option:selected").val();
-
-            if (dst_ip == src_ip){
-                console.log('problem')
+            
+            if (dst_ip == src_ip || src_ip == 'na'){
+                $("#submit").attr("disabled", true);
+            } else {
+                $("#submit").attr("disabled", false);
             }
+            
         });
 
 
