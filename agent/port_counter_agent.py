@@ -34,6 +34,7 @@ class PortCounterAgent(AbstractAgent):
             "Rx_errs INT NOT NULL,"
             "Tx_errs INT NOT NULL,"
             "Port_down BOOL NOT NULL,"
+            "STP_Forwarding BOOL NOT NULL,"
             "PRIMARY KEY (ID) );")
         self.sql_tool.create_sql_table(table)
 
@@ -102,6 +103,12 @@ class PortCounterAgent(AbstractAgent):
             port_stats[int_id]["tx-errs"] = int_stats["transmit-errors"]
             port_stats[int_id]['port-down'] = int_status["link-down"]
             port_stats[int_id]["timestamp"] = self.add_timestamp()
+            keys = response[interface]['node-connector'][0].keys()
+            print(keys)
+            if ('stp-status-aware-node-connector:status' in keys):
+                port_stats[int_id]['stp_fowarding'] = False
+            else:
+                port_stats[int_id]['stp_fowarding'] = True
         return port_stats
 
     def store_data(self, data):
@@ -117,13 +124,13 @@ class PortCounterAgent(AbstractAgent):
             sql_insert = (f"INSERT INTO {self.node}_counters "
                           "(Interface, Timestamp, Rx_pckts, Tx_pckts, "
                           "Rx_bytes, Tx_bytes, Rx_drops, Tx_drops, "
-                          "Rx_errs, Tx_errs, Port_down) VALUES "
-                          "('{}', '{}', {}, {}, {}, {}, {}, {}, {}, {}, {})")
+                          "Rx_errs, Tx_errs, Port_down, STP_Forwarding) VALUES "
+                          "('{}', '{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {})")
             query = sql_insert.format(interface, int_data['timestamp'],
                                       int_data['rx-pckts'], int_data['tx-pckts'],
                                       int_data['rx-bytes'], int_data['tx-bytes'],
                                       int_data['rx-drops'], int_data['tx-drops'],
                                       int_data['rx-errs'], int_data['tx-errs'],
-                                      int_data['port-down'])
+                                      int_data['port-down'], int_data['stp_fowarding'])
             self.sql_tool.send_insert(query)
 
