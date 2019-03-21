@@ -44,7 +44,7 @@ def pull_flow_graphs(node, time):
         f"Timestamp >= '{data_start}'"
         f"AND Timestamp < '{data_end}'"
     )
-    print(query)
+    #print(query)
     mydb = mysql.connector.connect(
         host="localhost",
         user="root",
