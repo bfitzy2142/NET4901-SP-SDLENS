@@ -6,6 +6,14 @@
   margin-top: 10px; 
 }
 
+#host_selection{
+  margin-top: 10px; 
+}
+
+title {
+  text-align: center;
+}
+
 #mynetwork {
   margin: auto;
   width: 100%;
@@ -20,6 +28,7 @@ h1 {
   text-align: center;
 }
 .retroshadow {
+  text-align: center;
   font-size: 60px;
   padding: 20px;
   color: #2c2c2c;
@@ -28,4 +37,20 @@ h1 {
   text-shadow: 
     4px 4px 0px #d5d5d5, 
     7px 7px 0px rgba(0, 0, 0, 0.2);
+}
+
+.flowtrace {
+  text-align: center;
+  font-size: 30px;
+  padding: 20px;
+  color: #2c2c2c;
+  background-color: #ffffff;
+  letter-spacing: .05em;
+  text-shadow: 
+    4px 4px 0px #d5d5d5, 
+    7px 7px 0px rgba(0, 0, 0, 0.2);
+}
+
+.information_pannel{
+  margin-top: 30px;
 }

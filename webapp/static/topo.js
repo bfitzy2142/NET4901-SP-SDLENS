@@ -8,10 +8,10 @@ interface throughput, host information, etc.
 
 /*
 Function to call topo-switch-stats API via POST and gather 
-switch throughput Information with the help of the
-handleThroughput method on API response. 
+switch throughput, and summary stats on Openflow flows with
+the help of the renderPopUp method on API response. 
 */
-function throughputInfo(node)
+function getPopUpInfo(node)
 {
     var xhr = new XMLHttpRequest();
     
@@ -22,7 +22,7 @@ function throughputInfo(node)
         // bind callback function
         xhr.onreadystatechange = function()
         {
-          handleThroughput(xhr, node);
+          renderPopUp(xhr, node);
         };
         // actually send the Ajax request 
         var post_params = '{ "switch_throughput" : "' + node + '"}';
@@ -33,10 +33,11 @@ function throughputInfo(node)
 
 /*
  Callback function that processes the server response for switch throughput
- and builds an html string with the selected switch's interface throughput information 
- that is presented to the user when they hover over that switch.
+ and flow summary information that is used to build an html string with the
+ selected switch's interface throughput information that is presented to the
+ user when they hover over that switch.
  */
-function handleThroughput(xhr, node) {
+function renderPopUp(xhr, node) {
     if (xhr.readyState == 4 && xhr.status == 200)
     {   
         var tp_stats = [];

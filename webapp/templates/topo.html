@@ -2,20 +2,76 @@
 {% block body %}
 
     <h1 class ='retroshadow'><img width="30" height="30" src="{{url_for('static', filename='icon.png')}}"/>Topology View</h1> 
-    
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="//cdn.ckeditor.com/4.6.2/basic/ckeditor.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
 
     <div id="mynetwork"></div>
 
-    <div id="titlebar"<></div>
+    
+ <div class='information_pannel'>   
+    <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" href="#collapse2">
+            Flow Tracer</a>
+          </h4>
+        </div>
+        <div id="collapse2" class="panel-collapse collapse">
+          <div class="panel-body">
+            <form name ="flow_tracer" id="flow_tracer" method="POST", action="">
+                <table style="width:50%" align="center">
+                    <tr>
+                        <td>
+                            <div class="form-group">
+                                <label class='form_title' for="src_ip">Source Host IP</label><br>
+                                <select name='src_ip' id='src_ip' class = "form-control">
+                                    <option value="" disabled selected>Select your option</option>
+                                    {% for ip in topologyInfo['hosts'] %}
+                                    <option value="{{ip}}">{{ip}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <p>&nbsp; &nbsp; &nbsp; </p>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <label class='form_title', for="dst_ip">Destination Host IP</label><br>
+                                <select name='dst_ip' id='dst_ip' class = "form-control">
+                                    <option value="" disabled selected>Select your option</option>
+                                    {% for ip in topologyInfo['hosts'] %}
+                                    <option value="{{ip}}">{{ip}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </td>
+                        <td colspan="3" align="right">
+                            <input type="submit" class="btn btn-primary" value="Trace">
+                        </td>
+                    </tr>
+                </table>
+            </form>  
+          </div>
+        </div>
+      </div>   
+      <div class="panel-group">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" href="#collapse1">
+              Information Pannel</a>
+            </h4>
+          </div>
+          <div id="collapse1" class="panel-collapse collapse in">
+            <div class="panel-body">
+                <div id="titlebar"></div>
+                <div id="infobox"></div>      
+            </div>
+          </div>
+        </div>
+<div>   
+    
 
-    <div id="infobox"></div>
-
-    <script type="text/javascript">
-
-        var responseJSON;
+<script type="text/javascript">
 
         var nodes = new vis.DataSet([
             {% for device in topologyInfo['devices'] %}
@@ -59,13 +115,43 @@
 		};
 
         var network = new vis.Network(container, data, options);
+
+        
+        $("#src_ip").change(function() {
+            src_ip = $("#src_ip option:selected").val();
+            dst_ip = $("#dst_ip option:selected").val();
+
+            if (dst_ip == src_ip){
+                console.log('problem')
+            }
+        });
+
+        $("#dst_ip").change(function() {
+            src_ip = $("#src_ip option:selected").val();
+            dst_ip = $("#dst_ip option:selected").val();
+
+            if (dst_ip == src_ip){
+                console.log('problem')
+            }
+        });
+
+
+        $(document).ready(function($){
+            {% if "ignore" not in topologyInfo['link_ids'] %}    
+            {% for link in topologyInfo['link_ids'] %}
+            edges.update({id:'{{link}}',color:{color:'red'}});
+            {% endfor %}
+            document.getElementById('infobox').innerHTML = '<h2><b>Trace Successful!</b></h2>';
+            {% endif %}
+        });
+        
         
         //Event Handler to catch when user hovers a node
         network.on("hoverNode", function (params) {
             var node = String(params.node);
             //Limitation: Switch names must include openflow atm.
             if (node.includes('openflow')){
-                throughputInfo(node);
+                getPopUpInfo(node);
             }
         });
         
@@ -95,6 +181,7 @@
                 //edgeInfo(edgeName);
             }      
         });
+
     </script>
 
 {% endblock %}

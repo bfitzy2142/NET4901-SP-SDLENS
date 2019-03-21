@@ -56,6 +56,14 @@ class generate_topology():
 
         return nodes
 
+    def get_host_ip(self):
+        host_list = []
+        self.cursor.execute("select IP_ADDRESS from host_info")
+        host_tuples = self.cursor.fetchall()
+        for host in host_tuples:
+            host_list.append(host[0])
+        return sorted(host_list)
+
     def fetch_host_info(self, host):
         query_host = ('select IP_ADDRESS, FIRST_TIME_SEEN, LATEST_TIME_SEEN '
                       f'from host_info where HOST = "{host}"')
@@ -79,10 +87,12 @@ class generate_topology():
     def fetch_topology(self):
         # Gets topology data and stores as a dict
         deviceList = self.fetch_nodes()
-        connectionList = self.fetch_links() 
+        connectionList = self.fetch_links()
+        hosts = self.get_host_ip()
 
         topologyInfo = {'devices': deviceList,
                         'connections': connectionList,
+                        'hosts': hosts
                         }
 
         return topologyInfo

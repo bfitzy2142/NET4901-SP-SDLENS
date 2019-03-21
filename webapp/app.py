@@ -5,6 +5,7 @@ from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
+from requests import get
 
 # Deprecated in favour of gen_topo
 # from generatetopo import odl_topo_builder
@@ -80,9 +81,11 @@ def rest_trace_flows(source_ip, dest_ip):
     return jsonify(flow_trace_results)
 
 
-@app.route("/topology")
+@app.route("/topology", methods=['GET', 'POST'])
 @is_logged_in
 def topology():
+    """
+    """
     # Get SQL Auth & Creds
     yaml_db_creds = auth.working_creds['database']
     sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
@@ -90,9 +93,28 @@ def topology():
                  "host": yaml_db_creds['MYSQL_HOST']
                  }
     db = auth.working_creds['database']['MYSQL_DB']
-
     parser = generate_topology(**sql_creds, db=db)
-    return render_template('topo.html', topologyInfo=parser.fetch_topology())
+
+    if (request.method == 'POST'):
+        src_ip = str(request.form.getlist('src_ip')[0])
+        dst_ip = str(request.form.getlist('dst_ip')[0])
+        flow_url = f'http://localhost:5000/l2_trace_flow/{src_ip}/{dst_ip}'
+        raw_api_data = get(flow_url)
+        flow_path = raw_api_data.json()
+
+        link_ids = []
+        # get flow path from json
+        for link in flow_path['links_traversed']:
+            link_id = f"{link['SRCPORT']}-{link['DSTPORT']}"
+            link_ids.append(link_id)
+
+        topologyInfo = parser.fetch_topology()
+        topologyInfo['link_ids'] = link_ids
+        return render_template('topo.html', topologyInfo=topologyInfo)
+    else:
+        topologyInfo = parser.fetch_topology()
+        topologyInfo['link_ids'] = 'ignore'
+        return render_template('topo.html', topologyInfo=topologyInfo)
 
 
 @app.route("/node-stats")
