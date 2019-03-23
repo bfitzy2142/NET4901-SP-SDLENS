@@ -81,6 +81,50 @@ function renderPopUp(xhr, node) {
 }
 
 /*
+Function to call stp_topo api 
+*/
+function fetch_stp_topo()
+{
+    var xhr = new XMLHttpRequest();
+    
+    if (xhr)
+    {
+        // open( method, location, isAsynchronous )
+        xhr.open("GET", "/stp_topo", true);
+        // bind callback function
+        xhr.onreadystatechange = function()
+        {
+          handleSTP(xhr);
+        };
+        xhr.send(); // Send request
+    }
+}
+
+function handleSTP(xhr) {
+    if (xhr.readyState == 4 && xhr.status == 200)
+    {
+        responseJSON = JSON.parse(xhr.responseText);
+        //console.log(responseJSON);
+        var keys = Object.keys(responseJSON);
+        for (var i = 0; i < keys.length; i++) {
+            stp_state = responseJSON[keys[i]]
+            switch (stp_state) {
+                case 'Forwarding':
+                    edges.update({id: keys[i], color:{color:'Green'}});
+                    break;
+                case 'Discarding':
+                    edges.update({id: keys[i], color:{color:'red'}});
+                    break;
+                case 'N/A':
+                    edges.update({id: keys[i], color:{color:'black'}});
+            }
+        }
+        document.getElementById('titlebar').innerHTML = '<h2><b>Displaying STP Topology</b></h2>';
+        document.getElementById('infobox').innerHTML = '<div class="stp_green"></div> <p>Forwarding State</p> <div class="stp_red"></div> <p>Discarding State</p> <div class="stp_black"></div><p>STP Not Enabled</p>';
+    }
+}
+
+/*
 Function to call topo-switch-stats API via POST
 and gather edge Information with the help of the
 handleEdge method on API response. 
@@ -199,7 +243,8 @@ function buildTable(xhr)
         
         var title = new Array();
         title.push(["Interface", "Tx Packets", "Rx Packets", "Tx Errors", 
-                                "Rx Errors", "Tx Drops", "Rx Drops"]);
+                    "Rx Errors", "Tx Drops", "Rx Drops", "Status",
+                    "STP Port State"]);
         
         //Create a HTML Table element.
         var table = document.createElement("TABLE");
@@ -208,7 +253,7 @@ function buildTable(xhr)
         table.border = "1";
     
         //Get the count of columns.
-        var columnCount = 7;
+        var columnCount = 9;
     
         //Add the header row.
         var row = table.insertRow(-1);
@@ -227,7 +272,15 @@ function buildTable(xhr)
                 var interface = Object.keys(responseJSON[i]);
                 var counters = responseJSON[i][interface];
                 }
-
+                var port_status = ""
+                var stp_fowarding_state = ""
+                
+                if (counters["Port_status"] == 0){
+                    port_status = "Enabled"
+                } else {
+                    port_status = "Disconnected"
+                }
+    
                 switch (j) {
                     case 0:
                         cell.innerHTML = interface;
@@ -249,7 +302,12 @@ function buildTable(xhr)
                         break;
                     case 6:
                         cell.innerHTML = counters["Rx_drops"];
-                         
+                        break;
+                    case 7:
+                        cell.innerHTML = port_status;
+                        break;
+                    case 8:
+                        cell.innerHTML = counters["STP_status"];
                     }
             }
         }
