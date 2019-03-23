@@ -2,6 +2,7 @@
 import collections
 import re
 import time
+import json
 
 import mysql.connector
 from mysql.connector import errorcode
@@ -12,8 +13,8 @@ from get_flows import Odl_Flow_Collector
 
 class L2FlowTracer(FlowTracer):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, user, password, host, db):
+        super().__init__(user, password, host, db)
 
     def trace_flows(self, source, dest):
         """Determine the path taken for traffic with a given source/dest ip in
