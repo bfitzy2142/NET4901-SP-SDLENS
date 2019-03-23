@@ -53,6 +53,31 @@
           </div>
         </div>
       </div>   
+      
+      <div class='Additional Options'>   
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a data-toggle="collapse" href="#collapse3">
+                    Additional Options</a>
+                  </h4>
+                </div>
+                <div id="collapse3" class="panel-collapse collapse">
+                  <div class="panel-body">
+                        <table style="width:50%" align="center">
+                                <tr>
+                                    <td colspan="3" align="center">
+                                        <input id="stp_topo" type="button" class="btn btn-primary" value="Show STP Topology">
+                                    </td>
+                                    <td colspan="3" align="center">
+                                        <input id="reset" type="button" class="btn btn-primary" value="Reset Topology">
+                                    </td>
+                                </tr>
+                            </table>
+                    </div>
+                </div>
+              </div>
+      
       <div class="panel-group">
         <div class="panel panel-default">
           <div class="panel-heading">
@@ -68,12 +93,14 @@
             </div>
           </div>
         </div>
+
+        
 <div>   
     
 
 <script type="text/javascript">
 
-        var nodes = new vis.DataSet([
+        var nodesArray = [
             {% for device in topologyInfo['devices'] %}
             {% if loop.index != topologyInfo['devices']|length %}
             {% if "host" not in device['id'] %}
@@ -89,9 +116,10 @@
             {% endif %}
             {% endif %}
             {% endfor %}
-        ]);
+        ];
 
-        var edges = new vis.DataSet([
+        
+        var edgesArray = [
             {% for link in topologyInfo['connections'] %}
             {% if loop.index != topologyInfo['connections']|length %}
             {id: '{{link['src_port']}}-{{link['dst_port']}}', from: '{{link['src']}}', to: '{{link['dst']}}', title: 'Source Port: <b> {{link['src_port']}} </b><br>Dst Port: <b>{{link['dst_port']}}</b>'},
@@ -99,8 +127,11 @@
             {id: '{{link['src_port']}}-{{link['dst_port']}}', from: '{{link['src']}}', to: '{{link['dst']}}', title: 'Source Port: <b> {{link['src_port']}} </b><br>Dst Port: <b>{{link['dst_port']}}</b>'}
             {% endif %}
             {% endfor %}
-        ]);
-    
+        ];
+
+        var nodes = new vis.DataSet(nodesArray);
+        var edges = new vis.DataSet(edgesArray);
+
         // create a network
         var container = document.getElementById('mynetwork');
     
@@ -140,6 +171,20 @@
             
         });
 
+        $("#reset").click(function() {
+            document.getElementById('titlebar').innerHTML = '';
+            document.getElementById('infobox').innerHTML = '';
+            nodes.clear();
+            edges.clear();
+            nodes.add(nodesArray);
+            edges.add(edgesArray);
+            network.stabilize();
+        });
+
+        $("#stp_topo").click(function() {
+            fetch_stp_topo();
+        });
+
 
         $(document).ready(function($){
             {% if "ignore" not in topologyInfo['link_ids'] %}    
@@ -160,13 +205,13 @@
             }
         });
         
-        //Event Handler to catch when user right clicks on a node
+        //Event Handler to catch when user left clicks on a node
         network.on("selectNode", function (params) {
             document.getElementById('titlebar').innerHTML = '';
             document.getElementById('infobox').innerHTML = '';
             var node = String(params.nodes);
 
-            //Limitation: Switch names must include openflow atm. 
+            //Limitation: Switch names must include 'openflow'. 
             if (node.includes('openflow')) {
                 document.getElementById('titlebar').innerHTML = '<h2>'+'<a href="switch/'+ node +'">' + node +'</a></h2>';
                 switchStats(node);
@@ -185,9 +230,9 @@
                 //Feature disabled for now
                 //edgeInfo(edgeName);
             }      
-        });
+        });  
 
-    </script>
+</script>
 
 {% endblock %}
  

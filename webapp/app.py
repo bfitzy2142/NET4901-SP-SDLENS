@@ -6,10 +6,6 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
 from requests import get
-
-# Deprecated in favour of gen_topo
-# from generatetopo import odl_topo_builder
-
 from gen_topo import generate_topology
 from get_stats import Odl_Stat_Collector
 from deviceInfo import odl_switch_info
@@ -21,8 +17,8 @@ from topo_db import Topo_DB_Interactions
 from get_flows import Odl_Flow_Collector
 from flow_summary_graphs import pull_flow_graphs
 from l2_flow_tracer import L2FlowTracer
-
 from authenticator import Authenticator
+
 # TODO: Find PEP8 way of importing modules
 
 import json
@@ -47,7 +43,18 @@ app.config['MYSQL_CURSORCLASS'] = auth.working_creds['database']['CURSORCLASS']
 # Init Mysql
 mysql = MySQL(app)
 
-# TODO: CLEAN UP CODE, MAKE INIT SCRIPT
+# Get SQL Auth & Creds
+yaml_db_creds = auth.working_creds['database']
+sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
+             "password": yaml_db_creds['MYSQL_PASSWORD'],
+             "host": yaml_db_creds['MYSQL_HOST']
+            }
+db = auth.working_creds['database']['MYSQL_DB']
+
+topo_db = Topo_DB_Interactions(**sql_creds, db=db)
+parser = generate_topology(**sql_creds, db=db)
+
+# TODO: CLEAN UP CODE
 
 @app.route("/")
 def index():
@@ -76,31 +83,27 @@ def dashboard():
 
 @app.route('/l2_trace_flow/<string:source_ip>/<string:dest_ip>', methods=['GET'])
 def rest_trace_flows(source_ip, dest_ip):
-    flow_tracer = L2FlowTracer()
+    flow_tracer = L2FlowTracer(**sql_creds, db=db)
     flow_trace_results = flow_tracer.trace_flows(source_ip, dest_ip)
     return jsonify(flow_trace_results)
+
+@app.route('/stp_topo')
+def get_stp_topo():
+    return jsonify(topo_db.build_stp_topology())
 
 
 @app.route("/topology", methods=['GET', 'POST'])
 @is_logged_in
 def topology():
     """
-    """
-    # Get SQL Auth & Creds
-    yaml_db_creds = auth.working_creds['database']
-    sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
-                 "password": yaml_db_creds['MYSQL_PASSWORD'],
-                 "host": yaml_db_creds['MYSQL_HOST']
-                 }
-    db = auth.working_creds['database']['MYSQL_DB']
-    parser = generate_topology(**sql_creds, db=db)
-
+    """    
     if (request.method == 'POST'):
         src_ip = str(request.form.getlist('src_ip')[0])
         dst_ip = str(request.form.getlist('dst_ip')[0])
-        flow_url = f'http://localhost:5000/l2_trace_flow/{src_ip}/{dst_ip}'
-        raw_api_data = get(flow_url)
-        flow_path = raw_api_data.json()
+
+        # Get the flow path
+        flow_tracer = L2FlowTracer(**sql_creds, db=db)
+        flow_path = flow_tracer.trace_flows(src_ip, dst_ip)
 
         link_ids = []
         # get flow path from json
@@ -155,33 +158,25 @@ def getControllerIP():
 def getSwitchCounters():
 
     if (request.method == 'POST'):
-        # Get SQL Auth & Creds
-        yaml_db_creds = auth.working_creds['database']
-        sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
-                        "password": yaml_db_creds['MYSQL_PASSWORD'],
-                        "host": yaml_db_creds['MYSQL_HOST']}
-        db = auth.working_creds['database']['MYSQL_DB']
-
         # Get counters for switch
-        obj = Topo_DB_Interactions(**sql_creds, db=db)
         raw_json = request.get_json()
         key = ''.join(raw_json.keys())
 
         if (key == 'switch'):
             switch = raw_json['switch']
-            counters = obj.switch_query(switch)
+            counters = topo_db.switch_query(switch)
             return jsonify(counters)
         elif (key == 'edge'):
             edge = raw_json['edge']
-            edgeinfo = obj.edge_query(edge)
+            edgeinfo = topo_db.edge_query(edge)
             return jsonify(edgeinfo)
         elif (key == 'host'):
             host = raw_json['host']
-            hostinfo = obj.host_query(host)
+            hostinfo = topo_db.host_query(host)
             return jsonify(hostinfo)
         elif (key == 'switch_throughput'):
             switch = raw_json['switch_throughput']
-            return jsonify(obj.calculate_throughput(switch))
+            return jsonify(topo_db.calculate_throughput(switch))
 
 @app.route("/graphs", methods=['GET', 'POST'])
 @is_logged_in

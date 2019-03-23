@@ -2,7 +2,7 @@
 import mysql.connector
 from mysql.connector import errorcode
 from time import strftime, localtime
-
+import json
 
 class Topo_DB_Interactions():
     """Module to handle SQL queries for topo webapp actions
@@ -22,7 +22,6 @@ class Topo_DB_Interactions():
         """Method to get counters from the db to be
         displayed on the topology page when a user clicks
         an active switch.
-
         Parameters:
         Switch - The switch to obtain statisitcs for.
         """
@@ -51,7 +50,9 @@ class Topo_DB_Interactions():
                     "Rx_drops": row[7],
                     "Tx_drops": row[8],
                     "Rx_errs": row[9],
-                    "Tx_errs": row[10]
+                    "Tx_errs": row[10],
+                    "Port_status": row[11],
+                    "STP_status": row[12]
                 }
             }
             dict_list.append(d)
@@ -92,11 +93,82 @@ class Topo_DB_Interactions():
                 'mac': host[5:]
                 }
 
+    def STP_query(self, switch):
+        """Method to get STP counters from the db
+        Parameters:
+        Switch - The switch to obtain STP statisitcs for.
+        """
+        # Switch Statistics Table
+        ctr_table = f"{switch}_counters"
+
+        # Get lastest timestamp
+        qry_latest = f"SELECT max(Timestamp) FROM {ctr_table}"
+
+        self.cursor.execute(qry_latest)
+        raw_result = self.cursor.fetchall()
+        date = str(raw_result[0][0])
+
+        qry_sw = f'SELECT Interface, STP_state FROM {ctr_table} WHERE Timestamp = "{date}"'
+
+        self.cursor.execute(qry_sw)
+        raw_result = self.cursor.fetchall()
+
+        sw_interfaces = {}
+        for row in raw_result:
+            sw_interfaces[row[0]] = {
+                "stp_status": row[1]
+                }
+
+        return sw_interfaces
+
+    def build_stp_topology(self):
+        switches = self.get_switches()
+        stp_status = {}
+
+        # Get STP state for all interfaces
+        for sw in switches:
+            sw_stp_status = self.STP_query(sw)
+            stp_status[sw] = sw_stp_status
+
+        # Find links and assign STP state to them
+
+        # Keep track of links already found
+        ports_touched = []
+        stp_topology = {}
+
+        for switch in stp_status.keys():
+            for inter in stp_status[switch].keys():
+                if (inter not in ports_touched and 'LOCAL' not in inter):
+                    query = ('select SRCPORT, DSTPORT from links where'
+                            f' SRCPORT = "{inter}" or DSTPORT = "{inter}"')
+                    self.cursor.execute(query)
+                    raw_data = self.cursor.fetchall()
+                    src_port = str(raw_data[0][0])
+                    dst_port = str(raw_data[0][1])
+
+                    ports_touched.append(src_port)
+                    ports_touched.append(dst_port)
+
+                    link_id = f'{src_port}-{dst_port}'
+                    stp_port_stat = stp_status[switch][inter]['stp_status']
+                    stp_topology[link_id] = stp_port_stat
+
+        return stp_topology
+
+    def get_switches(self):
+        """Returns a list of switches stored in the DB."""
+        switch_list = []
+        self.cursor.execute("SELECT Node FROM nodes WHERE Type='switch'")
+        switch_tuples = self.cursor.fetchall()
+
+        for switch in switch_tuples:
+            switch_list.append(str(switch[0].replace(":", "")))
+        return(switch_list)
+
     def calculate_throughput(self, raw_node):
         """ Query method to get specified node's
         interfaces with transmitted and received bits
         calcalated from stats in the sql database.
-
         Returns:
         Dict - device and their interface rx & tx bps
         """
@@ -162,7 +234,6 @@ class Topo_DB_Interactions():
     def pdtc(self, node, latest_date, penultimate_date):
         """
         pdtc stands for Per device throughput calculation.
-
         Returns:
         Dict - Each interface name as key and Rx and Tx
                port utalization in bps as value.
