@@ -26,7 +26,7 @@ class FlowAgent(AbstractAgent):
             "ID INT NOT NULL AUTO_INCREMENT,"
             "Timestamp DATETIME NOT NULL,"
             "Active_Flows INT NOT NULL,"
-            "Packets_Looked_Up INT NOT NULL,"
+            "Packets_Looked_Up BLOB NOT NULL,"
             "Packets_Matched INT NOT NULL,"
             "PRIMARY KEY (ID) );")
         self.sql_tool.create_sql_table(table)

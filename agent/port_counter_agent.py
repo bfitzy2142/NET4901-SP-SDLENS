@@ -34,7 +34,7 @@ class PortCounterAgent(AbstractAgent):
             "Rx_errs INT NOT NULL,"
             "Tx_errs INT NOT NULL,"
             "Port_down BOOL NOT NULL,"
-            "STP_Forwarding BOOL NOT NULL,"
+            "STP_state VARCHAR(20) NOT NULL,"
             "PRIMARY KEY (ID) );")
         self.sql_tool.create_sql_table(table)
 
@@ -88,27 +88,35 @@ class PortCounterAgent(AbstractAgent):
             the fields should correspond to the SD_Lens SQL tables.
         """
         port_stats = {}
+        stp_key = 'stp-status-aware-node-connector:status'
         for interface in response:
-            int_id = interface
-            int_stats = response[interface]['node-connector'][0][self.int_counter_str]
-            int_status = response[interface]['node-connector'][0][self.int_state]
-            port_stats[int_id] = {}
-            port_stats[int_id]["rx-pckts"] = int_stats["packets"]["received"]
-            port_stats[int_id]["tx-pckts"] = int_stats["packets"]["transmitted"]
-            port_stats[int_id]["rx-bytes"] = int_stats["bytes"]["received"]
-            port_stats[int_id]["tx-bytes"] = int_stats["bytes"]["transmitted"]
-            port_stats[int_id]["rx-drops"] = int_stats["receive-drops"]
-            port_stats[int_id]["tx-drops"] = int_stats["transmit-drops"]
-            port_stats[int_id]["rx-errs"] = int_stats["receive-errors"]
-            port_stats[int_id]["tx-errs"] = int_stats["transmit-errors"]
-            port_stats[int_id]['port-down'] = int_status["link-down"]
-            port_stats[int_id]["timestamp"] = self.add_timestamp()
-            keys = response[interface]['node-connector'][0].keys()
-            print(keys)
-            if ('stp-status-aware-node-connector:status' in keys):
-                port_stats[int_id]['stp_fowarding'] = False
-            else:
-                port_stats[int_id]['stp_fowarding'] = True
+            try:
+                int_id = interface
+                int_params = response[interface]['node-connector'][0]
+                int_stats = response[interface]['node-connector'][0][self.int_counter_str]
+                int_status = response[interface]['node-connector'][0][self.int_state]
+                port_stats[int_id] = {}
+                port_stats[int_id]["rx-pckts"] = int_stats["packets"]["received"]
+                port_stats[int_id]["tx-pckts"] = int_stats["packets"]["transmitted"]
+                port_stats[int_id]["rx-bytes"] = int_stats["bytes"]["received"]
+                port_stats[int_id]["tx-bytes"] = int_stats["bytes"]["transmitted"]
+                port_stats[int_id]["rx-drops"] = int_stats["receive-drops"]
+                port_stats[int_id]["tx-drops"] = int_stats["transmit-drops"]
+                port_stats[int_id]["rx-errs"] = int_stats["receive-errors"]
+                port_stats[int_id]["tx-errs"] = int_stats["transmit-errors"]
+                port_stats[int_id]['port-down'] = int_status["link-down"]
+                port_stats[int_id]["timestamp"] = self.add_timestamp()
+                keys = response[interface]['node-connector'][0].keys()
+
+                if (stp_key in keys):
+                    if (int_params[stp_key] == 'discarding'):
+                        port_stats[int_id]['stp_state'] = 'Discarding'
+                    elif (int_params[stp_key] == 'forwarding'):
+                        port_stats[int_id]['stp_state'] = 'Forwarding'
+                else:
+                    port_stats[int_id]['stp_state'] = 'N/A'
+            except:
+                continue
         return port_stats
 
     def store_data(self, data):
@@ -124,13 +132,13 @@ class PortCounterAgent(AbstractAgent):
             sql_insert = (f"INSERT INTO {self.node}_counters "
                           "(Interface, Timestamp, Rx_pckts, Tx_pckts, "
                           "Rx_bytes, Tx_bytes, Rx_drops, Tx_drops, "
-                          "Rx_errs, Tx_errs, Port_down, STP_Forwarding) VALUES "
+                          "Rx_errs, Tx_errs, Port_down, STP_state) VALUES "
                           "('{}', '{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {})")
             query = sql_insert.format(interface, int_data['timestamp'],
                                       int_data['rx-pckts'], int_data['tx-pckts'],
                                       int_data['rx-bytes'], int_data['tx-bytes'],
                                       int_data['rx-drops'], int_data['tx-drops'],
                                       int_data['rx-errs'], int_data['tx-errs'],
-                                      int_data['port-down'], int_data['stp_fowarding'])
+                                      int_data['port-down'], "'"+int_data['stp_state']+"'")
             self.sql_tool.send_insert(query)
 
