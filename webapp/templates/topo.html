@@ -189,9 +189,10 @@
         $(document).ready(function($){
             {% if "ignore" not in topologyInfo['link_ids'] %}    
             {% for link in topologyInfo['link_ids'] %}
-            edges.update({id:'{{link}}',color:{color:'red'}});
+            edges.update({id:'{{link}}',color:{color:'green'}});
             {% endfor %}
-            document.getElementById('infobox').innerHTML = '<h2><b>Trace Successful!</b></h2>';
+            document.getElementById('titlebar').innerHTML = '<h2><b>Trace Successful!</b></h2>';
+            document.getElementById('infobox').innerHTML = '<div class="stp_green"></div> <p>Traced Path</p>';
             {% endif %}
         });
         

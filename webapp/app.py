@@ -51,9 +51,6 @@ sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
             }
 db = auth.working_creds['database']['MYSQL_DB']
 
-topo_db = Topo_DB_Interactions(**sql_creds, db=db)
-parser = generate_topology(**sql_creds, db=db)
-
 # TODO: CLEAN UP CODE
 
 @app.route("/")
@@ -89,6 +86,7 @@ def rest_trace_flows(source_ip, dest_ip):
 
 @app.route('/stp_topo')
 def get_stp_topo():
+    topo_db = Topo_DB_Interactions(**sql_creds, db=db)
     return jsonify(topo_db.build_stp_topology())
 
 
@@ -96,7 +94,8 @@ def get_stp_topo():
 @is_logged_in
 def topology():
     """
-    """    
+    """
+    parser = generate_topology(**sql_creds, db=db)
     if (request.method == 'POST'):
         src_ip = str(request.form.getlist('src_ip')[0])
         dst_ip = str(request.form.getlist('dst_ip')[0])
@@ -156,8 +155,9 @@ def getControllerIP():
 @app.route("/topo-switch-stats", methods=['GET', 'POST'])
 @is_logged_in
 def getSwitchCounters():
-
+    
     if (request.method == 'POST'):
+        topo_db = Topo_DB_Interactions(**sql_creds, db=db)
         # Get counters for switch
         raw_json = request.get_json()
         key = ''.join(raw_json.keys())
