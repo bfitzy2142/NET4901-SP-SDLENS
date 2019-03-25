@@ -28,6 +28,8 @@ class L2FlowTracer(FlowTracer):
             [dict] -- Returns a dictionary with a list of links traversed and
             a list of switches + flows matched.
         """
+        self.flow_path = []
+        self.links_traversed = []
         # Find the corresponding hosts and the switches they connect to.
         src_host = self.find_host(source)
         dest_host = self.find_host(dest)

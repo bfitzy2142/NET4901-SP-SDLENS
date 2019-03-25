@@ -50,6 +50,7 @@ sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
              "host": yaml_db_creds['MYSQL_HOST']
             }
 db = auth.working_creds['database']['MYSQL_DB']
+flow_tracer = L2FlowTracer(**sql_creds, db=db)
 
 # TODO: CLEAN UP CODE
 
@@ -80,7 +81,7 @@ def dashboard():
 
 @app.route('/l2_trace_flow/<string:source_ip>/<string:dest_ip>', methods=['GET'])
 def rest_trace_flows(source_ip, dest_ip):
-    flow_tracer = L2FlowTracer(**sql_creds, db=db)
+    
     flow_trace_results = flow_tracer.trace_flows(source_ip, dest_ip)
     return jsonify(flow_trace_results)
 
@@ -90,33 +91,12 @@ def get_stp_topo():
     return jsonify(topo_db.build_stp_topology())
 
 
-@app.route("/topology", methods=['GET', 'POST'])
+@app.route("/topology")
 @is_logged_in
 def topology():
-    """
-    """
     parser = generate_topology(**sql_creds, db=db)
-    if (request.method == 'POST'):
-        src_ip = str(request.form.getlist('src_ip')[0])
-        dst_ip = str(request.form.getlist('dst_ip')[0])
-
-        # Get the flow path
-        flow_tracer = L2FlowTracer(**sql_creds, db=db)
-        flow_path = flow_tracer.trace_flows(src_ip, dst_ip)
-
-        link_ids = []
-        # get flow path from json
-        for link in flow_path['links_traversed']:
-            link_id = f"{link['SRCPORT']}-{link['DSTPORT']}"
-            link_ids.append(link_id)
-
-        topologyInfo = parser.fetch_topology()
-        topologyInfo['link_ids'] = link_ids
-        return render_template('topo.html', topologyInfo=topologyInfo)
-    else:
-        topologyInfo = parser.fetch_topology()
-        topologyInfo['link_ids'] = 'ignore'
-        return render_template('topo.html', topologyInfo=topologyInfo)
+    topologyInfo = parser.fetch_topology()
+    return render_template('topo.html', topologyInfo=topologyInfo)
 
 
 @app.route("/node-stats")
@@ -155,7 +135,7 @@ def getControllerIP():
 @app.route("/topo-switch-stats", methods=['GET', 'POST'])
 @is_logged_in
 def getSwitchCounters():
-    
+
     if (request.method == 'POST'):
         topo_db = Topo_DB_Interactions(**sql_creds, db=db)
         # Get counters for switch
@@ -223,7 +203,7 @@ def switch_stats(switch_name):
     # Get flow summary stats
     flow_s_graphs = pull_flow_graphs(switch_num, time)
     render_kwargs["flow_s_graph"] = flow_s_graphs
-    
+
     return render_template("switch_stats.html", **render_kwargs)
 
 
