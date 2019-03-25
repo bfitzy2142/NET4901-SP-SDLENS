@@ -13,6 +13,8 @@ import getpass
 import json
 import yaml
 import os
+import sys
+import signal
 
 from mysql.connector import errorcode
 
@@ -239,6 +241,13 @@ def leave():
         exit()
     return leave_val
 
+
+def signal_handler(sig, frame):
+        os.system("kill $(ps aux | grep 'agent/__main__.py' | awk '{print $2}')")
+        os.system("kill $(ps aux | grep 'webapp/app.py' | awk '{print $2}')")
+        sys.exit(0)
+
+
 if __name__ == '__main__':
     get_admin_info()
     clear_db()
@@ -246,3 +255,7 @@ if __name__ == '__main__':
     #Questionable Multi-threading
     os.system("python3 webapp/app.py &")
     os.system("python3 agent/__main__.py &")
+
+    #Killing the processes
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.pause()
