@@ -45,7 +45,8 @@
                             </div>
                         </td>
                         <td colspan="3" align="right">
-                            <input disabled id="submit" type="submit" class="btn btn-primary" value="Trace">
+                            <input disabled id="submit" type="button" class="btn btn-primary" value="Trace">
+                            <input disabled id="swap" type="button" class="btn btn-primary" value="Swap Path">
                         </td>
                     </tr>
                 </table>
@@ -67,10 +68,10 @@
                         <table style="width:50%" align="center">
                                 <tr>
                                     <td colspan="3" align="center">
-                                        <input id="stp_topo" type="button" class="btn btn-primary" value="Show STP Topology">
+                                        <input id="stp_topo" type="button" class="btn btn-primary" value="Spanning Tree Topology">
                                     </td>
                                     <td colspan="3" align="center">
-                                        <input id="reset" type="button" class="btn btn-primary" value="Reset Topology">
+                                        <input id="reset" type="button" class="btn btn-primary" value="Reset">
                                     </td>
                                 </tr>
                             </table>
@@ -147,56 +148,60 @@
 
         var network = new vis.Network(container, data, options);
 
-        
-        $("#src_ip").change(function() {
+
+        $("#submit").click(function(){
+            refresh();
             src_ip = $("#src_ip option:selected").val();
             dst_ip = $("#dst_ip option:selected").val();
+            fetch_flow_topo(src_ip, dst_ip);
+        });
+
+        
+        $("#src_ip").change(function() {
+            var src_ip = $("#src_ip option:selected").val();
+            var dst_ip = $("#dst_ip option:selected").val();
             
             if (src_ip == dst_ip || dst_ip == 'na'){
                 $("#submit").attr("disabled", true);
+                $("#swap").attr("disabled", true);
             } else {
                 $("#submit").attr("disabled", false);
+                $("#swap").attr("disabled", false);
             }
         });
 
         $("#dst_ip").change(function() {
-            src_ip = $("#src_ip option:selected").val();
-            dst_ip = $("#dst_ip option:selected").val();
+            var src_ip = $("#src_ip option:selected").val();
+            var dst_ip = $("#dst_ip option:selected").val();
             
             if (dst_ip == src_ip || src_ip == 'na'){
                 $("#submit").attr("disabled", true);
+                $("#swap").attr("disabled", true);
             } else {
                 $("#submit").attr("disabled", false);
+                $("#swap").attr("disabled", false);
             }
             
         });
 
         $("#reset").click(function() {
-            document.getElementById('titlebar').innerHTML = '';
-            document.getElementById('infobox').innerHTML = '';
-            nodes.clear();
-            edges.clear();
-            nodes.add(nodesArray);
-            edges.add(edgesArray);
-            network.stabilize();
+            refresh();
+        });
+
+        $("#swap").click(function() {
+            var src_ip = $("#src_ip option:selected").val();
+            var dst_ip = $("#dst_ip option:selected").val();
+
+            $("#dst_ip").val(src_ip);
+            $("#src_ip").val(dst_ip);
         });
 
         $("#stp_topo").click(function() {
+            refresh();
             fetch_stp_topo();
         });
 
 
-        $(document).ready(function($){
-            {% if "ignore" not in topologyInfo['link_ids'] %}    
-            {% for link in topologyInfo['link_ids'] %}
-            edges.update({id:'{{link}}',color:{color:'green'}});
-            {% endfor %}
-            document.getElementById('titlebar').innerHTML = '<h2><b>Trace Successful!</b></h2>';
-            document.getElementById('infobox').innerHTML = '<div class="stp_green"></div> <p>Traced Path</p>';
-            {% endif %}
-        });
-        
-        
         //Event Handler to catch when user hovers a node
         network.on("hoverNode", function (params) {
             var node = String(params.node);

@@ -81,6 +81,76 @@ function renderPopUp(xhr, node) {
 }
 
 /*
+Function to call flow_tracer api and handle response 
+via the handleFlowTrace callback function
+*/
+function fetch_flow_topo(src_ip, dst_ip)
+{
+    document.getElementById('titlebar').innerHTML = '<h2><b>Waiting...</b></h2>';
+    api = "/l2_trace_flow/" + src_ip + "/" + dst_ip
+    var xhr = new XMLHttpRequest();
+    
+    if (xhr)
+    {
+        // open( method, location, isAsynchronous )
+        xhr.open("GET", api, true);
+        // bind callback function
+        xhr.onreadystatechange = function()
+        {
+          handleFlowTrace(xhr);
+        };
+        xhr.send(); // Send request
+    }
+}
+
+/*
+ Callback function that processes the server response for flow trace 
+ information that is used to display an acurrate path data packets
+ would travel from a given source to destination ip address
+ */
+function handleFlowTrace(xhr) {
+    if (xhr.readyState == 4 && xhr.status == 200)
+    {
+        responseJSON = JSON.parse(xhr.responseText);
+        
+        var flow_path = responseJSON['flow_path'];
+
+        var transit_switches = [];
+        for (var i = 0; i < flow_path.length; i++){
+            transit_switches.push(flow_path[i]['switch']);
+        }
+
+        var links_traversed = responseJSON['links_traversed'];
+        
+        for (var i = 0; i < links_traversed.length; i++) {
+
+            link = links_traversed[i]['SRCPORT'] + '-' + links_traversed[i]['DSTPORT'];
+            if (i == 0){
+                src_link = links_traversed[i]['SRCPORT'];
+                if (src_link.includes('host')){
+                    edges.update({id: link, color:{color:'green'}, arrows:'to'});
+                }else {
+                    edges.update({id: link, color:{color:'green'}, arrows:'from'});
+                }
+            }else {
+                src_sw = transit_switches[i-1];
+                src_link = links_traversed[i]['SRCPORT'];
+
+                // If the flow source link is from the flow source switch draw an arrow to the flow dest node
+                if (src_link.includes(src_sw)){
+                    edges.update({id: link, color:{color:'green'}, arrows:'to'});
+                } else { //The opposite case applies and the destination port for the link-id is the flow source. Therefore, draw arrow from dest port
+                    edges.update({id: link, color:{color:'green'}, arrows:'from'});
+                }
+            }
+        }
+
+        document.getElementById('titlebar').innerHTML = '<h2><b>Trace Successful!</b></h2>';
+        document.getElementById('infobox').innerHTML = '<div class="stp_green"></div> <p>Traced Path</p>';
+    }
+}
+
+/*
 Function to call stp_topo api 
 */
 function fetch_stp_topo()
@@ -119,7 +189,7 @@ function handleSTP(xhr) {
                     edges.update({id: keys[i], color:{color:'black'}});
             }
         }
-        document.getElementById('titlebar').innerHTML = '<h2><b>Displaying STP Topology</b></h2>';
+        document.getElementById('titlebar').innerHTML = '<h2><b>Spanning Tree Topology</b></h2>';
         document.getElementById('infobox').innerHTML = '<div class="stp_green"></div> <p>Forwarding State</p> <div class="stp_red"></div> <p>Discarding State</p> <div class="stp_black"></div><p>STP Not Enabled</p>';
     }
 }
@@ -198,8 +268,6 @@ function handleEdge(xhr) {
       
       //add table to infobox div
       document.getElementById('infobox').appendChild(table);
-      //move page view to the bottom
-      window.scrollTo(0, document.body.scrollHeight);
   }
 }
 
@@ -313,8 +381,6 @@ function buildTable(xhr)
         }
         //add table to infobox div
         document.getElementById('infobox').appendChild(table);
-        //move page view to the bottom
-        window.scrollTo(0, document.body.scrollHeight);
     }
 }
 
@@ -397,8 +463,15 @@ function handleHost(xhr) {
         document.getElementById('titlebar').innerHTML = '<h2><b>Host: '+ ip +'</b></h2>';
         //add table to infobox div
         document.getElementById('infobox').appendChild(table);
-        //move page view to the bottom
-        window.scrollTo(0, document.body.scrollHeight);
-        
     }
+}
+
+function refresh() {
+    document.getElementById('titlebar').innerHTML = '';
+    document.getElementById('infobox').innerHTML = '';
+    nodes.clear();
+    edges.clear();
+    nodes.add(nodesArray);
+    edges.add(edgesArray);
+    network.stabilize();
 }
