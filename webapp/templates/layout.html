@@ -10,7 +10,7 @@
     <script type="text/javascript" src="{{ url_for('static', filename='vis.min.js') }}"></script>
     <link href="{{ url_for('static', filename='vis.min.css') }}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='topo.css') }}">
-    
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
 
   </head>
   <body>
@@ -20,7 +20,7 @@
       {% block body %}{% endblock %}
     </div>
 
-    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+    
     
   </body>
 </html>
