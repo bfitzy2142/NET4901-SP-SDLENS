@@ -8,11 +8,17 @@ from abstract_agent import AbstractAgent
 class LinkAgent(AbstractAgent):
     """
     Description: OpenDayLight RESTCONF API parser for device links.
+
+        March 2019
+        SDLENS Monitoring Solution
+        Brad Fitzgerald
+        bradfitzgerald@cmail.carleton.ca
     """
 
     def __init__(self, controller_ip):
         """"Initalizer for LinkAgent, initializes parent object."""
         super().__init__(controller_ip)
+        self.create_avgAgent_table()
 
     def get_data(self):
         """Retrieves json data containing the connections of the
@@ -92,7 +98,11 @@ class LinkAgent(AbstractAgent):
         self.create_links_table()
 
         for link in data:
-            self.store_links(link['src'], link['dst'], link['src_port'], link['dst_port'])
+            self.store_links(link['src'],
+                             link['dst'],
+                             link['src_port'],
+                             link['dst_port']
+                             )
 
     def store_links(self, src, dst, src_port, dst_port):
         """Inserts a unique link into the 'links' table.
@@ -122,7 +132,19 @@ class LinkAgent(AbstractAgent):
             "SRCPORT VARCHAR(32) NOT NULL,"
             "DSTPORT VARCHAR(32) NOT NULL,"
             "PRIMARY KEY (ID) );")
-        
+
+        self.sql_tool.create_sql_table(table)
+
+    def create_avgAgent_table(self):
+        """
+        Table to store previous average time spent by agent
+        modules updating each switch
+        """
+        table = (
+            "CREATE TABLE average_agent_time("
+            "ID int NOT NULL AUTO_INCREMENT,"
+            "average_time FLOAT NOT NULL,"
+            "PRIMARY KEY (ID) );")
         self.sql_tool.create_sql_table(table)
 
     def retrieve_links(self):
@@ -135,7 +157,7 @@ class LinkAgent(AbstractAgent):
         """
         connections = []
         link_query = "select * from links"
-        
+
         link_rows = self.sql_tool.send_select(link_query)
 
         for row in link_rows:
@@ -175,4 +197,3 @@ class LinkAgent(AbstractAgent):
         links = self.retrieve_links()
         nodes = self.retrieve_devices()
         return {'links': links, 'nodes': nodes}
-

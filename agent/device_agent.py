@@ -74,10 +74,10 @@ class DeviceAgent(AbstractAgent):
         int_info = {}
         fni = 'flow-node-inventory:'
         for switch in response:
-         
+
             # Node connector, flow inventory List
             nc_fi_list = response[switch]['node-connector'][0]
-          
+
             int_info[switch] = {}
             int_info[switch]["p-num"] = nc_fi_list[fni + "port-number"]
             int_info[switch]["pt-name"] = nc_fi_list[fni + "name"]
@@ -98,7 +98,7 @@ class DeviceAgent(AbstractAgent):
         for interface in data:
             int_data = data[interface]
             stripped_node = self.node.replace(":", "")
-            print(stripped_node)
+            print(f'Populating DB w/:{interface}.')
             sql_insert = (f"INSERT INTO {stripped_node}_info"
                           "(Interface, Port_Number, Port_Name, "
                           "Speed, Hw_Addr, State_Bl, State_DW)"
