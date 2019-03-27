@@ -3,7 +3,13 @@ JavaScript functions that are used to preform
 API calls to the Flask backend to display useful
 information to the user such as packet count, 
 interface throughput, host information, etc.
-***SDLENS 2019***
+    
+    ***SDLENS 2019***
+    March 2019
+    SDLENS Monitoring Solution
+    Brad Fitzgerald
+    bradfitzgerald@cmail.carleton.ca
+
 */
 
 /*
@@ -86,7 +92,7 @@ via the handleFlowTrace callback function
 */
 function fetch_flow_topo(src_ip, dst_ip)
 {
-    document.getElementById('titlebar').innerHTML = '<h2><b>Waiting...</b></h2>';
+    document.getElementById('titlebar').innerHTML = '<h2><b>Finding a path...</b></h2>';
     api = "/l2_trace_flow/" + src_ip + "/" + dst_ip
     var xhr = new XMLHttpRequest();
     
@@ -128,25 +134,26 @@ function handleFlowTrace(xhr) {
             if (i == 0){
                 src_link = links_traversed[i]['SRCPORT'];
                 if (src_link.includes('host')){
-                    edges.update({id: link, color:{color:'green'}, arrows:'to'});
+                    edges.update({id: link, color:{color:'green'}, arrows:'to', width: 2});
                 }else {
-                    edges.update({id: link, color:{color:'green'}, arrows:'from'});
+                    edges.update({id: link, color:{color:'green'}, arrows:'from', width: 2});
                 }
             }else {
                 src_sw = transit_switches[i-1];
                 src_link = links_traversed[i]['SRCPORT'];
 
-                // If the flow source link is from the flow source switch draw an arrow to the flow dest node
+                // If the source within the link-id is from the flow source switch draw an arrow to the flow dest node
                 if (src_link.includes(src_sw)){
-                    edges.update({id: link, color:{color:'green'}, arrows:'to'});
-                } else { //The opposite case applies and the destination port for the link-id is the flow source. Therefore, draw arrow from dest port
-                    edges.update({id: link, color:{color:'green'}, arrows:'from'});
+                    edges.update({id: link, color:{color:'green'}, arrows:'to', width: 2});
+                } else { //The opposite case applies and the destination port for the link-id is the flow source. 
+                         //Therefore, draw arrow 'from' the dest port
+                    edges.update({id: link, color:{color:'green'}, arrows:'from', width: 2});
                 }
             }
         }
-
         document.getElementById('titlebar').innerHTML = '<h2><b>Trace Successful!</b></h2>';
         document.getElementById('infobox').innerHTML = '<div class="stp_green"></div> <p>Traced Path</p>';
+
     }
 }
 
@@ -155,6 +162,7 @@ Function to call stp_topo api
 */
 function fetch_stp_topo()
 {
+    document.getElementById('titlebar').innerHTML = '<h2><b>Calculating L2 Topology...</b></h2>';
     var xhr = new XMLHttpRequest();
     
     if (xhr)
@@ -180,17 +188,21 @@ function handleSTP(xhr) {
             stp_state = responseJSON[keys[i]]
             switch (stp_state) {
                 case 'Forwarding':
-                    edges.update({id: keys[i], color:{color:'Green'}});
+                    edges.update({id: keys[i], color:{color:'Green'}, width: 4});
                     break;
                 case 'Discarding':
-                    edges.update({id: keys[i], color:{color:'red'}});
+                    edges.update({id: keys[i], color:{color:'red'} , width: 4});
                     break;
                 case 'N/A':
-                    edges.update({id: keys[i], color:{color:'black'}});
+                    edges.update({id: keys[i], color:{color:'black'}, width: 2});
             }
         }
+        
         document.getElementById('titlebar').innerHTML = '<h2><b>Spanning Tree Topology</b></h2>';
-        document.getElementById('infobox').innerHTML = '<div class="stp_green"></div> <p>Forwarding State</p> <div class="stp_red"></div> <p>Discarding State</p> <div class="stp_black"></div><p>STP Not Enabled</p>';
+        document.getElementById('infobox').innerHTML = 
+        '<div class="stp_green"></div> <p>Forwarding State</p>\
+        <div class="stp_red"></div> <p>Discarding State</p>\
+        <div class="stp_black"> </div><p>STP Disabled/p>';
     }
 }
 
@@ -274,7 +286,7 @@ function handleEdge(xhr) {
 /*
 Function to call topo-switch-stats API via POST and gather 
 switch interface counter Information with the help of the
-handleThroughput method on API response. 
+populateSwitchCounters method on API response. 
 */
 function switchStats(node)
 {
@@ -287,7 +299,7 @@ function switchStats(node)
         // bind callback function
         xhr.onreadystatechange = function()
         {
-            buildTable(xhr);
+            populateSwitchCounters(xhr);
         };
         // actually send the Ajax request 
         //Limitation: Switch names must include openflow atm.
@@ -302,7 +314,7 @@ function switchStats(node)
  and builds a table with the selected switch's interface information that is
  presented to the user.
  */
-function buildTable(xhr)
+function populateSwitchCounters(xhr)
 {
     if (xhr.readyState == 4 && xhr.status == 200)
     {
@@ -465,7 +477,9 @@ function handleHost(xhr) {
         document.getElementById('infobox').appendChild(table);
     }
 }
-
+/*
+Function to reset toplogy page
+*/
 function refresh() {
     document.getElementById('titlebar').innerHTML = '';
     document.getElementById('infobox').innerHTML = '';
