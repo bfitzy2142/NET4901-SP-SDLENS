@@ -30,6 +30,8 @@ app = Flask(__name__)
 # aux = Webapp_Auxiliary()
 # odlControllerList = aux.device_scan()
 # controllerIP = odlControllerList[0]
+odl_user = auth.working_creds['controller']['username']
+odl_password = auth.working_creds['controller']['password']
 controllerIP = auth.working_creds['controller']['controller-ip']
 
 
@@ -51,6 +53,9 @@ sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
             }
 db = auth.working_creds['database']['MYSQL_DB']
 flow_tracer = L2FlowTracer(**sql_creds, db=db)
+topo = generate_topology(**sql_creds, db=db)
+topo_db = Topo_DB_Interactions(**sql_creds, db=db)
+
 
 # TODO: CLEAN UP CODE
 
@@ -81,21 +86,18 @@ def dashboard():
 
 @app.route('/l2_trace_flow/<string:source_ip>/<string:dest_ip>', methods=['GET'])
 def rest_trace_flows(source_ip, dest_ip):
-    
     flow_trace_results = flow_tracer.trace_flows(source_ip, dest_ip)
     return jsonify(flow_trace_results)
 
 @app.route('/stp_topo')
 def get_stp_topo():
-    topo_db = Topo_DB_Interactions(**sql_creds, db=db)
     return jsonify(topo_db.build_stp_topology())
 
 
 @app.route("/topology")
 @is_logged_in
 def topology():
-    parser = generate_topology(**sql_creds, db=db)
-    topologyInfo = parser.fetch_topology()
+    topologyInfo = topo.fetch_topology()
     return render_template('topo.html', topologyInfo=topologyInfo)
 
 
@@ -121,7 +123,7 @@ def flow_stats():
 @app.route("/device-info")
 @is_logged_in
 def device_info():
-    o = odl_switch_info(controllerIP)
+    o = odl_switch_info(controllerIP, odl_user, odl_password)
     return render_template('deviceInfo.html', nodes=o.run())
 
 
