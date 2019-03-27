@@ -4,8 +4,14 @@ from mysql.connector import errorcode
 from time import strftime, localtime
 import json
 
+
 class Topo_DB_Interactions():
-    """Module to handle SQL queries for topo webapp actions
+    """
+        Module to handle SQL queries for topo webapp actions
+        March 2019
+        SDLENS Monitoring Solution
+        Brad Fitzgerald
+        bradfitzgerald@cmail.carleton.ca
     """
 
     def __init__(self, user, password, host, db):
@@ -15,30 +21,31 @@ class Topo_DB_Interactions():
             "host": host,
             "db": db
         }
-        self.cnx = mysql.connector.connect(**self.sql_auth)
-        self.cursor = self.cnx.cursor()
 
     def switch_query(self, switch):
         """Method to get counters from the db to be
         displayed on the topology page when a user clicks
         an active switch.
-        Parameters:
-        Switch - The switch to obtain statisitcs for.
+
+        Attributes:
+            Switch {str} - The switch to obtain statisitcs for.
+
+        Returns:
+            Dict {} - Port counter statistics
         """
+
         # Switch Statistics Table
         ctr_table = f"{switch}_counters"
 
         # Get lastest timestamp
         qry_latest = f"SELECT max(Timestamp) FROM {ctr_table}"
 
-        self.cursor.execute(qry_latest)
-        raw_result = self.cursor.fetchall()
+        raw_result = self.sql_select_query(qry_latest)
         date = str(raw_result[0][0])
 
         qry_sw = f'SELECT * FROM {ctr_table} WHERE Timestamp = "{date}"'
 
-        self.cursor.execute(qry_sw)
-        raw_result = self.cursor.fetchall()
+        raw_result = self.sql_select_query(qry_sw)
 
         dict_list = []
 
@@ -56,28 +63,41 @@ class Topo_DB_Interactions():
                 }
             }
             dict_list.append(d)
-
         return dict_list
 
     def edge_query(self, edge):
+        """
+        Method used to obtain the links of a specified edge
+
+        Attributes:
+            edge {str}: the edge to be looked at
+
+        Retruns:
+            Dict {} - The source port and dest port
+        """
         node_list = edge.split('-')
 
         query_edges = (f'select SRCPORT, DSTPORT from links where'
                        f'(SRC = "{node_list[0]}" and DST = "{node_list[1]}") or'
                        f'(SRC = "{node_list[1]}" and DST = "{node_list[0]}")')
 
-        self.cursor.execute(query_edges)
-        raw_result = self.cursor.fetchall()
-
+        raw_result = self.sql_select_query(query_edges)
         return {'src_port': raw_result[0][0], 'dst_port': raw_result[0][1]}
 
     def host_query(self, host):
+        """
+        Method to obtain statistics on hosts within the topology
 
+        Attributes:
+            host {str}: host of interest
+
+        Returns:
+            Dict {} - Dictionary containing useful info on selected host
+        """
         query_host = ('select IP_ADDRESS, FIRST_TIME_SEEN, LATEST_TIME_SEEN '
                       f'from host_info where HOST = "{host}"')
 
-        self.cursor.execute(query_host)
-        raw_result = self.cursor.fetchall()
+        raw_result = self.sql_select_query(query_host)
 
         # Get epoch in seconds by dividing by 1000
         first_epoch = int(raw_result[0][1])/1000
@@ -85,7 +105,6 @@ class Topo_DB_Interactions():
 
         first_seen = strftime('%Y-%m-%d %H:%M:%S', localtime(first_epoch))
         last_seen = strftime('%Y-%m-%d %H:%M:%S', localtime(latest_epoch))
-
         return {'ip': raw_result[0][0],
                 'hostname': f'H{raw_result[0][0][-1]}',
                 'first_seen': first_seen,
@@ -94,9 +113,16 @@ class Topo_DB_Interactions():
                 }
 
     def STP_query(self, switch):
-        """Method to get STP counters from the db
+        """
+        Method to get the STP particpation status of
+        the specified switch's Interfaces
+
         Parameters:
-        Switch - The switch to obtain STP statisitcs for.
+            Switch - The switch to obtain STP statisitcs for.
+
+        Returns:
+            Dict {} - Dictionary of switch's interfaces 
+            and status of STP participation
         """
         # Switch Statistics Table
         ctr_table = f"{switch}_counters"
@@ -104,24 +130,28 @@ class Topo_DB_Interactions():
         # Get lastest timestamp
         qry_latest = f"SELECT max(Timestamp) FROM {ctr_table}"
 
-        self.cursor.execute(qry_latest)
-        raw_result = self.cursor.fetchall()
+        raw_result = self.sql_select_query(qry_latest)
         date = str(raw_result[0][0])
 
         qry_sw = f'SELECT Interface, STP_state FROM {ctr_table} WHERE Timestamp = "{date}"'
 
-        self.cursor.execute(qry_sw)
-        raw_result = self.cursor.fetchall()
+        raw_result = self.sql_select_query(qry_sw)
 
         sw_interfaces = {}
         for row in raw_result:
             sw_interfaces[row[0]] = {
                 "stp_status": row[1]
                 }
-
         return sw_interfaces
 
     def build_stp_topology(self):
+        """
+        A method used to obtain the L2 topology
+
+        Returns:
+        Dict {} - dictionary of link-IDs and
+        their corespoinding Spanning Tree status
+        """
         switches = self.get_switches()
         stp_status = {}
 
@@ -141,10 +171,9 @@ class Topo_DB_Interactions():
                 if (inter not in ports_touched and 'LOCAL' not in inter):
                     query = ('select SRCPORT, DSTPORT from links where'
                             f' SRCPORT = "{inter}" or DSTPORT = "{inter}"')
-                    self.cursor.execute(query)
-                    raw_data = self.cursor.fetchall()
-                    src_port = str(raw_data[0][0])
-                    dst_port = str(raw_data[0][1])
+                    raw_result = self.sql_select_query(query)
+                    src_port = str(raw_result[0][0])
+                    dst_port = str(raw_result[0][1])
 
                     ports_touched.append(src_port)
                     ports_touched.append(dst_port)
@@ -157,26 +186,32 @@ class Topo_DB_Interactions():
 
     def get_switches(self):
         """Returns a list of switches stored in the DB."""
+
         switch_list = []
-        self.cursor.execute("SELECT Node FROM nodes WHERE Type='switch'")
-        switch_tuples = self.cursor.fetchall()
+        query = "SELECT Node FROM nodes WHERE Type='switch'"
+        switch_tuples = self.sql_select_query(query)
 
         for switch in switch_tuples:
             switch_list.append(str(switch[0].replace(":", "")))
-        return(switch_list)
+        return switch_list
 
     def calculate_throughput(self, raw_node):
         """ Query method to get specified node's
         interfaces with transmitted and received bits
         calcalated from stats in the sql database.
+
+        Arguments:
+            raw_node = node containing ':'. Will have
+                       each interface Tx and Rx 
+                       throughput calculated for
+
         Returns:
-        Dict - device and their interface rx & tx bps
+            Dict {} - device and their interface rx & tx bps
         """
         node = raw_node.replace(":", "")
         # Find latest entry date and ID in DB
         date_n_ID = f'select max(ID), max(Timestamp) from {node}_counters'
-        self.cursor.execute(date_n_ID)
-        raw_data = self.cursor.fetchall()
+        raw_data = self.sql_select_query(date_n_ID)
         newest_ID = int(raw_data[0][0])
         newest_date = str(raw_data[0][1])
 
@@ -184,8 +219,7 @@ class Topo_DB_Interactions():
         link_num_query = (f'select ID from {node}_counters'
                           f' where Timestamp = "{newest_date}"')
 
-        self.cursor.execute(link_num_query)
-        raw_link_num = self.cursor.fetchall()
+        raw_link_num = self.sql_select_query(link_num_query)
         link_num = len(raw_link_num)
 
         # Wait until there is at least two sets of
@@ -200,8 +234,7 @@ class Topo_DB_Interactions():
         penaltimate_qry = (f'SELECT Timestamp from {node}_counters'
                            f' WHERE ID = "{penultimate_ID}"')
 
-        self.cursor.execute(penaltimate_qry)
-        raw_pen_date = self.cursor.fetchall()
+        raw_pen_date = self.sql_select_query(penaltimate_qry)
         penultimate_date = str(raw_pen_date[0][0])
 
         device_info = {}
@@ -210,16 +243,14 @@ class Topo_DB_Interactions():
         # Get flow stats
         # Get latest id in db
         id_query = f'select max(ID) from {node}_table0_summary'
-        self.cursor.execute(id_query)
-        raw_data = self.cursor.fetchall()
+        raw_data = self.sql_select_query(id_query)
         latest_id = raw_data[0][0]
 
         # Flow stat query
         fsq = ('select Active_Flows, Packets_Looked_Up, Packets_Matched '
                f'from {node}_table0_summary where ID = {latest_id}')
 
-        self.cursor.execute(fsq)
-        raw_data = self.cursor.fetchall()
+        raw_data = self.sql_select_query(fsq)
 
         active_flows = raw_data[0][0]
         pckts_looked_up = raw_data[0][1]
@@ -228,17 +259,17 @@ class Topo_DB_Interactions():
         device_info[node]['flow-stats'] = {'active_flows': active_flows,
                                            'packets_looked_up': pckts_looked_up,
                                            'packets_matched': pckts_matched
-                                        }
+                                           }
         return device_info
 
     def pdtc(self, node, latest_date, penultimate_date):
         """
         pdtc stands for Per device throughput calculation.
+        
         Returns:
         Dict - Each interface name as key and Rx and Tx
                port utalization in bps as value.
         """
-
         latest_counters = []
         pen_counters = []
         int_dict = {}
@@ -246,14 +277,12 @@ class Topo_DB_Interactions():
         latest_query = (f'select Interface, Tx_bytes, Rx_bytes from {node}_counters'
                         f' where Timestamp = "{latest_date}"')
 
-        self.cursor.execute(latest_query)
-        latest_raw_data = self.cursor.fetchall()
+        latest_raw_data = self.sql_select_query(latest_query)
 
         pen_query = (f'select Interface, Tx_bytes, Rx_bytes from {node}_counters'
                      f' where Timestamp = "{penultimate_date}"')
 
-        self.cursor.execute(pen_query)
-        pen_raw_data = self.cursor.fetchall()
+        pen_raw_data = self.sql_select_query(pen_query)
 
         for latest_row in latest_raw_data:
             new_tx = int(latest_row[1])
@@ -286,12 +315,47 @@ class Topo_DB_Interactions():
             int_dict[int_name] = {
                                 'tx_bps': tx_bps,
                                 'rx_bps': rx_bps
-                            }
+                          }
         return int_dict
 
     def bps_cal(self, new_bytes, pen_bytes):
         """ Bits per second calculation
+        Arguments:
+            new_bytes: latest byte count
+            pen_pytes: byte count from penultimate db entry
+
         Returns:
-        Double - Bits transmitted in 10 second interval
+            Double - Bits transmitted in 10 second interval
         """
-        return ((new_bytes - pen_bytes) / 10) * 8
+        num_switches = len(self.get_switches())
+
+        # get the latest average agent runtime
+        max_id = 'select max(ID) from average_agent_time;'
+
+        raw_result = self.sql_select_query(max_id)
+
+        average_time_query = ('select average_time from '
+                              f'average_agent_time where ID ={raw_result[0][0]}')
+        raw_result = self.sql_select_query(average_time_query)
+
+        average_time = raw_result[0][0]
+        # Approx 2 seconds to service a switch, 10 seconds between polls
+        db_update_interarrival = (num_switches * average_time) + 10
+
+        return int(((new_bytes - pen_bytes) / db_update_interarrival) * 8)
+
+    def sql_select_query(self, query):
+        """Simple method to run SQL SELECT queries.
+
+        Arguments:
+            query {str} -- Desired SQL query to be executed
+
+        Returns:
+            [list] -- Returns results of the query
+        """
+        cnx = mysql.connector.connect(**self.sql_auth)
+        cursor = cnx.cursor()
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+        return result
