@@ -98,8 +98,8 @@ class L2FlowTracer(FlowTracer):
         Returns:
             [list] -- Returns results of the query
         """
-
-        cursor = self.cnx.cursor()
+        cnx = mysql.connector.connect(**self.sql_auth)
+        cursor = cnx.cursor()
         cursor.execute(query)
         result = cursor.fetchall()
         cursor.close()
@@ -108,7 +108,7 @@ class L2FlowTracer(FlowTracer):
 # TODO: HANDLE ARP CASE
     def find_flow_rules(self, src_host, dest_host, src_switch, dest_switch):
         """Iterates through every switch to determine the flow path and flow rules.
-        
+
         Arguments:
             src_host {str} -- Source host name
             dest_host {str} -- Destionation host name
@@ -119,7 +119,7 @@ class L2FlowTracer(FlowTracer):
         src_mac = src_host.replace("host:", "")
         dest_mac = dest_host.replace("host:", "")
         current_switch = src_switch
-        
+
         #Iterate through all switches in the path
         while last_flow is not True:
             if current_switch == dest_switch:
@@ -139,10 +139,10 @@ class L2FlowTracer(FlowTracer):
 
     def pull_flows(self, switch):
         """Get flows from a given switch
-        
+
         Arguments:
             switch {str} -- Switch name
-        
+
         Returns:
             [list] -- Returns list of flow rules on a switch
         """
@@ -167,7 +167,7 @@ class L2FlowTracer(FlowTracer):
                 flow_source = address_pair['ethernet-source']['address']
                 flow_dest = address_pair['ethernet-destination']['address']
                 if flow_source == src_mac and flow_dest == dest_mac:
-                    return True 
+                    return True
             return False
         except KeyError:
             print("nope")

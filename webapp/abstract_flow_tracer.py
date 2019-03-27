@@ -22,7 +22,7 @@ class FlowTracer(metaclass=abc.ABCMeta):
             "host": host,
             "db": db
         }
-        self.cnx = mysql.connector.connect(**self.sql_auth)
+        
 
 
     @abc.abstractmethod
