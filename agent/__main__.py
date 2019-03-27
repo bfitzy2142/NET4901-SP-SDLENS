@@ -54,8 +54,22 @@ def get_switches():
     return switch_list
 
 
+def store_avgAgent_time(average_time):
+    cnx = mysql.connector.connect(**sql_creds, database=db)
+    cursor = cnx.cursor()
+    sql_insert = (f"INSERT INTO average_agent_time"
+                  f"(average_time) VALUES ({average_time})")
+    query = sql_insert.format(average_time)
+    cursor.execute(query)
+    cnx.commit()
+
+
+
 if __name__ == '__main__':
+    print("***SDLENS DATABASE AGENT UTILITY***")
+    print('Checking database-->')
     create_db()
+    print('\n1) Building Topology Datastructures-->')
     topo_agent = TopologyAgent(controller_ip)
     topo_agent.run_agent()
     switch_list = get_switches()
@@ -64,22 +78,36 @@ if __name__ == '__main__':
     counter_agents = {}
     device_agents = {}
     flow_agents = {} # May have to change this if many flow tables
-    for switch in switch_list:
+    print('\n2)Populating Port Counter Tables-->')
+    for index, switch in enumerate(switch_list):
+        print(f'{switch}: {index+1}/{len(switch_list)}')
         counter_agents[switch] = PortCounterAgent(controller_ip, switch)
         device_agents[switch] = DeviceAgent(controller_ip, switch)
         flow_agents[switch] = FlowAgent(controller_ip, switch, 0)
         device_agents[switch].run_agent()
     while True:
+        print('DB Update Loop-->')
         # Delete and repopulate tables to keep topology relevant
         topo_agent.delete_stale_nodes()
         topo_agent.populate_host_table()
         link_agent.run_agent()
-
+        times = []
         # Update switch and flow counters
-        for switch in switch_list:
-            # try:  # If topo changes mid execution agents are error prone
-            counter_agents[switch].run_agent()
-            flow_agents[switch].run_agent()
-            # except:
-                # continue
+        for index, switch in enumerate(switch_list):
+            start = time.time()
+            print(f'\nUpdating DB for SW: {switch}.\nSwitch {index+1}/{len(switch_list)}')
+            try:  # If topo changes mid execution agents are error prone
+                counter_agents[switch].run_agent()
+                flow_agents[switch].run_agent()
+                end = time.time()
+                times.append(end-start)
+                # print(f'\nSw:{switch} took:{end-start} seconds to update.')
+            except:
+                print(f'Ran into error on SW: {switch}')
+                continue
+        average_time = sum(times)/len(switch_list)
+        print(f'Average switch update time: {average_time} seconds.')
+        store_avgAgent_time(average_time)
+        times.clear()
+        print('\nSleeping 10 seconds...')
         time.sleep(10)
