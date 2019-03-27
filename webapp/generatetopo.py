@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-OpenDayLight RESTCONF API parser for topology information
+    OpenDayLight RESTCONF API parser for topology information
+    December 2018
+    SDLENS Monitoring Solution
+    Brad Fitzgerald
+    bradfitzgerald@cmail.carleton.ca
 
 ***DEPRECATED***
 Use this module if you wish to query topology infomation
