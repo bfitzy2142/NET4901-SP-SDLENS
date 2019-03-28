@@ -71,7 +71,7 @@ class L2FlowTracer(FlowTracer):
             logic to determine if the host is the first host in our
             trace. If so, we add the corresponding link to the
             links_traversed attribute. (default: {False})
-        
+
         Returns:
             string -- Returns name of the switch connected to the host.
         """
@@ -159,7 +159,7 @@ class L2FlowTracer(FlowTracer):
         """Verifies if a given flow rule matches our source and destination MACs.
 
         Arguments:
-            flow {dict} -- Dictionary contain all the parameters of a flow rule.
+            flow {dict} -- Dictionary containing parameters of a flow rule.
             src_mac {str} -- Source host MAC address.
             dest_mac {str} -- Destination MAC address.
 
@@ -181,8 +181,7 @@ class L2FlowTracer(FlowTracer):
             return False
         # TODO: RAISE EXCEPTION IF KEYERROR
         except KeyError:
-            print("Error, couldn't find matching flow")
-            return True
+            raise UnknownFlow
 
     def check_arp_rule(self, flow):
         """Checks if a flow rule is used to handle ARP messages
@@ -226,3 +225,15 @@ class L2FlowTracer(FlowTracer):
         link_pair['DSTPORT'] = link_tuple[4]
         self.links_traversed.append(link_pair)
         return new_switch
+
+
+class Error(Exception):
+    """Base Error for all exceptions raised by this module."""
+
+
+class FlowError(Error):
+    """Base error for flow-related exceptions raised."""
+
+
+class UnknownFlow(FlowError):
+    """Flow rule unrecognized by flow_tracer."""
