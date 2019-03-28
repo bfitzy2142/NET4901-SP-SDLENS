@@ -65,9 +65,12 @@ function renderPopUp(xhr, node) {
                 var inter =  keys[i];
                 var tx_bps = responseJSON[device][keys[i]]['tx_bps'];
                 var rx_bps = responseJSON[device][keys[i]]['rx_bps'];
+                tx_data_ps = getReadableFileSizeString(tx_bps/8);
+                rx_data_ps = getReadableFileSizeString(rx_bps/8);
+
                 tp_stats.push('<br>Interface: <b>' + inter + '</b>',
-                                '<br><span style="padding-left:2em">Tx: <b>'+ tx_bps + ' bps</b></span></br>',
-                                '<span style="padding-left:2em">Rx: <b>'+ rx_bps + ' bps</b></span>');
+                                '<br><span style="padding-left:2em">Tx: <b>'+ tx_data_ps + '</b></span></br>',
+                                '<span style="padding-left:2em">Rx: <b>'+ rx_data_ps + '</b></span>');
             }else {
               active_flows = responseJSON[device][keys[i]]['active_flows']
               packets_looked_up = responseJSON[device][keys[i]]['packets_looked_up']
@@ -84,6 +87,19 @@ function renderPopUp(xhr, node) {
         network['body']['nodes'][node]['options']['title'] = title;
         
     }
+}
+
+// Convert Byte per second value into more sensable measurement (i.e Gbps)
+function getReadableFileSizeString(fileSizeInBytes) {
+    var i = -1;
+    var byteUnits = [' kbps', ' Mbps', ' Gbps', ' Tbps', 'Pbps', 'Ebps', 'Zbps', 'Ybps'];
+    do {
+        fileSizeInBytes = fileSizeInBytes / 1024;
+        value_per_sec = (fileSizeInBytes * 8)
+        i++;
+    } while (fileSizeInBytes > 1024);
+
+    return Math.max(value_per_sec, 0.1).toFixed(1) + byteUnits[i];
 }
 
 /*

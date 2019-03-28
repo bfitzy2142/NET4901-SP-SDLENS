@@ -9,7 +9,6 @@ from requests import get
 from gen_topo import generate_topology
 from get_stats import Odl_Stat_Collector
 from deviceInfo import odl_switch_info
-from auxiliary import Webapp_Auxiliary
 from forms import RegisterForm, GraphForm
 from user_db import create_user_db
 from gen_graphs import sql_graph_info
@@ -303,6 +302,10 @@ def switch_int_query(switch):
     for interface in interface_tuples:
         interface_list.append(interface['Interface'])
     return interface_list
+
+@app.route('/github')
+def github():
+    return redirect("https://github.com/sambo19/NET4901-SP")
 
 
 @app.route('/logout')
