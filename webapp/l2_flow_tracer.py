@@ -121,7 +121,7 @@ class L2FlowTracer(FlowTracer):
         current_switch = src_switch
 
         # Iterate through all switches in the path
-        while last_flow is not  True:
+        while last_flow is not True:
             if current_switch == dest_switch:
                 last_flow = True
             # Get Flows
@@ -133,6 +133,8 @@ class L2FlowTracer(FlowTracer):
                 if flow_match is True:
                     flow_pair = {'switch': current_switch, 'flow': flow}
                     self.flow_path.append(flow_pair)
+                    # TODO: CHECK ARP FLOW HERE
+
                     next_switch = self.find_next_node(current_switch, flow)
                     break
             current_switch = next_switch
@@ -171,15 +173,31 @@ class L2FlowTracer(FlowTracer):
                 else:
                     return False
             elif "ethernet-type" in flow["match_rules"]["ethernet-match"]:
-                e_type = flow["match_rules"]["ethernet-match"]["ethernet-type"]
-                if e_type["type"] == 2054:
-                    return True
-                else:
-                    return False
+                is_arp_flow = self.check_arp_rule(flow)
+                return is_arp_flow
             return False
+        # TODO: RAISE EXCEPTION IF KEYERROR
         except KeyError:
             print("Error, couldn't find matching flow")
             return True
+
+    def check_arp_rule(self, flow):
+        """Checks if a flow rule is used to handle ARP messages
+        
+        Arguments:
+            flow {dict} -- Flow dictionary as provided by get_flows
+        
+        Returns:
+            [bool] -- True or False flag to determine if ARP rule or not
+        """
+        if "ethernet-type" in flow["match_rules"]["ethernet-match"]:
+            e_type = flow["match_rules"]["ethernet-match"]["ethernet-type"]
+            if e_type["type"] == 2054:
+                return True
+            else:
+                return False
+        else:
+            return False
 
     def find_next_node(self, switch, flow):
         """Finds the next hop node of a given flow rule.
