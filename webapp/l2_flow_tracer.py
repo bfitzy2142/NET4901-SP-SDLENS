@@ -134,7 +134,13 @@ class L2FlowTracer(FlowTracer):
                     flow_pair = {'switch': current_switch, 'flow': flow}
                     self.flow_path.append(flow_pair)
                     # TODO: CHECK ARP FLOW HERE
-
+                    arp_flow = self.check_arp_rule(flow)
+                    if arp_flow is True:
+                        last_flow = True
+                        next_switch = None
+                        print("here")
+                        break
+                    print("here")
                     next_switch = self.find_next_node(current_switch, flow)
                     break
             current_switch = next_switch
