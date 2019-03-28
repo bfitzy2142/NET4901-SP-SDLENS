@@ -121,7 +121,7 @@ class L2FlowTracer(FlowTracer):
         current_switch = src_switch
 
         #Iterate through all switches in the path
-        while last_flow is not True:
+        while last_flow is not  True:
             if current_switch == dest_switch:
                 last_flow = True
             # Get Flows
