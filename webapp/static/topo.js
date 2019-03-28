@@ -150,9 +150,9 @@ function handleFlowTrace(xhr) {
             if (i == 0){
                 src_link = links_traversed[i]['SRCPORT'];
                 if (src_link.includes('host')){
-                    edges.update({id: link, color:{color:'green'}, arrows:'to', width: 2});
+                    edges.update({id: link, color:{color:'green'}, arrows:'to', width: 3});
                 }else {
-                    edges.update({id: link, color:{color:'green'}, arrows:'from', width: 2});
+                    edges.update({id: link, color:{color:'green'}, arrows:'from', width: 3});
                 }
             }else {
                 src_sw = transit_switches[i-1];
@@ -160,10 +160,10 @@ function handleFlowTrace(xhr) {
 
                 // If the source within the link-id is from the flow source switch draw an arrow to the flow dest node
                 if (src_link.includes(src_sw)){
-                    edges.update({id: link, color:{color:'green'}, arrows:'to', width: 2});
+                    edges.update({id: link, color:{color:'green'}, arrows:'to', width: 3});
                 } else { //The opposite case applies and the destination port for the link-id is the flow source. 
                          //Therefore, draw arrow 'from' the dest port
-                    edges.update({id: link, color:{color:'green'}, arrows:'from', width: 2});
+                    edges.update({id: link, color:{color:'green'}, arrows:'from', width: 3});
                 }
             }
         }
