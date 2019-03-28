@@ -105,7 +105,6 @@ class L2FlowTracer(FlowTracer):
         cursor.close()
         return result
 
-# TODO: HANDLE ARP CASE
     def find_flow_rules(self, src_host, dest_host, src_switch, dest_switch):
         """Iterates through every switch to determine the flow path and flow rules.
 
@@ -133,14 +132,12 @@ class L2FlowTracer(FlowTracer):
                 if flow_match is True:
                     flow_pair = {'switch': current_switch, 'flow': flow}
                     self.flow_path.append(flow_pair)
-                    # TODO: CHECK ARP FLOW HERE
+                    # Checks if matching flow rule is an ARP handler
                     arp_flow = self.check_arp_rule(flow)
                     if arp_flow is True:
                         last_flow = True
                         next_switch = None
-                        print("here")
                         break
-                    print("here")
                     next_switch = self.find_next_node(current_switch, flow)
                     break
             current_switch = next_switch
@@ -189,10 +186,10 @@ class L2FlowTracer(FlowTracer):
 
     def check_arp_rule(self, flow):
         """Checks if a flow rule is used to handle ARP messages
-        
+
         Arguments:
             flow {dict} -- Flow dictionary as provided by get_flows
-        
+
         Returns:
             [bool] -- True or False flag to determine if ARP rule or not
         """
