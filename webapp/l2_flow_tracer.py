@@ -120,7 +120,7 @@ class L2FlowTracer(FlowTracer):
         dest_mac = dest_host.replace("host:", "")
         current_switch = src_switch
 
-        #Iterate through all switches in the path
+        # Iterate through all switches in the path
         while last_flow is not  True:
             if current_switch == dest_switch:
                 last_flow = True
@@ -168,9 +168,17 @@ class L2FlowTracer(FlowTracer):
                 flow_dest = address_pair['ethernet-destination']['address']
                 if flow_source == src_mac and flow_dest == dest_mac:
                     return True
+                else:
+                    return False
+            elif "ethernet-type" in flow["match_rules"]["ethernet-match"]:
+                e_type = flow["match_rules"]["ethernet-match"]["ethernet-type"]
+                if e_type["type"] == 2054:
+                    return True
+                else:
+                    return False
             return False
         except KeyError:
-            print("nope")
+            print("Error, couldn't find matching flow")
             return True
 
     def find_next_node(self, switch, flow):
