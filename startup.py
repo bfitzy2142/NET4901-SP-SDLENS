@@ -22,7 +22,7 @@ from mysql.connector import errorcode
 def get_admin_info():
     # Read from existing
     comp_user = getpass.getuser()
-    file_check = input("Does an existing credintials file exist [Y/n]: ")
+    file_check = input("Keep exising credentials file? [Y/n]: ")
     if file_check.lower() == "y":
             with open(f"/home/{comp_user}/.sdlens/creds.yml", 'r') as stream:
                 try:
