@@ -91,6 +91,7 @@ if __name__ == '__main__':
         topo_agent.delete_stale_nodes()
         topo_agent.populate_host_table()
         link_agent.run_agent()
+        loop_start = time.time()
         times = []
         # Update switch and flow counters
         for index, switch in enumerate(switch_list):
@@ -109,5 +110,7 @@ if __name__ == '__main__':
         print(f'Average switch update time: {average_time} seconds.')
         store_avgAgent_time(average_time)
         times.clear()
+        loop_end = time.time()
+        print(f'Total agent loop took {loop_end - loop_start} seconds')
         print('\nSleeping 10 seconds...')
         time.sleep(10)
