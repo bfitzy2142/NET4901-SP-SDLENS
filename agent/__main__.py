@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Main module for the agent component of our app."""
 import time
+import threading
 
 import mysql.connector
 from mysql.connector import errorcode
@@ -64,6 +65,13 @@ def store_avgAgent_time(average_time):
     cnx.commit()
 
 
+def agent_runner(counter_agents, flow_agents, switch):
+    print(f'\nUpdating DB for SW: {switch}.')
+    try:  # If topo changes mid execution agents are error prone
+        counter_agents[switch].run_agent()
+        flow_agents[switch].run_agent()
+    except:
+        print(f'Ran into error on SW: {switch}')
 
 if __name__ == '__main__':
     print("***SDLENS DATABASE AGENT UTILITY***")
@@ -92,24 +100,25 @@ if __name__ == '__main__':
         topo_agent.populate_host_table()
         link_agent.run_agent()
         loop_start = time.time()
-        times = []
+        # times = []
+        threads = []
         # Update switch and flow counters
+        
         for index, switch in enumerate(switch_list):
-            start = time.time()
             print(f'\nUpdating DB for SW: {switch}.\nSwitch {index+1}/{len(switch_list)}')
-            try:  # If topo changes mid execution agents are error prone
-                counter_agents[switch].run_agent()
-                flow_agents[switch].run_agent()
-                end = time.time()
-                times.append(end-start)
-                # print(f'\nSw:{switch} took:{end-start} seconds to update.')
-            except:
-                print(f'Ran into error on SW: {switch}')
-                continue
+            t = threading.Thread(target=agent_runner, args=(counter_agents, flow_agents, switch))
+            t.start()
+            threads.append(t)
+        for thread in threads:
+            thread.join()
+            
+        """    
         average_time = sum(times)/len(switch_list)
         print(f'Average switch update time: {average_time} seconds.')
         store_avgAgent_time(average_time)
         times.clear()
+        """
+        threads.clear()
         loop_end = time.time()
         print(f'Total agent loop took {loop_end - loop_start} seconds')
         print('\nSleeping 10 seconds...')
