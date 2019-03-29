@@ -132,16 +132,38 @@ class TopologyAgent(AbstractAgent):
 
     def populate_host_table(self):
         """Stores host paramaters into host_info tbl"""
-        self.sql_tool.send_sql_query('DELETE FROM host_info')
+
+        # Determine what nodes are unique on topology change
+        query = 'SELECT HOST FROM host_info'
+        raw_db = self.sql_tool.send_select(query)
+        hosts = []
+        odl_hosts = []
+        if not raw_db:
+            pass
+        else:
+            for host in raw_db:
+                hosts.append(host[0])
+
         response = self.get_data()
+
         for node in response['topology'][0]['node']:
-            if 'host' in node['node-id']:
-                host_id = node['node-id']
-                host_data = node['host-tracker-service:addresses'][0]
-                ip = host_data['ip']
-                first_seen = host_data['first-seen']
-                last_seen = host_data['last-seen']
-                self.store_host_info(host_id, ip, first_seen, last_seen)
+            odl_hosts.append(node['node-id'])
+
+        # Remove hosts no longer reported by ODL
+        for host in hosts:
+            if (host not in odl_hosts):
+                query = f'delete from host_info where HOST ="{host}"'
+                self.sql_tool.send_sql_query(query)
+
+        for node in response['topology'][0]['node']:
+            if (node['node-id'] not in hosts):
+                if 'host' in node['node-id']:
+                    host_id = node['node-id']
+                    host_data = node['host-tracker-service:addresses'][0]
+                    ip = host_data['ip']
+                    first_seen = host_data['first-seen']
+                    last_seen = host_data['last-seen']
+                    self.store_host_info(host_id, ip, first_seen, last_seen)
     
     def store_host_info(self, host, ip, first, latest):
         """Stores host parameters in the host_info DB table
@@ -156,14 +178,31 @@ class TopologyAgent(AbstractAgent):
         self.sql_tool.send_insert(sql_insert.format(host, ip, first, latest))
 
     def delete_stale_nodes(self):
-        self.sql_tool.send_sql_query('DELETE FROM nodes')
+        #self.sql_tool.send_sql_query('DELETE FROM nodes')
 
         response = self.get_data()
         parsed_data = self.parse_response(response)
 
+        # Determine what nodes are unique on topology change
+        query = 'SELECT Node FROM nodes'
+        raw_db = self.sql_tool.send_select(query)
+        devices = []
+        if not raw_db:
+            pass
+        else:
+            for device in raw_db:
+                devices.append(device[0])
+
+        # Remove nodes no longer reported by ODL
+        for node in devices:
+            if (node not in parsed_data.keys()):
+                query = f'delete from nodes where Node ="{node}"'
+                self.sql_tool.send_sql_query(query)
+
         for node, inter in parsed_data.items():
-            if "openflow" in node:
-                node_type = "switch"
-            if "host" in node:
-                node_type = "host"
-            self.store_nodes(node, node_type)
+            if (node not in devices):
+                if "openflow" in node:
+                    node_type = "switch"
+                if "host" in node:
+                    node_type = "host"
+                self.store_nodes(node, node_type)
