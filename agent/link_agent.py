@@ -19,6 +19,7 @@ class LinkAgent(AbstractAgent):
         """"Initalizer for LinkAgent, initializes parent object."""
         super().__init__(controller_ip)
         self.create_avgAgent_table()
+        self.create_links_table()
 
     def get_data(self):
         """Retrieves json data containing the connections of the
@@ -95,14 +96,33 @@ class LinkAgent(AbstractAgent):
         Data - A list of links. Each index contains dict with src and
         dst port identifiers.
         """
-        self.create_links_table()
+
+        # Determine what links are unique on topology change
+        query = 'SELECT SRCPORT FROM links'
+        raw_db = self.sql_tool.send_select(query)
+        db_src_links = []
+        odl_src_links = []
+        if not raw_db:
+            pass
+        else:
+            for link in raw_db:
+                db_src_links.append(link[0])
 
         for link in data:
-            self.store_links(link['src'],
-                             link['dst'],
-                             link['src_port'],
-                             link['dst_port']
-                             )
+            odl_src_links.append(link['src_port'])
+        # Remove links no longer reported by ODL
+        for link in db_src_links:
+            if (link not in odl_src_links):
+                query = f'delete from links where SRCPORT ="{link}"'
+                self.sql_tool.send_sql_query(query)
+
+        for link in data:
+            if (link['src_port'] not in db_src_links):
+                self.store_links(link['src'],
+                                 link['dst'],
+                                 link['src_port'],
+                                 link['dst_port']
+                                 )
 
     def store_links(self, src, dst, src_port, dst_port):
         """Inserts a unique link into the 'links' table.
