@@ -65,8 +65,8 @@ def store_avgAgent_time(average_time):
     cnx.commit()
 
 
+# Passing in agent dicts is not very memory efficient
 def agent_runner(counter_agents, flow_agents, switch):
-    print(f'\nUpdating DB for SW: {switch}.')
     try:  # If topo changes mid execution agents are error prone
         counter_agents[switch].run_agent()
         flow_agents[switch].run_agent()
@@ -85,10 +85,9 @@ if __name__ == '__main__':
     link_agent.run_agent()
     counter_agents = {}
     device_agents = {}
-    flow_agents = {} # May have to change this if many flow tables
+    flow_agents = {}  # May have to change this if many flow tables
     creator_threads = []
     print('\n2)Populating Port Counter Tables-->')
-    # TODO: THREAD HERE
     da_start = time.time()
     for index, switch in enumerate(switch_list):
         print(f'{switch}: {index+1}/{len(switch_list)}')
@@ -113,21 +112,21 @@ if __name__ == '__main__':
         # times = []
         threads = []
         # Update switch and flow counters
-        
+
         for index, switch in enumerate(switch_list):
-            print(f'\nUpdating DB for SW: {switch}.\nSwitch {index+1}/{len(switch_list)}')
-            t = threading.Thread(target=agent_runner, args=(counter_agents, flow_agents, switch))
+            print(f'\nUpdating DB for SW: {switch}.')
+            print(f'Switch {index+1}/{len(switch_list)}')
+            arg_tuple = (counter_agents, flow_agents, switch)
+            # agent_runner(counter_agents, flow_agents, switch)
+            t = threading.Thread(target=agent_runner, args=arg_tuple)
             t.start()
             threads.append(t)
         for thread in threads:
             thread.join()
-            
-           
         # average_time = sum(times)/len(switch_list)
         # print(f'Average switch update time: {average_time} seconds.')
         # store_avgAgent_time(average_time)
         # times.clear()
-        
         threads.clear()
         loop_end = time.time()
         print(f'Total agent loop took {loop_end - loop_start} seconds')
