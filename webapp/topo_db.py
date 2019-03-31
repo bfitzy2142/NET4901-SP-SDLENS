@@ -265,7 +265,7 @@ class Topo_DB_Interactions():
     def pdtc(self, node, latest_date, penultimate_date):
         """
         pdtc stands for Per device throughput calculation.
-        
+
         Returns:
         Dict - Each interface name as key and Rx and Tx
                port utalization in bps as value.
@@ -327,7 +327,6 @@ class Topo_DB_Interactions():
         Returns:
             Double - Bits transmitted in 10 second interval
         """
-        num_switches = len(self.get_switches())
 
         # get the latest average agent runtime
         max_id = 'select max(ID) from average_agent_time;'
@@ -339,8 +338,9 @@ class Topo_DB_Interactions():
         raw_result = self.sql_select_query(average_time_query)
 
         average_time = raw_result[0][0]
+
         # Approx 2 seconds to service a switch, 10 seconds between polls
-        db_update_interarrival = (num_switches * average_time) + 10
+        db_update_interarrival = (average_time) + 10
 
         return int(((new_bytes - pen_bytes) / db_update_interarrival) * 8)
 
