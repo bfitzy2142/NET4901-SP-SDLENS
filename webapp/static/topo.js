@@ -218,7 +218,7 @@ function handleSTP(xhr) {
         document.getElementById('infobox').innerHTML = 
         '<div class="stp_green"></div> <p>Forwarding State</p>\
         <div class="stp_red"></div> <p>Discarding State</p>\
-        <div class="stp_black"> </div><p>STP Disabled/p>';
+        <div class="stp_black"> </div><p>STP Disabled</p>';
     }
 }
 
