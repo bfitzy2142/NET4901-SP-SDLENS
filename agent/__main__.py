@@ -89,6 +89,7 @@ if __name__ == '__main__':
     creator_threads = []
     print('\n2)Populating Port Counter Tables-->')
     # TODO: THREAD HERE
+    da_start = time.time()
     for index, switch in enumerate(switch_list):
         print(f'{switch}: {index+1}/{len(switch_list)}')
         counter_agents[switch] = PortCounterAgent(controller_ip, switch)
@@ -100,6 +101,8 @@ if __name__ == '__main__':
         creator_threads.append(c_t)
     for thread in creator_threads:
         thread.join()
+    da_end = time.time()
+    print(f'Populating device interfaces took: {da_end - da_start} seconds')
     while True:
         print('DB Update Loop-->')
         # Delete and repopulate tables to keep topology relevant
@@ -119,12 +122,12 @@ if __name__ == '__main__':
         for thread in threads:
             thread.join()
             
-        """    
-        average_time = sum(times)/len(switch_list)
-        print(f'Average switch update time: {average_time} seconds.')
-        store_avgAgent_time(average_time)
-        times.clear()
-        """
+           
+        # average_time = sum(times)/len(switch_list)
+        # print(f'Average switch update time: {average_time} seconds.')
+        # store_avgAgent_time(average_time)
+        # times.clear()
+        
         threads.clear()
         loop_end = time.time()
         print(f'Total agent loop took {loop_end - loop_start} seconds')
