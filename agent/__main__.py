@@ -86,13 +86,20 @@ if __name__ == '__main__':
     counter_agents = {}
     device_agents = {}
     flow_agents = {} # May have to change this if many flow tables
+    creator_threads = []
     print('\n2)Populating Port Counter Tables-->')
+    # TODO: THREAD HERE
     for index, switch in enumerate(switch_list):
         print(f'{switch}: {index+1}/{len(switch_list)}')
         counter_agents[switch] = PortCounterAgent(controller_ip, switch)
         device_agents[switch] = DeviceAgent(controller_ip, switch)
         flow_agents[switch] = FlowAgent(controller_ip, switch, 0)
-        device_agents[switch].run_agent()
+        # device_agents[switch].run_agent()
+        c_t = threading.Thread(target=device_agents[switch].run_agent)
+        c_t.start()
+        creator_threads.append(c_t)
+    for thread in creator_threads:
+        thread.join()
     while True:
         print('DB Update Loop-->')
         # Delete and repopulate tables to keep topology relevant
