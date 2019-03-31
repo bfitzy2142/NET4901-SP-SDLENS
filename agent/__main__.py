@@ -109,10 +109,9 @@ if __name__ == '__main__':
         topo_agent.populate_host_table()
         link_agent.run_agent()
         loop_start = time.time()
-        # times = []
         threads = []
+        
         # Update switch and flow counters
-
         for index, switch in enumerate(switch_list):
             print(f'\nUpdating DB for SW: {switch}.')
             print(f'Switch {index+1}/{len(switch_list)}')
@@ -123,12 +122,10 @@ if __name__ == '__main__':
             threads.append(t)
         for thread in threads:
             thread.join()
-        # average_time = sum(times)/len(switch_list)
-        # print(f'Average switch update time: {average_time} seconds.')
-        # store_avgAgent_time(average_time)
-        # times.clear()
         threads.clear()
         loop_end = time.time()
+        # Store total agent execution time in DB for int Rx Tx speed Calculations
+        store_avgAgent_time(loop_end-loop_start)
         print(f'Total agent loop took {loop_end - loop_start} seconds')
         print('\nSleeping 10 seconds...')
         time.sleep(10)
