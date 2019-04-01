@@ -143,7 +143,7 @@ function handleFlowTrace(xhr) {
         }
 
         var links_traversed = responseJSON['links_traversed'];
-        
+        // Draw out path on the topology
         for (var i = 0; i < links_traversed.length; i++) {
 
             link = links_traversed[i]['SRCPORT'] + '-' + links_traversed[i]['DSTPORT'];
@@ -167,8 +167,98 @@ function handleFlowTrace(xhr) {
                 }
             }
         }
-        document.getElementById('titlebar').innerHTML = '<h2><b>Trace Successful!</b></h2>';
-        document.getElementById('infobox').innerHTML = '<div class="stp_green"></div> <p>Traced Path</p>';
+        var src_ip = $("#src_ip option:selected").val();
+        var dst_ip = $("#dst_ip option:selected").val();
+        document.getElementById('titlebar').innerHTML = '<h2><b>Showing Traced Path:<br />' + src_ip + ' to ' + dst_ip + '</b></h2>';
+        document.getElementById('infobox').innerHTML = '<div class="stp_green alignright"></div> <p>Traced Path</p> <br />';
+
+        //Print out Flow data for traced path
+        var flow = responseJSON['flow_path'];
+        
+        var title = new Array();
+        title.push(["Flow ID", "Match Rules", "Output Action", "Packet Count",
+                    "Duration", "Priority", "Tables Traversed by #", "Idle Timeout", "Hard Timeout"
+                    ]);
+        
+        for (var j = 0; j < transit_switches.length; j++){
+            var sw = flow[j]['switch'];
+            var label = document.createElement("label");
+            label.textContent = sw;
+            //text_sw = document.createTextNode(sw);
+            var h2 = document.createElement("h2");
+            var b = document.createElement("b");
+            var link = document.createElement('a');
+            link.setAttribute('href','switch/'+ sw)
+            link.appendChild(label)
+            h2.appendChild(link);
+            
+            document.getElementById('infobox').appendChild(h2);
+            var table = document.createElement("TABLE");
+            table.classList.add("table-bordered");
+            table.classList.add("table");
+            table.border = "1";
+            
+            //Get the count of columns.
+            var columnCount = 9;
+
+            //Add the header row.
+            var row = table.insertRow(-1);
+            for (var i = 0; i < columnCount; i++) {
+                var headerCell = document.createElement("TH");
+                headerCell.innerHTML = title[0][i];
+                row.appendChild(headerCell);
+            }
+            
+            var flow_id = flow[j]['flow']['id'];
+            var match_rules = JSON.stringify(flow[j]['flow']['match_rules'], undefined, 2);
+            var actions = JSON.stringify(flow[j]['flow']['actions'][0]['output-action'], undefined, 2);
+            var tbl_traversed = flow[j]['flow']['actions'][0]['order'];
+            var packet_count = flow[j]['flow']['pckt-count'];
+            var duration = flow[j]['flow']['duration'];
+            var priority = flow[j]['flow']['priority'];
+            var idle_timeout = flow[j]['flow']['idle-timeout'];
+            var hard_timeout = flow[j]['flow']['hard-timeout'];
+
+            //Add the data rows.
+            row = table.insertRow(-1);
+            for (var h = 0; h < columnCount; h++) {
+                var cell = row.insertCell(-1);
+
+                switch (h) {
+                    case 0:
+                        cell.innerHTML = flow_id;
+                        break;
+                    case 1:
+                        cell.innerHTML = '<pre>' + match_rules + '</pre>';
+                        break;
+                    case 2:
+                        cell.innerHTML = '<pre>' + actions + '</pre>'
+                        break;
+                    case 3:
+                        cell.innerHTML = packet_count;
+                        break;
+                    case 4:
+                        cell.innerHTML = duration;
+                        break;
+                    case 5:
+                        cell.innerHTML = priority;
+                        break;
+                    case 6:
+                        cell.innerHTML = tbl_traversed;
+                        break;
+                    case 7:
+                        cell.innerHTML = idle_timeout;
+                        break;
+                    case 8:
+                        cell.innerHTML = hard_timeout;
+                    }
+            }
+        
+            //add table to infobox div
+            document.getElementById('infobox').appendChild(table);
+        }
+
+        
 
     }
 }
