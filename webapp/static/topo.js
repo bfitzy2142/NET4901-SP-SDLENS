@@ -253,7 +253,6 @@ function handleFlowTrace(xhr) {
                         cell.innerHTML = hard_timeout;
                     }
             }
-        
             //add table to infobox div
             document.getElementById('infobox').appendChild(table);
         }
