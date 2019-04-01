@@ -3,6 +3,7 @@
 {% block body %}
 {% for node in flow_dict %}
 <h2><a href="switch/{{node}}">{{node}}</a></h2>
+<div style="overflow: auto; width: 98%;" >
 <table class="table table-bordered">
     <tr>
         <th>Flow-ID</th>
@@ -34,6 +35,7 @@
 
 {% endfor %}
 </table>
+</div>
 {% endfor %}
 {% endblock %}
  
