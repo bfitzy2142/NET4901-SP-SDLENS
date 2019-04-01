@@ -28,11 +28,8 @@
         <td>{{flow['idle-timeout']}}</td>
         <td>{{flow['table']}}</td>
         <td>{{flow['cookie']}}</td>
-        <td>{{flow['match_rules']}}</td>
-        <td>{% for action in flow['actions'] %}
-            {{action['order']}}: {{action['output-action']}}<br>
-            {% endfor %}
-        </td>
+        <td><pre>{{flow['match_rules'] |tojson_pretty}}</pre></td>
+        <td><pre>{{flow['actions'] | tojson_pretty}}</pre></td>
     </tr>
 
 {% endfor %}

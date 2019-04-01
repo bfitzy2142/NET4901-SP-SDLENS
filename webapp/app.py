@@ -21,8 +21,6 @@ from json import dumps
 
 # TODO: Find PEP8 way of importing modules
 
-import json
-
 auth = Authenticator()
 
 
