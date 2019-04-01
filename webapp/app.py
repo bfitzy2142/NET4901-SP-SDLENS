@@ -17,6 +17,7 @@ from get_flows import Odl_Flow_Collector
 from flow_summary_graphs import pull_flow_graphs
 from l2_flow_tracer import L2FlowTracer
 from authenticator import Authenticator
+from json import dumps
 
 # TODO: Find PEP8 way of importing modules
 
@@ -302,6 +303,10 @@ def switch_int_query(switch):
     for interface in interface_tuples:
         interface_list.append(interface['Interface'])
     return interface_list
+
+@app.template_filter('tojson_pretty')
+def to_pretty_json(value):
+    return dumps(value, sort_keys=True, indent=4, separators=(',', ': '))
 
 @app.route('/github')
 def github():
