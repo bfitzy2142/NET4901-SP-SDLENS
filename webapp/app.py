@@ -21,6 +21,8 @@ from json import dumps
 
 # TODO: Find PEP8 way of importing modules
 
+import json
+
 auth = Authenticator()
 
 
@@ -39,6 +41,8 @@ app.config['MYSQL_USER'] = auth.working_creds['database']['MYSQL_USER']
 app.config['MYSQL_PASSWORD'] = auth.working_creds['database']['MYSQL_PASSWORD']
 app.config['MYSQL_DB'] = auth.working_creds['database']['MYSQL_DB']
 app.config['MYSQL_CURSORCLASS'] = auth.working_creds['database']['CURSORCLASS']
+
+
 
 # Init Mysql
 mysql = MySQL(app)
@@ -158,11 +162,19 @@ def getSwitchCounters():
             switch = raw_json['switch_throughput']
             return jsonify(topo_db.calculate_throughput(switch))
 
+@app.route("/switch-interfaces", methods=['POST'])
+def get_switch_interfaces_api():
+    if (request.method == 'POST'):
+        raw_json = request.get_json()
+        switch = raw_json['switch']
+        interfaces = switch_int_query('openflow'+switch)
+        return jsonify({'interfaces': interfaces})
+
 @app.route("/graphs", methods=['GET', 'POST'])
 @is_logged_in
 def graphs():
     graph_input = GraphForm(request.form)
-    if request.method == 'POST' and graph_input.validate():
+    if request.method == 'POST':
         node = graph_input.node.data
         interface = graph_input.interface.data
         time = graph_input.time.data
@@ -170,7 +182,10 @@ def graphs():
         graph_object = sql_graph_info(node, interface, time)
         data = graph_object.db_pull(node, interface, time)
 
-        return render_template("graphs.html", form=graph_input, data=data)
+        return render_template("graphs.html", 
+                               form=graph_input, 
+                               data=data, 
+                               interface=f'openflow:{node}:{interface}')
     return render_template("graphs.html", form=graph_input)
 
 
