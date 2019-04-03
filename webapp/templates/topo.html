@@ -1,9 +1,9 @@
 {% extends 'layout.html' %}
 {% block body %}
+<script type="text/javascript" src="{{ url_for('static', filename='topo.js') }}"></script>
+<h1 class ='retroshadow'><img width="30" height="30" src="{{url_for('static', filename='icon.png')}}"/>Topology View</h1> 
 
-    <h1 class ='retroshadow'><img width="30" height="30" src="{{url_for('static', filename='icon.png')}}"/>Topology View</h1> 
-
-    <div id="mynetwork"></div>
+<div id="mynetwork"></div>
 
     
  <div class='information_pannel'>   
