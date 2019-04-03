@@ -87,6 +87,7 @@ def dashboard():
 
 
 @app.route('/l2_trace_flow/<string:source_ip>/<string:dest_ip>', methods=['GET'])
+@is_logged_in
 def rest_trace_flows(source_ip, dest_ip):
     flow_trace_results = flow_tracer.trace_flows(source_ip, dest_ip)
     return jsonify(flow_trace_results)
@@ -163,6 +164,7 @@ def getSwitchCounters():
             return jsonify(topo_db.calculate_throughput(switch))
 
 @app.route("/switch-interfaces", methods=['POST'])
+@is_logged_in
 def get_switch_interfaces_api():
     if (request.method == 'POST'):
         raw_json = request.get_json()
