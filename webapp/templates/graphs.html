@@ -1,7 +1,12 @@
 {% extends 'layout.html' %}
 {% block body %}
+<script type="text/javascript" src="{{ url_for('static', filename='graphs.js') }}"></script>
+<h1 style="font-size: 50px;">Per Interface Performance Metrics</h1>
 
-<h1 style="font-size: 50px;"> Performance Metrics</h1>
+<br>
+
+<div id='informationbox'><h2><b>{{interface}}</b></h2></div>
+
 <br>
     <!-- Input Values -->
     <div id="switch_input">

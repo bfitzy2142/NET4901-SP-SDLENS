@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Module manages all form classes required by SDLens webapp."""
 from wtforms import Form, StringField, SelectField, TextAreaField, PasswordField, validators
+from topo_db import Topo_DB_Interactions
+from authenticator import Authenticator
 
 
 class RegisterForm(Form):
@@ -20,14 +22,26 @@ class GraphForm(Form):
     """
     Class to select the device and interface for graphs
     """
-    node = StringField('Node (Switch #)', [
-        validators.length(min=1, max=3),
-        validators.Regexp("\d{1,3}")
-        ])
-    interface = StringField('Interface (Int #)', [
-        validators.length(min=1, max=2),
-        validators.Regexp("\d{1,2}")
-        ])
+
+    auth = Authenticator()
+    # Get SQL Auth & Creds
+    yaml_db_creds = auth.working_creds['database']
+    sql_creds = {"user": yaml_db_creds['MYSQL_USER'],
+                 "password": yaml_db_creds['MYSQL_PASSWORD'],
+                 "host": yaml_db_creds['MYSQL_HOST']
+                 }
+    db = auth.working_creds['database']['MYSQL_DB']
+    topo_db = Topo_DB_Interactions(**sql_creds, db=db)
+    switches = topo_db.get_switches()
+
+    switch_tuple = []
+    for index, switch in enumerate(switches):
+        tup = index+1, switch
+        switch_tuple.append(tup)
+    
+    node = SelectField('Node', choices=switch_tuple)
+    interface = SelectField('Interface', choices=[('-', '-')])
+    
     time = SelectField('Graph Duration', choices=[(
              '1', '30 Minutes'), ('2', '1 Hour'),
             ('3', '2 Hours'), ('4', '6 Hours'),
