@@ -81,7 +81,7 @@ The reset button allows you to clear the topology page.
 
 This page is not visable from the navbar but can be reached via the multiple hyperlinks displayed on numerous pages. For example, when a node is cliked on the topology page, the hyperlink is the name of the switch above the port counter table.
 
-Below is the switch overview page. Port counters are displayed by default. You can also view that switche's flow tables, a graph showing the flow count history, and graphs partaining to interface utalization. This information under the interface usage tab is the same as what can be found on the graphs page and will be shown in more detail under the "Graphs" section.
+Below is the switch overview page. Port counters are displayed by default. You can also view that switch's flow tables, a graph showing the flow count history, and graphs partaining to interface utalization. This information under the interface usage tab is the same as what can be found on the graphs page and will be shown in more detail under the "Graphs" section.
 ![switch_overview](https://user-images.githubusercontent.com/44167644/55678534-83896080-58c9-11e9-8132-ea55c7a0585d.png)
 
 ## Graphs Page

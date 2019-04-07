@@ -5,7 +5,7 @@ SDLens is a monitoring application for OpenFlow based networks which use the Ope
 
 This entire application was built using the web-framework Flask.
 
-## Getting Started
+## Installation
 The following instructions will discribe how to install and run our web application, **SDLENS** with the OpenDaylight controller.
 ### Prerequisites
 This application makes uses the following services:
