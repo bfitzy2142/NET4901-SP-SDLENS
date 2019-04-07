@@ -283,6 +283,10 @@ function fetch_stp_topo()
     }
 }
 
+/*
+ Callback function that processes the server response from the /stp_topo
+ API that is used to display an acurrate stp topology
+ */
 function handleSTP(xhr) {
     if (xhr.readyState == 4 && xhr.status == 200)
     {
