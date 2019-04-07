@@ -1,10 +1,12 @@
-# NET4901-SP
+# NET4901-Senior Project: SDLENS
+
+## Application Overview
 SDLens is a monitoring application for OpenFlow based networks which use the OpenDaylight controller. It provides real time information from the OpenFlow switches, as well as an interactive topology of the network.
 
 This entire application was built using the web-framework Flask.
 
 ## Getting Started
-The following instructions will discribe how to install and run our web application, **SDlens** with the OpenDaylight controller.
+The following instructions will discribe how to install and run our web application, **SDLENS** with the OpenDaylight controller.
 ### Prerequisites
 This application makes uses the following services:
 - MySql Server
@@ -61,27 +63,19 @@ Once downloaded and opperational, you can create a new topology with the followi
 $ sudo mn --controller=remote,ip=`controller IP` --switch ovsk,protocols=OpenFLow13 --topo Topology of your choice
 ```
 
-This command can be altered to make the required topology, but the remote controller portion of the command must remain.
+A mesh topology is included with this repository called 'basicMesh' under the mininet directory. Copy this file to your Mininet VM and place it within ~/scripts. Create ~/scripts if that directory does not already exist. To create the mesh topology, add your controller's IP address and run the following:
 
-#### SDLens
-With all of the services now running, we can start the monitoring application.
-1. In the directory where the application is located make sure that you have all of the neccicary requirements. This can be accomplished with the following command, and the use of the `requirements.txt`
-
-```bash
-$ pip3 install -r "requirements.txt"
+```sh
+sudo mn --custom scripts/basicMesh.py --topo dcharoot --controller=remote,ip='controller IP' --switch ovsk,protocols=OpenFlow13
 ```
 
-2. The application is now ready to start, and to do so, use the following command from the `webapp` directory:
+Once mininet is running issue the following:
 
-```bash
-$ ./app.py
+```sh
+pingall
 ```
 
-This will launch the application, you will need to specifiy a Controller IP in the `SECTION` section so that the application knows where to request information from.
-3. The application should now be fully opperational.
-
-## Operation
-OPPERATION SECTION - Once the application is closer to being finished and graphs have been added I will add this section to talk about how to use the application.
+This will generate traffic throughout the network and allow the contoller to populate the openflow switches with flowrules.
 
 ## Authors
 - Samuel Robillard - Carleton University, Canada
