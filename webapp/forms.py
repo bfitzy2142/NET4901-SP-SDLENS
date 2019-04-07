@@ -3,6 +3,7 @@
 from wtforms import Form, StringField, SelectField, TextAreaField, PasswordField, validators
 from topo_db import Topo_DB_Interactions
 from authenticator import Authenticator
+from time import sleep
 
 
 class RegisterForm(Form):
@@ -32,8 +33,16 @@ class GraphForm(Form):
                  }
     db = auth.working_creds['database']['MYSQL_DB']
     topo_db = Topo_DB_Interactions(**sql_creds, db=db)
-    switches = topo_db.get_switches()
-
+    while True:
+        try:
+            switches = topo_db.get_switches()
+            break
+        except:
+            print('Waiting for DB to be ready!')
+            sleep(5)
+            continue
+    print('got here')
+    
     switch_tuple = []
     for index, switch in enumerate(switches):
         tup = index+1, switch
