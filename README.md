@@ -82,3 +82,5 @@ This will generate traffic throughout the network and allow the contoller to pop
 - Bradley Fitzgerald - Carleton University, Canada
 - Josh Nelson - Carleton University, Canada
 - Samuel Cook - Carleton University, Canada
+
+![SDLens_Group](https://user-images.githubusercontent.com/44167644/55919797-47097d80-5bc5-11e9-9967-34752b6e1f3d.jpg)
