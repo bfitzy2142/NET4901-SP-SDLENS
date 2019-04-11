@@ -1,12 +1,24 @@
 # NET4901-Senior Project: SDLENS
 
 ## Application Overview
-SDLens is a monitoring application for OpenFlow based networks which use the OpenDaylight controller. It provides real time information from the OpenFlow switches, as well as an interactive topology of the network.
+SDLens is a software defined network (SDN) monitoring web application designed to operate with the OpenDaylight controller. It provides real-time telemetry from OpenFlow switches, provides an interactive topology of the network, and many more intuitive features.
 
 This entire application was built using the web-framework Flask.
 
-## Installation
-The following instructions will discribe how to install and run our web application, **SDLENS** with the OpenDaylight controller.
+## Architecture of SDLENS
+![SDLens Architecture](https://user-images.githubusercontent.com/44167644/55921299-314a8700-5bca-11e9-9a3e-d80d6294686c.png)
+- Primarily developed in Python​3
+- JavaScript on the front-end​
+- Three main components of our application​
+    - Web App​
+    - Monitoring Agents​
+    - MySQL Database​
+- Web App and Agents interact with both the Database and the controller's Northbound interface​
+- Designed with modularity in mind​
+
+## Installation Steps
+The following instructions will discribe how to install and run our web application, **SDLENS**.
+
 ### Prerequisites
 This application makes uses the following services:
 - MySql Server
@@ -30,10 +42,10 @@ This application makes uses the following services:
     - Any SDN can be used provided it uses an OpenDaylight controller.
 
 ### Installing
-Preface: All commands will assuem a linux operating system.
+Preface: All commands will assuem a linux or other Unix based operating system (MacOS).
 
 #### MySql Server
-Installing the MySql Server is quite easy, as it can be accomplished with Aptitude.
+Installing the MySql Server is easy, as it can be accomplished with Aptitude.
 
 ```
 $ apt install mysql-server
@@ -41,7 +53,7 @@ $ apt install libmysqlclient-dev
 ```
 
 #### OpenDaylight
-OpenDaylight can be downloaded from the [OpenDaylight](https://www.opendaylight.org/) website. This application was developed using OpenDaylight version: `0.8.3`
+The OpenDaylight controller can be downloaded from the [OpenDaylight](https://www.opendaylight.org/) website. This application was developed using OpenDaylight version: `0.8.3`
 
 Once OpenDaylight has been extracted, you can start the program with:
 
