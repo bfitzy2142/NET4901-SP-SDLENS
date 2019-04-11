@@ -26,7 +26,8 @@ This application makes uses the following services:
 
 #### Optional
 - Mininet
-We have used the Mininet VM to emulate a SDN network.
+    - The Mininet VM was used to emulate SDN networks in the development of SDLENS.
+    - Any SDN can be used provided it uses an OpenDaylight controller.
 
 ### Installing
 Preface: All commands will assuem a linux operating system.
@@ -40,7 +41,7 @@ $ apt install libmysqlclient-dev
 ```
 
 #### OpenDaylight
-OpenDaylight can be downloaded from the [OpenDaylight](https://www.opendaylight.org/) website. This application has been based off of OpenDaylight version: `0.8.3`
+OpenDaylight can be downloaded from the [OpenDaylight](https://www.opendaylight.org/) website. This application was developed using OpenDaylight version: `0.8.3`
 
 Once OpenDaylight has been extracted, you can start the program with:
 
@@ -48,16 +49,18 @@ Once OpenDaylight has been extracted, you can start the program with:
 $ karaf-version/bin/./karaf clean
 ```
 
-When starting the program with the `clean` option, this ensures that any previously installed packages are not inclueded and allows for more continuity at the cost of an extra step. To install the OpenDaylight features which we use, the following command is used:
+When starting the program, run the `clean` option. This ensures that any previously installed packages are removed and allows for more continuity at the cost of an extra step. 
+
+Use the following command to install required ODL features:
 
 ```
 > feature:install odl-restconf odl-l2switch-switch odl-dlux-core odl-dluxapps-nodes odl-dluxapps-topology odl-dluxapps-yangui odl-dluxapps-yangvisualizer odl-dluxapps-yangman
 ```
 
 #### Mininet (Optional)
-If you are using Mininet to emulate a SDN network, you can download the virtual machine from Mininet's website: [Download](https://github.com/mininet/mininet/wiki/Mininet-VM-Images)
+If you are using Mininet to emulate an SDN network, you can download the Mininet virtual machine from Mininet's website: [Download](https://github.com/mininet/mininet/wiki/Mininet-VM-Images)
 
-Once downloaded and opperational, you can create a new topology with the following command. Note that you will have to specifiy the IP address of the OpenDaylight controller.
+Once downloaded and opperational, you can create a new topology with the following command. **Note: Add your controller IP**.
 
 ```bash
 $ sudo mn --controller=remote,ip=`controller IP` --switch ovsk,protocols=OpenFLow13 --topo Topology of your choice
@@ -78,9 +81,9 @@ pingall
 This will generate traffic throughout the network and allow the contoller to populate the openflow switches with flowrules.
 
 ## Authors
-- Samuel Robillard - Carleton University, Canada
-- Bradley Fitzgerald - Carleton University, Canada
-- Josh Nelson - Carleton University, Canada
-- Samuel Cook - Carleton University, Canada
+- Bradley Fitzgerald - Carleton University, Canada (far left)
+- Samuel Cook - Carleton University, Canada (inner left)
+- Samuel Robillard - Carleton University, Canada (inner right)
+- Josh Nelson - Carleton University, Canada (far right)
 
 ![SDLens_Group](https://user-images.githubusercontent.com/44167644/55919797-47097d80-5bc5-11e9-9967-34752b6e1f3d.jpg)
