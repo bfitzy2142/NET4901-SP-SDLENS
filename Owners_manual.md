@@ -18,11 +18,9 @@ The following are the main pages of the SDLENS Monitoring Webapp:
 
 
 ## The Topology Page
+![Topology_view](https://user-images.githubusercontent.com/44167644/56159678-4d1ba780-5f93-11e9-855c-0248277af520.png)
 
-
-![Topology](https://user-images.githubusercontent.com/44167644/55676798-08648200-58aa-11e9-9fe1-49c08f2576e4.png)
-
-**The topology page is designed to allow users to easily peek into their SDN to quickly gather telemetry on all their network elements.**
+The topology page is designed to allow users to easily peek into their SDN to quickly gather telemetry on all their network elements.
 **There are two areas of interest which display statistics on the topology page:**
 
 - **Topology View panel**
@@ -44,16 +42,17 @@ This area is filled with information on statistics gathering events.
 
 Within the topology area, you can hover over devices or click devices to obtain more information about them.
 Hovering over nodes or links will display information about that device. For example, hovering over a switch shows throughput statistics and realtime flow information.
-![throughput_info](https://user-images.githubusercontent.com/44167644/55677729-0f47c080-58bb-11e9-9a8a-57c360b96fb8.png)
+![throughput_stats](https://user-images.githubusercontent.com/44167644/56159862-be5b5a80-5f93-11e9-94c2-1c5ac6fc9f34.png)
 
 #### 2. Switch and Host Information
 
 
-![switch_clicked](https://user-images.githubusercontent.com/44167644/55677780-0c999b00-58bc-11e9-8700-aa1aa0eb8283.png)
+![info_panel](https://user-images.githubusercontent.com/44167644/56159946-f06cbc80-5f93-11e9-9451-96415faefdda.png)
 **Clicking on a switch will provide information such as switch port counters, errors, stp state, port status, etc.**
 
-![host_clicked](https://user-images.githubusercontent.com/44167644/55677791-2cc95a00-58bc-11e9-9742-78357f77c695.png)
-**Clicking on a host will display a timestamp of when that joined the network and the latest interaction with the network it has had.**
+
+![host_panel](https://user-images.githubusercontent.com/44167644/56160021-1abe7a00-5f94-11e9-9f74-33b9d0dc70a5.png)
+Clicking on a host will display a timestamp of when that joined the network and the latest interaction with the network it has had.
 #### 3. Flow Tracer Feature
 **The flow tracer feature allows users to visualize the path used for two host elements to communicate with one another.**
 ![flow_tracer_panel](https://user-images.githubusercontent.com/44167644/55676887-a6a51780-58ab-11e9-8d62-0fb3efc0ddab.png)
@@ -63,7 +62,7 @@ Within this tab, you select the source host and destination host. Then press tra
 
 The information panel displays information of the switches traversed and the flow rule used along with information on that particular flow.
 
-![flow_info_panel](https://user-images.githubusercontent.com/44167644/55677000-07355400-58ae-11e9-9611-f237d9ccefe6.png)
+![flow_trace](https://user-images.githubusercontent.com/44167644/56160110-4b061880-5f94-11e9-8592-96e34ef26a6a.png)
 
 #### 4. STP and RESET
 ![Additional_options_panel](https://user-images.githubusercontent.com/44167644/55676896-c89e9a00-58ab-11e9-84b4-1f1795d73ca1.png)
