@@ -25,17 +25,17 @@ The following are the main pages of the SDLENS Monitoring Webapp:
 **The topology page is designed to allow users to easily peek into their SDN to quickly gather telemetry on all their network elements.**
 **There are two areas of interest which display statistics on the topology page:**
 
-- **Topology View Pannel**
+- **Topology View panel**
 
-- **Information Pannel**
+- **Information panel**
 
 
-##### i. Topology View Pannel
+##### i. Topology View panel
 ![topology_box](https://user-images.githubusercontent.com/44167644/55676880-778ea600-58ab-11e9-8df9-de74e0acc644.png)
 From this view you can see what your working topology looks like.
 
-##### ii. Information Pannel
-![information_pannel](https://user-images.githubusercontent.com/44167644/55676912-f2f05780-58ab-11e9-964b-d176eadeef95.png)
+##### ii. Information panel
+![information_panel](https://user-images.githubusercontent.com/44167644/55676912-f2f05780-58ab-11e9-964b-d176eadeef95.png)
 This area is filled with information on statistics gathering events.
 
 ### Topology Page Features
@@ -56,23 +56,23 @@ Hovering over nodes or links will display information about that device. For exa
 **Clicking on a host will display a timestamp of when that joined the network and the latest interaction with the network it has had.**
 #### 3. Flow Tracer Feature
 **The flow tracer feature allows users to visualize the path used for two host elements to communicate with one another.**
-![flow_tracer_pannel](https://user-images.githubusercontent.com/44167644/55676887-a6a51780-58ab-11e9-8d62-0fb3efc0ddab.png)
+![flow_tracer_panel](https://user-images.githubusercontent.com/44167644/55676887-a6a51780-58ab-11e9-8d62-0fb3efc0ddab.png)
 
-Within this tab, you select the source host and destination host. Then press trace. The topology view pannel will display the path taken from the source host to destination host.
+Within this tab, you select the source host and destination host. Then press trace. The topology view panel will display the path taken from the source host to destination host.
 ![flow_trace_topo](https://user-images.githubusercontent.com/44167644/55676985-97bf6480-58ad-11e9-86f5-42efd3a7ea94.png)
 
-The information Pannel displays information of the switches traversed and the flow rule used along with information on that particular flow.
+The information panel displays information of the switches traversed and the flow rule used along with information on that particular flow.
 
-![flow_info_pannel](https://user-images.githubusercontent.com/44167644/55677000-07355400-58ae-11e9-9611-f237d9ccefe6.png)
+![flow_info_panel](https://user-images.githubusercontent.com/44167644/55677000-07355400-58ae-11e9-9611-f237d9ccefe6.png)
 
 #### 4. STP and RESET
-![Additional_options_pannel](https://user-images.githubusercontent.com/44167644/55676896-c89e9a00-58ab-11e9-84b4-1f1795d73ca1.png)
+![Additional_options_panel](https://user-images.githubusercontent.com/44167644/55676896-c89e9a00-58ab-11e9-84b4-1f1795d73ca1.png)
 
 If you would like to see the current Spanning Tree Topology then this is possible by clicking the STP Topology button.
 
 ![stp_topology](https://user-images.githubusercontent.com/44167644/55678297-4c18b500-58c5-11e9-9601-51dde1ca253c.png)
 
-The information pannel displays a legend:
+The information panel displays a legend:
 ![stp_legend](https://user-images.githubusercontent.com/44167644/55678331-c47f7600-58c5-11e9-8346-540e6ec8b91f.png)
 
 The reset button allows you to clear the topology page.

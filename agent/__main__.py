@@ -68,10 +68,13 @@ def store_avgAgent_time(average_time):
 # Passing in agent dicts is not very memory efficient
 def agent_runner(counter_agents, flow_agents, switch):
     try:  # If topo changes mid execution agents are error prone
+        print(switch + ':pre-counter-agent!')
         counter_agents[switch].run_agent()
+        print(switch + ':pre-flow-agent!')
         flow_agents[switch].run_agent()
-    except:
+    except Exception as e:
         print(f'Ran into error on SW: {switch}')
+        print(e)
 
 if __name__ == '__main__':
     print("***SDLENS DATABASE AGENT UTILITY***")
