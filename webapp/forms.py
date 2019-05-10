@@ -34,6 +34,7 @@ class GraphForm(Form):
     db = auth.working_creds['database']['MYSQL_DB']
     topo_db = Topo_DB_Interactions(**sql_creds, db=db)
     while True:
+        sleep(5)
         try:
             switches = topo_db.get_switches()
             break
@@ -41,7 +42,6 @@ class GraphForm(Form):
             print('Waiting for DB to be ready!')
             sleep(5)
             continue
-    print('got here')
     
     switch_tuple = []
     for index, switch in enumerate(switches):
