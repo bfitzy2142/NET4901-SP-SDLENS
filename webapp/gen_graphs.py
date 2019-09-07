@@ -11,16 +11,18 @@ from datetime import datetime, timedelta
 import json
 
 
-class sql_graph_info(object):
-    def __init__(self, node, interface, time):
+class sql_graph_info():
+    def __init__(self, node, interface, time, sql_creds, db):
         """
         Initializer for the sql_graph_info Object.
         """
         self.node = node
         self.interface = interface
         self.time = time
+        self.sql_creds = sql_creds
+        self.db = db
 
-    def db_pull(self, node, interface, time):
+    def db_pull(self, node, interface, time, ):
         """ Pulls the RX and TX information from the database
             to display for the graphs page.
 
@@ -60,10 +62,10 @@ class sql_graph_info(object):
         )
 
         mydb = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            passwd="root",
-            database="sdlens"
+            host=self.sql_creds['host'],
+            user=self.sql_creds['user'],
+            passwd=self.sql_creds['password'],
+            database=self.db
         )
         cur = mydb.cursor()
         cur.execute(query)

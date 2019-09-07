@@ -181,7 +181,7 @@ def graphs():
         interface = graph_input.interface.data
         time = graph_input.time.data
 
-        graph_object = sql_graph_info(node, interface, time)
+        graph_object = sql_graph_info(node, interface, time, sql_creds, db)
         data = graph_object.db_pull(node, interface, time)
 
         return render_template("graphs.html", 
@@ -213,12 +213,12 @@ def switch_stats(switch_name):
     switch_num = switch.replace("openflow:", "")
     for interface in interfaces:
         int_num = interface.replace(f"{switch}:", "")
-        graph_object = sql_graph_info(switch_num, int_num, time)
+        graph_object = sql_graph_info(switch_num, int_num, time, sql_creds, db)
         data = graph_object.db_pull(switch_num, int_num, time)
         interface_graphs[interface] = data
     render_kwargs["int_graphs"] = interface_graphs
     # Get flow summary stats
-    flow_s_graphs = pull_flow_graphs(switch_num, time)
+    flow_s_graphs = pull_flow_graphs(switch_num, time, sql_creds, db)
     render_kwargs["flow_s_graph"] = flow_s_graphs
 
     return render_template("switch_stats.html", **render_kwargs)
@@ -337,5 +337,6 @@ def logout():
 
 
 if __name__ == "__main__":
-    create_user_db()
+    create_user_db(sql_creds)
     app.run(debug=True)
+    

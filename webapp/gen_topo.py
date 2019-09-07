@@ -113,7 +113,3 @@ class generate_topology():
         result = cursor.fetchall()
         cursor.close()
         return result
-"""
-obj = generate_topology('root', 'root', '127.0.0.1', 'sdlens')
-print(dumps(obj.fetch_nodes(), indent=1))
-"""

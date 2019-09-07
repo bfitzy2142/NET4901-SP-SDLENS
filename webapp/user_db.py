@@ -5,10 +5,7 @@ from mysql.connector import errorcode
 
 
 # TODO: Add handling logic if DB doesnt exist
-def create_user_db():
-    sql_creds = {"user": "root",
-                 "password": "root",
-                 "host": "127.0.0.1"}
+def create_user_db(sql_creds):
     cnx = mysql.connector.connect(**sql_creds, database='sdlens')
     cursor = cnx.cursor()
     table = (

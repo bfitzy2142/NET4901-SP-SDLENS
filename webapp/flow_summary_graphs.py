@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import json
 
 
-def pull_flow_graphs(node, time):
+def pull_flow_graphs(node, time, sql_creds, db):
     """ Pulls the RX and TX information from the database
         to display for the graphs page.
 
@@ -44,12 +44,12 @@ def pull_flow_graphs(node, time):
         f"Timestamp >= '{data_start}'"
         f"AND Timestamp < '{data_end}'"
     )
-    #print(query)
+
     mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        passwd="root",
-        database="sdlens"
+        host=sql_creds['host'],
+        user=sql_creds['user'],
+        passwd=sql_creds['password'],
+        database=db
     )
     cur = mydb.cursor()
     cur.execute(query)
