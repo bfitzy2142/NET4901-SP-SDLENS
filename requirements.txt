@@ -17,7 +17,7 @@ mysqlclient==1.4.1
 passlib==1.7.1
 pep8==1.7.1
 pprint==0.1
-protobuf==3.6.1
+protobuf==3.15.0
 pylint==2.2.2
 python-nmap==0.6.1
 PyYAML==3.13
